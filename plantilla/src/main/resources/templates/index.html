@@ -16,21 +16,45 @@
 </nav>
 
 <h1>ColaSmart</h1>
-<p>ColaSmart es una plataforma web para gestionar turnos y colas virtuales en servicios
-presenciales como secretarías, tutorías o laboratorios. Los usuarios se ponen
-en cola desde su móvil, reciben notificaciones en tiempo real y evitan esperas innecesarias.
-El personal organiza la atención y prioriza casos. Menos colas físicas, menos estrés y una
-experiencia más eficiente para todos.
-Roles y tareas
-• Administrador: Crea y elimina nuevas colas con su ubicación y servicio. Gestiona usuarios y permisos, configura horarios, límites de aforo y exporta informes.
-Creación de códigos QR para anunciar existencia de servicio
-• Personal de atención: Abre y cierra turnos, llama al siguiente usuario, reordena
-prioridades, marca incidencias y visualiza el estado de la cola en tiempo real.
-Posibilidad de proyectar (o de poner una pantalla tonta) mostrando el estado de la lista en el lugar => posible meter el QR en esta pantalla!
-Pueden ver las revisiones
-• Usuario/Cliente: Solicita turno, consulta tiempo estimado de espera,
-recibe avisos, cancela reservas y valora el servicio. Escanea el QR, selecciona prioridad si las hay,  para solicitar turno.
-</p>
+
+    <h2>Descripción</h2>
+    <p>
+        ColaSmart es una plataforma web para gestionar turnos y colas virtuales en servicios
+        presenciales como secretarías, tutorías o laboratorios. Los usuarios se ponen en cola
+        escaneando un QR desde su móvil, reciben notificaciones en tiempo real y evitan esperas
+        innecesarias. El personal organiza la atención y prioriza casos. Menos colas físicas,
+        menos estrés y una experiencia más eficiente para todos.
+    </p>
+
+    <h2>Roles y tareas</h2>
+
+    <h3>Administrador</h3>
+    <p>Usuario con control del sistema.</p>
+    <ul>
+        <li>Crea y elimina colas con su ubicación y servicio: cada cola tendrá el nombre del servicio, el tiempo estimado, el aforo máximo, el horario y su ubicación.</li>
+        <li>Creación de códigos QR para anunciar existencias de servicios que los clientes puedan solicitar turno.</li>
+        <li>Gestionar usuarios: podrá añadir, eliminar y buscar usuarios con rol de personal de atención.</li>
+        <li>Exportar informes.</li>
+    </ul>
+
+    <h3>Personal de atención</h3>
+    <p>Responsable de la gestión de turnos en una cola específica.</p>
+    <ul>
+        <li>Abre y cierra turnos: activa o desactiva un turno a partir de un botón.</li>
+        <li>Llamar al siguiente: notifica al próximo usuario de la cola.</li>
+        <li>Prioriza a los usuarios: reordena los turnos según su prioridad.</li>
+        <li>Visualiza el estado de la cola en tiempo real y pueden ver las revisiones.</li>
+        <li>Posibilidad de proyectar mostrando el QR y el estado de la lista en el lugar.</li>
+    </ul>
+
+    <h3>Usuario/Cliente</h3>
+    <p>Persona que solicita turno y está interesada en un servicio.</p>
+    <ul>
+        <li>Solicita turno escaneando el QR que le llevará a una cola específica. Según su prioridad se le dará un turno específico.</li>
+        <li>Visualiza el estado en el que se encuentra en la cola y el tiempo estimado de espera.</li>
+        <li>Cancela el turno en caso de no querer seguir en la cola, eliminándose de ella.</li>
+        <li>Valora el servicio tras terminar su turno (opcional).</li>
+    </ul>
 
 </body>
 </html>
