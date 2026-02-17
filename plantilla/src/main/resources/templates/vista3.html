@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Vista 3</title>
 </head>
-<body>
 
-<nav>
-    <a href="/">Inicio</a>
-    <a href="/autor">Autores</a>
-</nav>
+<body class="d-flex flex-column h-100">
+
+<header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <h1>Vista de configuración de una nueva cola</h1>
 <p>Configura: qué información se muestra, logotipos o similar, tiempos estimados, y los servicios (por ejemplo: DNI/Pasaporte/Denuncia)

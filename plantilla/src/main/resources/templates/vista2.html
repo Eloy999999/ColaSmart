@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Vista 2</title>
 </head>
-<body>
 
-<nav>
-    <a href="/">Inicio</a>
-    <a href="/autor">Autores</a>
-</nav>
+<body class="d-flex flex-column h-100">
+
+<header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <h1>Vista de usuario de la cola en la que está</h1>
 <p>El usuario verá su posición en la cola, su prioridad asignada y un tiempo de espera estimado para ser atendido.</p>

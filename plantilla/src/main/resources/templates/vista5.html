@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Vista 5</title>
 </head>
-<body>
 
-<nav>
-    <a href="/">Inicio</a>
-    <a href="/autor">Autores</a>
-</nav>
+<body class="d-flex flex-column h-100">
+
+<header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <h1>Vista de administrador, gestionando ubicaciones</h1>
 <p>crea un lugar para la gestión de cada empresa que se dé de alta y elimina los de las empresas que se den de baja</p>
