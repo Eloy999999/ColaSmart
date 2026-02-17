@@ -3,6 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <title>Vista 1</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        nav {
+            background-color: #f2f2f2;
+            padding: 15px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        nav a {
+            color: #000;
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+
+        .contenedor {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 40px;
+        }
+
+        /* LADO IZQUIERDO */
+        .turnos-llamados {
+            width: 50%;
+        }
+
+        .turnos-llamados h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .grid-turnos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            font-size: 54px;
+            text-align: center;
+        }
+
+        .turno {
+            background-color: #f5f5f5;
+            padding: 25px;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+        }
+
+        /* LADO DERECHO */
+        .lado-derecho {
+            width: 45%;
+            text-align: center;
+        }
+
+        .escanee {
+            font-size: 40px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .lado-derecho img {
+            width: 480px;
+            margin-bottom: 30px;
+        }
+
+        .turno-actual-label {
+            font-size: 48px;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .turno-actual {
+            font-size: 110px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* BOTÓN PAUSA */
+        .boton-pausa {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #444;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .boton-pausa:hover {
+            background-color: #000;
+        }
+
+
+        /* OVERLAY VOLVEMOS EN */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffffff, #f2f2f2);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .overlay .titulo {
+            font-size: 60px;
+            letter-spacing: 8px;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .overlay .minutos {
+            font-size: 180px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .overlay .texto-minutos {
+            font-size: 50px;
+            letter-spacing: 6px;
+            margin-top: 10px;
+        }
+
+        .boton-volver {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: black;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .boton-volver:hover {
+            background-color: #444;
+        }
+
+    </style>
 </head>
 <body>
 
@@ -11,12 +168,56 @@
     <a href="/autor">Autores</a>
 </nav>
 
-<h1>Lista de espera de un negocio, con QR para apuntarse</h1>
-<p>Cada negocio tendrá un QR, el cual debe escanearse por el usuario para figurar en la cola.</p>
+<div class="contenedor">
 
-<h2>Escanea QR para entrar en una cola</h2>
- <img src="https://cdn-icons-png.flaticon.com/512/3081/3081329.png" alt="Foto qr" style=" width:200px;">
-<p>El usuario escanea el QR, se le asigna un turno y puede ver su posición en la cola y el tiempo estimado de espera.</p>
+    <div class="turnos-llamados">
+        <h2>TURNOS LLAMADOS</h2>
+
+        <div class="grid-turnos">
+            <div class="turno">B728 - Puesto 1</div>
+            <div class="turno">B729 - Puesto 2</div>
+            <div class="turno">B730 - Puesto 1</div>
+            <div class="turno">B731 - Puesto 3</div>
+            <div class="turno">B725 - Puesto 2</div>
+            <div class="turno">B726 - Puesto 1</div>
+        </div>
+    </div>
+
+    <div class="lado-derecho">
+
+        <div class="escanee">ESCANEE EL QR</div>
+
+        <img th:src="@{/img/QR_code.png}" alt="QR">
+
+        <div class="turno-actual-label">TURNO ACTUAL</div>
+        <div class="turno-actual">B732 - Puesto 3</div>
+
+    </div>
+
+</div>
+
+<!-- BOTÓN PAUSA -->
+<button class="boton-pausa" onclick="mostrarPausa()">Pausa</button>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+    <div class="titulo">VOLVEMOS EN</div>
+    <div class="minutos">5</div>
+    <div class="texto-minutos">MINUTOS</div>
+
+    <button class="boton-volver" onclick="ocultarPausa()">Volver</button>
+</div>
+
+
+<script>
+    function mostrarPausa() {
+        document.getElementById("overlay").style.display = "flex";
+    }
+
+    function ocultarPausa() {
+        document.getElementById("overlay").style.display = "none";
+    }
+</script>
 
 </body>
 </html>
