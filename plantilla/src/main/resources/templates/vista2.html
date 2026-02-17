@@ -10,11 +10,52 @@
 
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-<h1>Vista de usuario de la cola en la que está</h1>
-<p>El usuario verá su posición en la cola, su prioridad asignada y un tiempo de espera estimado para ser atendido.</p>
-<h2>Numero 30</h2>
- <img src="https://media.istockphoto.com/id/1323903078/es/vector/gran-grupo-multietnico-multirracial-de-personas-de-pie-en-largas-colas.jpg?s=612x612&w=0&k=20&c=fASn6-pV04VJcGbFNhIS0ITenPKWCXX5M-0bCYZb_qs=" alt="Foto cola" style=" width:200px;">
-<p>Su turno es el numero 30 de la cola.</p>
+<main class="flex-shrink-0">
+    <div class="container mt-4">
+
+        <div class="row align-items-center">
+
+            <!-- IZQUIERDA: información -->
+            <div class="col-md-6">
+
+                <p><strong>Tipo de servicio:</strong> Atención Secretaría</p>
+                <p><strong>Tiempo estimado:</strong> 15 minutos</p>
+
+            </div>
+
+            <!-- DERECHA: puesto en cola grande -->
+            <div class="col-md-6 text-center">
+
+                <h1 class="fw-bold text-primary" style="font-size: 8rem;">
+                    D4T
+                </h1>
+
+                <p class="fs-4">Tu turno</p>
+
+            </div>
+
+        </div>
+
+        <!-- BOTONES ABAJO -->
+        <div class="row mt-5">
+
+            <div class="col-6 text-start">
+                <button type="button" class="btn btn-success btn-lg">
+                    Tu turno
+                </button>
+            </div>
+
+            <div class="col-6 text-end">
+                <button type="button" class="btn btn-danger btn-lg">
+                    Abandonar la cola
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</main>
+
 
 </body>
 </html>
