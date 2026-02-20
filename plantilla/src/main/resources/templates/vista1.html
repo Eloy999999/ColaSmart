@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Vista 1</title>
 
@@ -163,10 +164,7 @@
 </head>
 <body>
 
-<nav>
-    <a href="/">Inicio</a>
-    <a href="/autor">Autores</a>
-</nav>
+<header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <div class="contenedor">
 
