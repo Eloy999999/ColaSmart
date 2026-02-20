@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <!-- Misma cabecera que Vista 2 -->
     <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Vista 1</title>
 
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Estilos específicos de Vista 1 -->
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -13,32 +18,14 @@
             color: #000000;
         }
 
-        nav {
-            background-color: #f2f2f2;
-            padding: 15px;
-            border-bottom: 2px solid #ddd;
+        /* 🔹 Evitar que la cabecera se vea bold (versión corregida) */
+        header nav.navbar,
+        header nav.navbar * {
+            font-weight: 400 !important;
         }
 
-        nav a {
-            color: #000;
-            text-decoration: none;
-            margin-right: 20px;
-            font-weight: bold;
-        }
-
-        .contenedor {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 40px;
-        }
-
-        /* LADO IZQUIERDO */
-        .turnos-llamados {
-            width: 50%;
-        }
-
-        .turnos-llamados h2 {
+        /* Solo el h2 dentro de turnos-llamados es bold */
+        .turnos-llamados > h2 {
             text-align: center;
             margin-bottom: 30px;
             font-size: 48px;
@@ -55,26 +42,15 @@
 
         .turno {
             background-color: #f5f5f5;
-            padding: 25px;
+            padding: 10px 20px;
             border-radius: 10px;
             border: 2px solid #ccc;
-        }
-
-        /* LADO DERECHO */
-        .lado-derecho {
-            width: 45%;
-            text-align: center;
         }
 
         .escanee {
             font-size: 40px;
             font-weight: bold;
             margin-bottom: 20px;
-        }
-
-        .lado-derecho img {
-            width: 480px;
-            margin-bottom: 30px;
         }
 
         .turno-actual-label {
@@ -90,24 +66,39 @@
             color: #000;
         }
 
-        /* BOTÓN PAUSA */
+        /* BOTÓN PAUSA Y VOLVER IGUAL ALTURA */
+        .boton-pausa,
+        .boton-volver {
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
         .boton-pausa {
             position: fixed;
             bottom: 20px;
             left: 20px;
             background-color: #444;
             color: white;
-            padding: 8px 15px;
-            font-size: 14px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
         }
 
         .boton-pausa:hover {
             background-color: #000;
         }
 
+        .boton-volver {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: black;
+            color: white;
+        }
+
+        .boton-volver:hover {
+            background-color: #444;
+        }
 
         /* OVERLAY VOLVEMOS EN */
         .overlay {
@@ -143,79 +134,63 @@
             letter-spacing: 6px;
             margin-top: 10px;
         }
-
-        .boton-volver {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background-color: black;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .boton-volver:hover {
-            background-color: #444;
-        }
-
     </style>
 </head>
-<body>
+<body class="d-flex flex-column h-100">
 
-<header th:replace="~{fragments/nav.html :: nav}"></header>
+    <!-- Cabecera Thymeleaf igual que Vista 2 -->
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-<div class="contenedor">
+    <main class="flex-shrink-0 mt-4">
+        <div class="container">
+            <div class="row">
 
-    <div class="turnos-llamados">
-        <h2>TURNOS LLAMADOS</h2>
+                <!-- LADO IZQUIERDO: TURNOS LLAMADOS -->
+                <div class="col-md-6">
+                    <div class="turnos-llamados">
+                        <h2>TURNOS LLAMADOS</h2>
+                        <div class="grid-turnos">
+                            <div class="turno">B728 - Puesto 1</div>
+                            <div class="turno">B729 - Puesto 2</div>
+                            <div class="turno">B730 - Puesto 1</div>
+                            <div class="turno">B731 - Puesto 3</div>
+                            <div class="turno">B725 - Puesto 2</div>
+                            <div class="turno">B726 - Puesto 1</div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="grid-turnos">
-            <div class="turno">B728 - Puesto 1</div>
-            <div class="turno">B729 - Puesto 2</div>
-            <div class="turno">B730 - Puesto 1</div>
-            <div class="turno">B731 - Puesto 3</div>
-            <div class="turno">B725 - Puesto 2</div>
-            <div class="turno">B726 - Puesto 1</div>
+                <!-- LADO DERECHO: ESCANEAR QR Y TURNO ACTUAL -->
+                <div class="col-md-6 text-center">
+                    <div class="escanee">ESCANEE EL QR</div>
+                    <img th:src="@{/img/QR_code.png}" alt="QR" class="img-fluid mb-3">
+                    <div class="turno-actual-label">TURNO ACTUAL</div>
+                    <div class="turno-actual">B732 - Puesto 3</div>
+                </div>
+
+            </div>
         </div>
+    </main>
+
+    <!-- BOTÓN PAUSA -->
+    <button class="boton-pausa" onclick="mostrarPausa()">Pausa</button>
+
+    <!-- OVERLAY -->
+    <div class="overlay" id="overlay">
+        <div class="titulo">VOLVEMOS EN</div>
+        <div class="minutos">5</div>
+        <div class="texto-minutos">MINUTOS</div>
+        <button class="boton-volver" onclick="ocultarPausa()">Volver</button>
     </div>
 
-    <div class="lado-derecho">
+    <script>
+        function mostrarPausa() {
+            document.getElementById("overlay").style.display = "flex";
+        }
 
-        <div class="escanee">ESCANEE EL QR</div>
-
-        <img th:src="@{/img/QR_code.png}" alt="QR">
-
-        <div class="turno-actual-label">TURNO ACTUAL</div>
-        <div class="turno-actual">B732 - Puesto 3</div>
-
-    </div>
-
-</div>
-
-<!-- BOTÓN PAUSA -->
-<button class="boton-pausa" onclick="mostrarPausa()">Pausa</button>
-
-<!-- OVERLAY -->
-<div class="overlay" id="overlay">
-    <div class="titulo">VOLVEMOS EN</div>
-    <div class="minutos">5</div>
-    <div class="texto-minutos">MINUTOS</div>
-
-    <button class="boton-volver" onclick="ocultarPausa()">Volver</button>
-</div>
-
-
-<script>
-    function mostrarPausa() {
-        document.getElementById("overlay").style.display = "flex";
-    }
-
-    function ocultarPausa() {
-        document.getElementById("overlay").style.display = "none";
-    }
-</script>
-
+        function ocultarPausa() {
+            document.getElementById("overlay").style.display = "none";
+        }
+    </script>
 </body>
 </html>

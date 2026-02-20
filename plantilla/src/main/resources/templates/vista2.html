@@ -4,58 +4,88 @@
     <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Vista 2</title>
+    <style>
+        /* Contenedor centrado para el mensaje de turno */
+        #turno-display {
+            display: none; /* oculto al inicio */
+            height: 100vh;
+            width: 100vw;
+            text-align: center;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 
 <body class="d-flex flex-column h-100">
 
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-<main class="flex-shrink-0">
+<main class="flex-shrink-0" id="main-content">
     <div class="container mt-4">
 
         <div class="row align-items-center">
 
             <!-- IZQUIERDA: información -->
             <div class="col-md-6">
-
-                <p><strong>Tipo de servicio:</strong> Atención Secretaría</p>
-                <p><strong>Tiempo estimado:</strong> 15 minutos</p>
-
+                <p class="fs-2"><strong>Tipo de servicio:</strong> Atención Secretaría</p>
+                <p class="fs-2"><strong>Tiempo estimado:</strong> 15 minutos</p>
             </div>
 
             <!-- DERECHA: puesto en cola grande -->
             <div class="col-md-6 text-center">
-
-                <h1 class="fw-bold text-primary" style="font-size: 8rem;">
-                    D4T
-                </h1>
-
+                <h1 class="fw-bold text-primary" style="font-size: 8rem;">B743</h1>
                 <p class="fs-4">Tu turno</p>
-
             </div>
 
         </div>
 
         <!-- BOTONES ABAJO -->
         <div class="row mt-5">
-
             <div class="col-6 text-start">
-                <button type="button" class="btn btn-success btn-lg">
+                <button type="button" class="btn btn-success btn-lg" id="btn-turno">
                     Tu turno
                 </button>
             </div>
 
             <div class="col-6 text-end">
-                <button type="button" class="btn btn-danger btn-lg">
+                <button type="button" class="btn btn-danger btn-lg" id="btn-abandonar">
                     Abandonar la cola
                 </button>
             </div>
-
         </div>
 
     </div>
 </main>
 
+<!-- Contenedor del mensaje central (sin d-flex) -->
+<div id="turno-display">
+    <p style="font-size: 4rem; font-weight: bold;">Es tu turno</p>
+    <h1 class="fw-bold text-primary" style="font-size: 10rem;">B743</h1>
+    <p style="font-size: 2rem;">Dirígete al puesto 2</p>
+</div>
+
+<script>
+    const btnTurno = document.getElementById('btn-turno');
+    const btnAbandonar = document.getElementById('btn-abandonar');
+    const mainContent = document.getElementById('main-content');
+    const turnoDisplay = document.getElementById('turno-display');
+
+    // Botón verde: muestra mensaje central
+    btnTurno.addEventListener('click', () => {
+        mainContent.style.display = 'none';   // Oculta el contenido original
+        turnoDisplay.style.display = 'flex';  // Muestra el mensaje central
+        turnoDisplay.style.flexDirection = 'column';
+        turnoDisplay.style.justifyContent = 'center';
+        turnoDisplay.style.alignItems = 'center';
+    });
+
+    // Botón rojo: redirige a vista 1
+    btnAbandonar.addEventListener('click', () => {
+        window.location.href = '/vista1'; // Cambia a la URL correcta de tu vista 1
+    });
+</script>
 
 </body>
 </html>
