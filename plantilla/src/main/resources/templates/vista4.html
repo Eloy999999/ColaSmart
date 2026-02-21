@@ -11,55 +11,62 @@
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <main class="flex-shrink-0">
-    <div class="container">
-    <h1>Seguimiento de Cola - Personal</h1>
+    <div th:if="${u != null and u.hasRole('ADMIN')}" class="container"></div>
+        <div class="container">
+        <h1>Seguimiento de Cola - Personal</h1>
 
-    <section>
-        <h2>Persona actualmente atendida</h2>
-        <p><strong>Nombre:</strong> Juan Pérez</p>
-        <p><strong>Número de turno:</strong> D4T</p>
-        <p><strong>Hora de inicio:</strong> 10:32</p>
-        <p><strong>Tiempo transcurrido:</strong> 08 minutos</p>
-    </section>
+        <section>
+            <h2>Persona actualmente atendida</h2>
+            <p><strong>Nombre:</strong> Juan Pérez</p>
+            <p><strong>Número de turno:</strong> D4T</p>
+            <p><strong>Hora de inicio:</strong> 10:32</p>
+            <p><strong>Tiempo transcurrido:</strong> 08 minutos</p>
+        </section>
 
-    <hr>
+        <hr>
 
-    <section>
-        <h2>Última persona atendida</h2>
-        <p><strong>Nombre:</strong> María López</p>
-        <p><strong>Número de turno:</strong> D4S</p>
-        <p><strong>Hora de inicio:</strong> 10:20</p>
-        <p><strong>Hora de fin:</strong> 10:32</p>
-        <p><strong>Tiempo total:</strong> 12 minutos</p>
-    </section>
+        <section>
+            <h2>Última persona atendida</h2>
+            <p><strong>Nombre:</strong> María López</p>
+            <p><strong>Número de turno:</strong> D4S</p>
+            <p><strong>Hora de inicio:</strong> 10:20</p>
+            <p><strong>Hora de fin:</strong> 10:32</p>
+            <p><strong>Tiempo total:</strong> 12 minutos</p>
+        </section>
 
-    <hr>
+        <hr>
 
-    <section>
-        <h2>Estado de la cola</h2>
-        <p><strong>Personas esperando:</strong> 7</p>
+        <section>
+            <h2>Estado de la cola</h2>
+            <p><strong>Personas esperando:</strong> 7</p>
 
-        <h3>Listado de espera</h3>
-        <ol>
-            <li>D4U - Carlos Sánchez</li>
-            <li>D4V - Laura Gómez</li>
-            <li>D4W - Pedro Martín</li>
-            <li>D4X - Ana Ruiz</li>
-            <li>D4Y - Sergio Díaz</li>
-            <li>D4Z - Elena Torres</li>
-            <li>D5A - Marta León</li>
-        </ol>
-    </section>
+            <h3>Listado de espera</h3>
+            <ol>
+                <li>D4U - Carlos Sánchez</li>
+                <li>D4V - Laura Gómez</li>
+                <li>D4W - Pedro Martín</li>
+                <li>D4X - Ana Ruiz</li>
+                <li>D4Y - Sergio Díaz</li>
+                <li>D4Z - Elena Torres</li>
+                <li>D5A - Marta León</li>
+            </ol>
+        </section>
 
-    <div class="row mt-5">
+        <div class="row mt-5">
 
-            <div class="col-6 text-start">
-                <button type="button" class="btn btn-success btn-lg">
-                    Llamar siguiente
-                </button>
+                <div class="col-6 text-start">
+                    <button type="button" class="btn btn-success btn-lg">
+                        Llamar siguiente
+                    </button>
+                </div>
+
             </div>
-
         </div>
+    </div>
+    <div th:unless="${u != null and u.hasRole('ADMIN')}" class="container text-center mt-5">
+            <div class="alert alert-danger">
+                <h2>Solo administradores</h2>
+            </div>
     </div>
 </main>
 

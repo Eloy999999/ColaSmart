@@ -29,15 +29,15 @@
                             <a class="nav-link" th:href="@{/vista2}">Vista 2</a>
                         </li>
 
-                        <li class="nav-item">
+                        <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
                             <a class="nav-link" th:href="@{/vista3}">Vista 3</a>
                         </li>
 
-                        <li class="nav-item">
+                        <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
                             <a class="nav-link" th:href="@{/vista4}">Vista 4</a>
                         </li>
 
-                        <li class="nav-item">
+                        <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
                             <a class="nav-link" th:href="@{/vista5}">Vista 5</a>
                         </li>
 

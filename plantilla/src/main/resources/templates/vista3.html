@@ -10,9 +10,41 @@
 
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-<h1>Vista de configuración de una nueva cola</h1>
-<p>Configura: qué información se muestra, logotipos o similar, tiempos estimados, y los servicios (por ejemplo: DNI/Pasaporte/Denuncia)
-</p>
+ <main class="flex-shrink-0">
+        <div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
+            <h1>Vista de configuración de una nueva cola</h1>
+            <form class="row g-3 mt-4" th:action="@{/admin/cola-nueva}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                
+                <div class="col-md-6">
+                    <label class="form-label">Nombre servicio</label>
+                    <input type="text" name="nombre" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Tiempo estimado (min)</label>
+                    <input type="number" name="tiempo" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Aforo máximo</label>
+                    <input type="number" name="aforo" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Horario</label>
+                    <input type="text" name="horario" class="form-control" placeholder="09:00-14:00">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Ubicación</label>
+                    <input type="text" name="ubicacion" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success mt-3">Crear Cola</button>
+            </form>
+        </div>
+        <div th:unless="${u != null and u.hasRole('ADMIN')}" class="container text-center mt-5">
+            <div class="alert alert-danger">
+                <h2>Solo administradores</h2>
+            </div>
+        </div>
+    </main>
 
 </body>
 </html>
