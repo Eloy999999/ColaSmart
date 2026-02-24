@@ -37,7 +37,7 @@ public class Cola {
   @ManyToOne
   private User encargado;
 
-  @OneToMany
+  @ManyToOne
   private User listaClientes;
   private Time horario;
   private String lugar;
