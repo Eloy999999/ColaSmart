@@ -37,8 +37,13 @@ public class Cola {
   @ManyToOne
   private User encargado;
 
+<<<<<<< HEAD
   @OneToMany
   private List<User> listaClientes;
+=======
+  @ManyToOne
+  private User listaClientes;
+>>>>>>> fd1b8816afa91139db84ac94117216510762c6a1
   private Time horario;
   private String lugar;
   private String turnoActual;
