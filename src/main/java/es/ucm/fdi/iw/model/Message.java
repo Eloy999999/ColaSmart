@@ -3,21 +3,21 @@ package es.ucm.fdi.iw.model;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.SequenceGenerator;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import lombok.AllArgsConstructor;
 
 /**
  * A message that users can send each other.
@@ -49,6 +49,10 @@ public class Message implements Transferable<Message.Transfer> {
 	
 	private LocalDateTime dateSent;
 	private LocalDateTime dateRead;
+
+	@ManyToOne
+	@JoinColumn(name = "receiver_id")
+	private User receiver;
 	
 	/**
 	 * Objeto para persistir a/de JSON

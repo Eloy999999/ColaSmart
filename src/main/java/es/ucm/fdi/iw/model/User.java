@@ -1,15 +1,25 @@
 package es.ucm.fdi.iw.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * An authorized user of the system.
@@ -35,36 +45,70 @@ public class User implements Transferable<User.Transfer> {
     ADMIN, // admin users
   }
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
-  @SequenceGenerator(name = "gen", sequenceName = "gen")
-  private long id; //autogenerado
+  
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
+    @SequenceGenerator(name = "gen", sequenceName = "gen")
+    private long id;
 
-  @Column(nullable = false)
-  private Role role; // split by ',' to separate roles
+    @Column(nullable = false, unique = true)
+    private String username;
 
-  //Trabajadores (ADMIN)
-  private String firstName;
-  private String lastName;
-  private String lugar;
-  private String ocupacion;
+    @Column(nullable = false)
+    private String password;
 
+    @Column(nullable = false)
+    private boolean enabled;
 
-  //Clientes (USER)
-  @Column(nullable = false, unique = true)
-  private String turno; //Se genera con el QR
-  private int tiempoEstimado;
-  private boolean prioridad;
+    @Column(nullable = false)
+    private String roles;
 
-  //Colas asignadas a un trabajador
-   @ManyToMany
-    @JoinTable(name = "user_colas")  // Trabajadores manejan colas
+    @OneToMany(mappedBy="receiver", cascade=CascadeType.ALL)
+    private List<Message> received = new ArrayList<>();
+
+    // Otros campos que ya tenías
+    private String firstName;
+    private String lastName;
+    private String lugar;
+    private String ocupacion;
+    @Column(nullable = false, unique = true)
+    private String turno;
+    private int tiempoEstimado;
+    private boolean prioridad;
+
+    @ManyToMany
+    @JoinTable(name = "user_colas")
     private List<Cola> colasAsignadas = new ArrayList<>();
 
-  //Un cliente puede tener varios turnos
-  @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Turno> turnos = new ArrayList<>(); 
-    
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    private List<Turno> turnos = new ArrayList<>();
+
+    // Métodos auxiliares
+    public boolean hasRole(Role r) {
+        if (roles == null) return false;
+        return Arrays.asList(roles.split(",")).contains(r.name());
+    }
+
+    // Clase Transfer (DTO)
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Transfer {
+        private long id;
+        private String nombreCompleto;
+        private String role;
+        private String turno;
+    }
+
+    @Override
+    public Transfer toTransfer() {
+        String nombreCompleto = (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
+        return new Transfer(id, nombreCompleto.trim(), roles, turno);
+    }
+
+    // Si el proyecto necesita getReceived() para mensajes:
+    // private List<Message> received = new ArrayList<>();
+    // public List<Message> getReceived() { return received; }
 /* 
   @Override
   public Transfer toTransfer() {
