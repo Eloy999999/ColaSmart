@@ -27,6 +27,10 @@ import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
+import es.ucm.fdi.iw.model.Cola;
+import java.util.List;
+import java.util.Map;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Site administration.
@@ -120,6 +124,39 @@ public class AdminController {
         g2.getMembers().add(u);
       }
     }
+    
     return "{\"admin\": \"populated\"}";
   }
+
+  // Listar todas las colas
+@GetMapping("/colas")
+public String listarColas(Model model, HttpSession session) {
+    List<Cola> colas = entityManager.createQuery("SELECT c FROM Cola c", Cola.class).getResultList();
+    model.addAttribute("colas", colas);
+    model.addAttribute("user", session.getAttribute("u"));  // Usuario logueado
+    return "admin-colas";  // Crea esta vista después
+}
+
+// Crear nueva cola
+@PostMapping("/colas")
+@Transactional
+public String crearCola(@ModelAttribute Cola nuevaCola, Model model, HttpServletResponse response) {
+    entityManager.persist(nuevaCola);
+    return "redirect:/admin/colas";  // Recarga lista
+}
+
+// Abrir/Cerrar cola
+@PostMapping("/colas/{id}/toggle")
+@Transactional
+@ResponseBody
+public Map<String, String> toggleCola(@PathVariable long id, HttpServletResponse response) {
+    Cola cola = entityManager.find(Cola.class, id);
+    if (cola == null) {
+        response.setStatus(404);
+        return Map.of("error", "Cola no encontrada");
+    }
+    cola.abrir();  // o cola.cerrar() según estado actual
+    return Map.of("estado", cola.getEstado().name());
+}
+
 }

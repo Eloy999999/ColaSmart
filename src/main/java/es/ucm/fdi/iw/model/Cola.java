@@ -6,6 +6,7 @@ import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,14 +17,17 @@ import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * A group of users, with an associated chat.
  */
-@Data
 @Entity
+@Data
+@NoArgsConstructor @AllArgsConstructor
+@Table(name = "Colas")
 public class Cola {
 
   @Id
@@ -35,17 +39,25 @@ public class Cola {
   private int capacidad;
 
   @ManyToOne
-  private User encargado;
+    @JoinColumn(name = "encargado_id")
+    private User encargado;
 
-<<<<<<< HEAD
   @OneToMany
   private List<User> listaClientes;
-=======
-  @ManyToOne
-  private User listaClientes;
->>>>>>> fd1b8816afa91139db84ac94117216510762c6a1
   private Time horario;
   private String lugar;
   private String turnoActual;
-  private Boolean estado;
+  private Boolean abierto;
+
+   // Trabajadores asignados (bidireccional)
+    @ManyToMany(mappedBy = "colasAsignadas")
+    private List<User> trabajadores = new ArrayList<>();
+
+    public void abrir(){
+      abierto = true;
+    }
+
+    public void cerrar(){
+      abierto = false;
+    }
 }
