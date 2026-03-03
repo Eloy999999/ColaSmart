@@ -50,7 +50,7 @@ public class Cola {
     private User encargado;
 
   @OneToMany
-  private List<User> listaClientes;
+  private User listaClientes;
   private Time horario;
   private String lugar;
   private String turnoActual;
