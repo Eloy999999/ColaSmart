@@ -84,8 +84,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         .replaceFirst("[^/]*", ""); // http[s]://...foo/ => //...foo/
     String ws = "ws:" + url + "/ws"; // //...foo/ => ws://...foo/ws
     if (url.contains("ucm.es")) {
-      // UCM containers use https / wss, but we are behind a reverse proxy: add extra s here
-      ws = ws.replace("ws:", "wss:"); 
+      ws = ws.replace("ws:", "wss:"); // for deployment in containers
     }
     session.setAttribute("url", url);
     session.setAttribute("ws", ws);
