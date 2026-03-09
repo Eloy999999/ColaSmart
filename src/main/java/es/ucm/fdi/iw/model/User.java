@@ -41,7 +41,8 @@ import lombok.NoArgsConstructor;
 public class User implements Transferable<User.Transfer> {
 
   public enum Role {
-    USER, // normal users
+    PACIENTE, // pacientes que esperan pacientemente la cola
+    ORGANIZADOR, // organizadores de colas
     ADMIN, // admin users
   }
 
@@ -67,14 +68,14 @@ public class User implements Transferable<User.Transfer> {
     private List<Message> received = new ArrayList<>();
 
     // Otros campos que ya tenías
+    @Column(nullable = true, unique = true)
     private String firstName;
     private String lastName;
     private String lugar;
     private String ocupacion;
-    @Column(nullable = false, unique = true)
     private String turno;
-    private int tiempoEstimado;
-    private boolean prioridad;
+    private Integer tiempoEstimado;
+    private Integer prioridad;
 
     @ManyToMany
     @JoinTable(name = "user_colas")
