@@ -58,6 +58,8 @@ public class AdminController {
     log.info("Admin acaba de entrar");
     model.addAttribute("users",
         entityManager.createQuery("select u from User u").getResultList());
+    model.addAttribute("colas", 
+    entityManager.createQuery("SELECT c FROM Cola c", Cola.class).getResultList());
     return "vista5";
   }
 
@@ -131,7 +133,7 @@ public String listarColas(Model model, HttpSession session) {
     List<Cola> colas = entityManager.createQuery("SELECT c FROM Cola c", Cola.class).getResultList();
     model.addAttribute("colas", colas);
     model.addAttribute("user", session.getAttribute("u"));  // Usuario logueado
-    return "admin-colas";  // Crea esta vista después
+    return "redirect:/vista5/";  
 }
 
 // Crear nueva cola
@@ -139,7 +141,7 @@ public String listarColas(Model model, HttpSession session) {
 @Transactional
 public String crearCola(@ModelAttribute Cola nuevaCola, Model model, HttpServletResponse response) {
     entityManager.persist(nuevaCola);
-    return "redirect:/admin/colas";  // Recarga lista
+    return "redirect:/vista5/";  // Recarga lista
 }
 
 // Abrir/Cerrar cola
