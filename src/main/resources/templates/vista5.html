@@ -129,41 +129,24 @@
                             <th>Nombre</th>
                             <th>Rol</th>
                             <th>Turno</th>
-                            <th>Salas Asignadas</th>
+                            <th>Sala Asignada</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
-
-                        <!-- EJ 1 -->
-                        <tr>
-                            <td>Dr. Martínez</td>
-                            <td>Pediatra</td>
-                            <td>Mañana</td>
-                            <td>
-                                <span class="badge bg-primary">Sala 3</span>
-                                <span class="badge bg-info text-dark">Urgencias</span>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-warning">✏️ Editar</button>
-                                <button class="btn btn-sm btn-danger">🗑️ Eliminar</button>
-                            </td>
-                        </tr>
-
-                        <!-- EJ 2 -->
-                        <tr>
-                            <td>Enfermera López</td>
-                            <td>Enfermería</td>
-                            <td>Tarde</td>
-                            <td>
-                                <span class="badge bg-success">Consulta 5</span>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-warning">✏️ Editar</button>
-                                <button class="btn btn-sm btn-danger">🗑️ Eliminar</button>
-                            </td>
-                        </tr>
-
+                            <tr th:each="trabajador : ${users}">
+                                <td th:text="${trabajador.firstName + ' ' + trabajador.lastName}">Dr. Martínez</td>
+                                <td th:text="${trabajador.roles}">Pediatra</td>
+                                <td th:text="${trabajador.turno}">Mañana</td>
+                                <td>
+                                    <span class="badge bg-primary" th:text="${trabajador.lugar}">Sala 3</span>
+                                <!--    <span class="badge bg-info text-dark">Urgencias</span> -->
+                                </td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-warning">✏️ Editar</button>
+                                    <button class="btn btn-sm btn-danger">🗑️ Eliminar</button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
