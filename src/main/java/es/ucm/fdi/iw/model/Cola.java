@@ -1,6 +1,6 @@
 package es.ucm.fdi.iw.model;
 
-import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,10 +51,12 @@ public class Cola {
 
   @OneToMany
   private List<User> listaClientes;
-  private Time horario;
+  private LocalDateTime horarioInicio;
+  private LocalDateTime horarioFin;
   private String lugar;
   private String turnoActual;
   private Boolean abierto;
+  private int tiempo;
 
    // Trabajadores asignados (bidireccional)
     @ManyToMany(mappedBy = "colasAsignadas")
