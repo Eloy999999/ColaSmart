@@ -80,18 +80,18 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td>Cola General</td>
-                            <td>4</td>
-                            <td><span class="badge bg-danger">15</span></td>
-                            <td>25 min</td>
-                            <td>40</td>
-                            <td>Sala 3 - Pediatría</td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-warning">✏️ Editar</button>
-                                <button class="btn btn-sm btn-danger">🗑️ Eliminar</button>
-                            </td>
-                        </tr>
+                            <tr th:each="cola : ${colas}">
+                                <td th:text="${cola.nombre}">Cola General</td>
+                                <td th:text="${cola.trabajadores.size()}">4</td>
+                                <td><span class="badge bg-danger" th:text="${cola.listaClientes != null ? cola.listaClientes.size() : 0}">15</span></td>
+                                <td th:text="${cola.tiempo}">25 min</td> <!-- Añadir campo tiempo -->
+                                <td th:text="${cola.capacidad}">40</td>
+                                <td th:text="${cola.lugar}">Sala 3</td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-warning">✏️ Editar</button>
+                                    <button class="btn btn-sm btn-danger">🗑️ Eliminar</button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
