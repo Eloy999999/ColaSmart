@@ -26,7 +26,7 @@
            class="btn btn-primary btn-lg py-4 fs-3"
            data-bs-toggle="modal"
            data-bs-target="#listasModal">
-            🗂️ Manejar Listas
+            🗂️ Manejar Colas
         </a>
 
         <!-- BOTÓN MANEJAR PERSONAL -->
@@ -54,15 +54,15 @@
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Gestión de Listas</h5>
+                <h5 class="modal-title">Gestión de Colas</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
 
                 <div class="mb-3 text-end">
-                    <button class="btn btn-success">
-                        ➕ Crear Lista
+                    <button onclick="window.location.href='/vista3'" class="btn btn-success">
+                        ➕ Crear Cola
                     </button>
                 </div>
 
@@ -81,7 +81,7 @@
                         </thead>
                         <tbody>
                         <tr>
-                            <td>Lista General</td>
+                            <td>Cola General</td>
                             <td>4</td>
                             <td><span class="badge bg-danger">15</span></td>
                             <td>25 min</td>
