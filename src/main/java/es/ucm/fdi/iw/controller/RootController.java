@@ -66,4 +66,9 @@ public class RootController {
     public String vista5(Model model) {
         return "vista5";
     }
+
+    @GetMapping("/Manejar Personal")
+    public String vista6(Model model) {
+        return "Manejar Personal";
+    }
 }

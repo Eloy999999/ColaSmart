@@ -136,11 +136,32 @@ public String listarColas(Model model, HttpSession session) {
     return "redirect:/vista5/";  
 }
 
+
+// Listar personal (usuarios con rol ORGANIZADOR)
+@GetMapping("/personal")
+public String listarPersonal(Model model, HttpSession session) {
+    List<User> personal = entityManager.createQuery("SELECT u FROM User u WHERE u.roles LIKE '%ORGANIZADOR%'", User.class).getResultList();
+    model.addAttribute("personal", personal);
+    model.addAttribute("user", session.getAttribute("u"));  // Usuario logueado
+    return "redirect:/vista5/";  
+}
+
 // Crear nueva cola
 @PostMapping("/colas")
 @Transactional
 public String crearCola(@ModelAttribute Cola nuevaCola, Model model, HttpServletResponse response) {
     entityManager.persist(nuevaCola);
+    return "redirect:/vista5/";  // Recarga lista
+}
+
+// Crear nuevo personal
+@PostMapping("/personal")
+@Transactional
+public String crearPersonal(@ModelAttribute User nuevoPersonal, Model model, HttpServletResponse response) {
+    nuevoPersonal.setPassword(passwordEncoder.encode(nuevoPersonal.getPassword()));
+    nuevoPersonal.setEnabled(true);
+    nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
+    entityManager.persist(nuevoPersonal);
     return "redirect:/vista5/";  // Recarga lista
 }
 
@@ -157,5 +178,7 @@ public Map<String, String> toggleCola(@PathVariable long id, HttpServletResponse
     cola.abrir();  // o cola.cerrar() según estado actual
     return Map.of("estado", cola.getEstado().name());
 }
+
+
 
 }
