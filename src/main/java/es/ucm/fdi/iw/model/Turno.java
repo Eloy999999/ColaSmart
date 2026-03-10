@@ -15,16 +15,21 @@ import lombok.NoArgsConstructor;
 @Entity
 @Data
 @NoArgsConstructor
-//Turno conecta usuarios y colas
+// Turno conecta usuarios y colas
 public class Turno {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
+
+    @Column(unique = true)
     private String turno;
-    
-    @ManyToOne @JoinColumn(name = "user_id")
-    private User cliente;  // Relación con User (rol=CLIENTE)
-    
-    @ManyToOne @JoinColumn(name = "cola_id")
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User cliente; // Relación con User (rol=CLIENTE)
+
+    @ManyToOne
+    @JoinColumn(name = "cola_id")
     private Cola cola;
-    
+
 }
