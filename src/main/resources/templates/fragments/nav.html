@@ -41,6 +41,10 @@
                             <a class="nav-link" th:href="@{/vista5}">Vista 5</a>
                         </li>
 
+                        <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
+                            <a class="nav-link" th:href="@{/Manejar Personal}">Manejar Personal</a>
+                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link" th:href="@{/autor}">Autores</a>
                         </li>
