@@ -62,10 +62,11 @@ public class RootController {
         return "vista4";
     }
 
+    /* Explota si se descomenta esto, porque en admin ya hay un GetMapping a vista5
     @GetMapping("/vista5")
     public String vista5(Model model) {
         return "vista5";
-    }
+    }*/
 
     @GetMapping("/Manejar Personal")
     public String vista6(Model model) {

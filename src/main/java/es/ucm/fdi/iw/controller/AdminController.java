@@ -18,11 +18,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import es.ucm.fdi.iw.model.Cola;
+import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.Lorem;
 import es.ucm.fdi.iw.model.Message;
 import es.ucm.fdi.iw.model.Topic;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,155 +32,145 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 
 /**
- * Site administration.
- *
- * Access to this end-point is authenticated - see SecurityConfig
+ * Controlador para la administración del sitio.
+ * Acceso autenticado: solo admins
  */
 @Controller
 @RequestMapping("vista5")
 public class AdminController {
 
-  @Autowired
-  private PasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-  @Autowired
-  private EntityManager entityManager;
+    @Autowired
+    private EntityManager entityManager;
 
-  @ModelAttribute
-  public void populateModel(HttpSession session, Model model) {
-    for (String name : new String[] { "u", "url", "ws", "topics"}) {
-      model.addAttribute(name, session.getAttribute(name));
+    @Autowired
+    private ColaRepository colaRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private static final Logger log = LogManager.getLogger(AdminController.class);
+
+    // Popula datos comunes
+    @ModelAttribute
+    public void populateModel(HttpSession session, Model model) {
+        model.addAttribute("u", session.getAttribute("u"));
     }
-  }
 
-  private static final Logger log = LogManager.getLogger(AdminController.class);
-
-  @GetMapping("/")
-  public String index(Model model) {
-    log.info("Admin acaba de entrar");
-    model.addAttribute("users",
-        entityManager.createQuery("select u from User u").getResultList());
-    model.addAttribute("colas", 
-    entityManager.createQuery("SELECT c FROM Cola c", Cola.class).getResultList());
-    return "vista5";
-  }
-
-  @PostMapping("/toggle/{id}")
-  @Transactional
-  @ResponseBody
-  public String toggleUser(@PathVariable long id, Model model) {
-    log.info("Admin cambia estado de " + id);
-    User target = entityManager.find(User.class, id);
-    target.setEnabled(!target.isEnabled());
-    return "{\"enabled\":" + target.isEnabled() + "}";
-  }
-
-  /**
-   * Returns JSON with all received messages
-   */
-  @GetMapping(path = "all-messages", produces = "application/json")
-  @Transactional // para no recibir resultados inconsistentes
-  @ResponseBody // para indicar que no devuelve vista, sino un objeto (jsonizado)
-  public List<Message.Transfer> retrieveMessages(HttpSession session) {
-    TypedQuery<Message> query = entityManager.createQuery("select m from Message m", Message.class);
-    query.setMaxResults(5);
-    query.setFirstResult(0); // para paginar: cambias el 1er resultado
-    // devuelve resultado
-    return query.getResultList().stream().map(Transferable::toTransfer)
-        .collect(Collectors.toList());
-  }
-
-  @RequestMapping("/populate")
-  @ResponseBody
-  @Transactional
-  public String populate(Model model) {
-
-    // create some groups
-    Topic g1 = new Topic();
-    g1.setName("g1");
-    g1.setKey(UserController.generateRandomBase64Token(6));
-    entityManager.persist(g1);
-    Topic g2 = new Topic();
-    g2.setName("g2");
-    g2.setKey(UserController.generateRandomBase64Token(6));
-    entityManager.persist(g2);
-
-    // create some users & assign to groups
-    for (int i = 0; i < 15; i++) {
-      User u = new User();
-      u.setUsername("user" + i);
-      u.setPassword(passwordEncoder
-          .encode("aa"));
-            //UserController.generateRandomBase64Token(9)));
-      u.setEnabled(true);
-      u.setRoles(User.Role.PACIENTE.toString());
-      u.setFirstName(Lorem.nombreAlAzar());
-      u.setLastName(Lorem.apellidoAlAzar());
-      entityManager.persist(u);
-      if (i%2 == 0) {
-        g1.getMembers().add(u);
-        // u.getTopics().add(g1); NO FUNCIONA: propietario es g, no u
-      }
-      if (i%3 == 0) {
-        g2.getMembers().add(u);
-      }
+    // GET principal que carga colas y usuarios
+    @GetMapping({"", "/"})
+    public String vista5(Model model, HttpSession session) {
+        log.info("Admin entra a vista5");
+        List<Cola> colas = colaRepository.findAll();
+        List<User> users = userRepository.findAll();
+        model.addAttribute("colas", colas);
+        model.addAttribute("users", users);
+        return "vista5"; // Thymeleaf
     }
-    
-    return "{\"admin\": \"populated\"}";
-  }
 
-  // Listar todas las colas
-@GetMapping("/colas")
-public String listarColas(Model model, HttpSession session) {
-    List<Cola> colas = entityManager.createQuery("SELECT c FROM Cola c", Cola.class).getResultList();
-    model.addAttribute("colas", colas);
-    model.addAttribute("user", session.getAttribute("u"));  // Usuario logueado
-    return "redirect:/vista5/";  
-}
-
-
-// Listar personal (usuarios con rol ORGANIZADOR)
-@GetMapping("/personal")
-public String listarPersonal(Model model, HttpSession session) {
-    List<User> personal = entityManager.createQuery("SELECT u FROM User u WHERE u.roles LIKE '%ORGANIZADOR%'", User.class).getResultList();
-    model.addAttribute("personal", personal);
-    model.addAttribute("user", session.getAttribute("u"));  // Usuario logueado
-    return "redirect:/vista5/";  
-}
-
-// Crear nueva cola
-@PostMapping("/colas")
-@Transactional
-public String crearCola(@ModelAttribute Cola nuevaCola, Model model, HttpServletResponse response) {
-    entityManager.persist(nuevaCola);
-    return "redirect:/vista5/";  // Recarga lista
-}
-
-// Crear nuevo personal
-@PostMapping("/personal")
-@Transactional
-public String crearPersonal(@ModelAttribute User nuevoPersonal, Model model, HttpServletResponse response) {
-    nuevoPersonal.setPassword(passwordEncoder.encode(nuevoPersonal.getPassword()));
-    nuevoPersonal.setEnabled(true);
-    nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
-    entityManager.persist(nuevoPersonal);
-    return "redirect:/vista5/";  // Recarga lista
-}
-
-// Abrir/Cerrar cola
-@PostMapping("/colas/{id}/toggle")
-@Transactional
-@ResponseBody
-public Map<String, String> toggleCola(@PathVariable long id, HttpServletResponse response) {
-    Cola cola = entityManager.find(Cola.class, id);
-    if (cola == null) {
-        response.setStatus(404);
-        return Map.of("error", "Cola no encontrada");
+    // Toggle estado de usuario
+    @PostMapping("/toggle/{id}")
+    @Transactional
+    @ResponseBody
+    public String toggleUser(@PathVariable long id) {
+        User target = entityManager.find(User.class, id);
+        if (target != null) {
+            target.setEnabled(!target.isEnabled());
+            return "{\"enabled\":" + target.isEnabled() + "}";
+        }
+        return "{\"error\":\"Usuario no encontrado\"}";
     }
-    cola.abrir();  // o cola.cerrar() según estado actual
-    return Map.of("estado", cola.getEstado().name());
-}
 
+    // Retorna últimos 5 mensajes como JSON
+    @GetMapping(path = "all-messages", produces = "application/json")
+    @Transactional
+    @ResponseBody
+    public List<Message.Transfer> retrieveMessages() {
+        TypedQuery<Message> query = entityManager.createQuery("SELECT m FROM Message m", Message.class);
+        query.setMaxResults(5);
+        return query.getResultList().stream().map(Transferable::toTransfer).collect(Collectors.toList());
+    }
 
+    // Crear nueva cola
+    @PostMapping("/colas")
+    @Transactional
+    public String crearCola(@ModelAttribute Cola nuevaCola) {
+        entityManager.persist(nuevaCola);
+        return "redirect:/vista5/";
+    }
+
+    // Crear nuevo personal
+    @PostMapping("/personal")
+    @Transactional
+    public String crearPersonal(@ModelAttribute User nuevoPersonal) {
+        nuevoPersonal.setPassword(passwordEncoder.encode(nuevoPersonal.getPassword()));
+        nuevoPersonal.setEnabled(true);
+        nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
+        entityManager.persist(nuevoPersonal);
+        return "redirect:/vista5/";
+    }
+
+    // Abrir/Cerrar cola
+    @PostMapping("/colas/{id}/toggle")
+    @Transactional
+    @ResponseBody
+    public Map<String, String> toggleCola(@PathVariable long id, HttpServletResponse response) {
+        Cola cola = entityManager.find(Cola.class, id);
+        if (cola == null) {
+            response.setStatus(404);
+            return Map.of("error", "Cola no encontrada");
+        }
+        cola.abrir(); // O cerrar según tu lógica
+        return Map.of("estado", cola.getEstado().name());
+    }
+
+    // Eliminar cola
+    @PostMapping("/colas/eliminar/{id}")
+    public String eliminarCola(@PathVariable Long id) {
+        if (colaRepository.existsById(id)) {
+            colaRepository.deleteById(id);
+        }
+        return "redirect:/vista5/";
+    }
+
+    // Eliminar personal
+    @PostMapping("/personal/eliminar/{id}")
+    public String eliminarPersonal(@PathVariable Long id) {
+        if (userRepository.existsById(id)) {
+            userRepository.deleteById(id);
+        }
+        return "redirect:/vista5/";
+    }
+
+    // Método opcional para poblar DB con datos de prueba
+    @RequestMapping("/populate")
+    @ResponseBody
+    @Transactional
+    public String populate() {
+        Topic g1 = new Topic();
+        g1.setName("g1");
+        g1.setKey(UserController.generateRandomBase64Token(6));
+        entityManager.persist(g1);
+        Topic g2 = new Topic();
+        g2.setName("g2");
+        g2.setKey(UserController.generateRandomBase64Token(6));
+        entityManager.persist(g2);
+
+        for (int i = 0; i < 15; i++) {
+            User u = new User();
+            u.setUsername("user" + i);
+            u.setPassword(passwordEncoder.encode("aa"));
+            u.setEnabled(true);
+            u.setRoles(User.Role.PACIENTE.toString());
+            u.setFirstName(Lorem.nombreAlAzar());
+            u.setLastName(Lorem.apellidoAlAzar());
+            entityManager.persist(u);
+            if (i % 2 == 0) g1.getMembers().add(u);
+            if (i % 3 == 0) g2.getMembers().add(u);
+        }
+        return "{\"admin\": \"populated\"}";
+    }
 
 }
