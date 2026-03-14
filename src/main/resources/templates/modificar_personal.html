@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html class="h-100" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <meta charset="UTF-8">
+    <title>Modificar Personal</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+<header th:replace="~{fragments/nav.html :: nav}"></header>
+
+<main class="flex-shrink-0">
+    <div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
+        <h1>Modificar personal con id <span th:text="${personal.id}"></span></h1>
+
+        <form class="row g-3 mt-4"
+              th:action="@{/user/editar/{id}(id=${personal.id})}"
+              method="post">
+
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <input type="hidden" name="id" th:value="${personal.id}">
+
+            <div class="col-md-6">
+                <label class="form-label">Nombre</label>
+                <input type="text" name="firstName" class="form-control"
+                       th:value="${personal.firstName}" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Apellidos</label>
+                <input type="text" name="lastName" class="form-control"
+                       th:value="${personal.lastName}" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Turno</label>
+                <input type="text" name="turno" class="form-control"
+                       th:value="${personal.turno}" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Sala asignada</label>
+                <input type="text" name="lugar" class="form-control"
+                       th:value="${personal.lugar}" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Nombre de Usuario</label>
+                <input type="text" name="username" class="form-control"
+                       th:value="${personal.username}" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" class="form-control"
+                       th:value="${personal.password}" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
+
+        </form>
+    </div>
+
+    <div th:unless="${u != null and u.hasRole('ADMIN')}" class="container text-center mt-5">
+        <div class="alert alert-danger">
+            <h2>Solo administradores</h2>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

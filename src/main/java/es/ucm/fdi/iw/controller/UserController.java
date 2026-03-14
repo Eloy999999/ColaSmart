@@ -1,10 +1,18 @@
 package es.ucm.fdi.iw.controller;
 
-import es.ucm.fdi.iw.LocalData;
-import es.ucm.fdi.iw.model.Message;
-import es.ucm.fdi.iw.model.Transferable;
-import es.ucm.fdi.iw.model.User;
-import es.ucm.fdi.iw.model.User.Role;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,32 +26,30 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import es.ucm.fdi.iw.LocalData;
+import es.ucm.fdi.iw.model.Message;
+import es.ucm.fdi.iw.model.Transferable;
+import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.User.Role;
+import es.ucm.fdi.iw.model.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.*;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * User management.
@@ -67,6 +73,9 @@ public class UserController {
 
   @Autowired
   private PasswordEncoder passwordEncoder;
+
+  @Autowired
+  private UserRepository userRepository;
 
   @ModelAttribute
   public void populateModel(HttpSession session, Model model) {
@@ -324,4 +333,32 @@ public class UserController {
     messagingTemplate.convertAndSend("/user/" + u.getUsername() + "/queue/updates", json);
     return "{\"result\": \"message sent.\"}";
   }
+
+
+
+@GetMapping("/modificar_personal/{id}")
+public String mostrarModificarPersonal(@PathVariable Long id, Model model) {
+    User personal = userRepository.findById(id).orElse(null);
+    model.addAttribute("personal", personal);
+    return "modificar_personal";
+}
+
+@PostMapping("/editar/{id}")
+public String actualizarPersonal(@PathVariable Long id, User personal) {
+
+    // 1️⃣ Cargar usuario existente desde la BD
+    User usuarioExistente = userRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
+
+    // 2️⃣ Mantener los roles del usuario existente
+    personal.setRoles(usuarioExistente.getRoles());
+
+    // 3️⃣ Guardar el usuario actualizado
+    userRepository.save(personal);
+
+    //personal.setId(id);
+    //userRepository.save(personal);
+
+    return "redirect:/vista5"; // misma lógica que cola
+}
 }
