@@ -3,6 +3,7 @@
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
     <title>Página Principal</title>
+    <script src="js/qrcode.js"></script>
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -22,6 +23,11 @@
             innecesarias. El personal organiza la atención y prioriza casos. Menos colas físicas,
             menos estrés y una experiencia más eficiente para todos.
         </p>
+
+<div id="qrcode"></div>
+<script type="text/javascript">
+new QRCode(document.getElementById("qrcode"), "http://esto.es.una.prueba");
+</script>
 
         <h2>Roles y tareas</h2>
 

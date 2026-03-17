@@ -47,13 +47,13 @@
 
             <div class="col-md-6">
                 <label class="form-label">Horario inicio</label>
-                <input type="datetime-local" name="horarioInicio" class="form-control"
+                <input type="datetime-local" name="horarioInicio" id="inicio" class="form-control"
                        th:value="${cola.horarioInicio}">
             </div>
 
             <div class="col-md-6">
                 <label class="form-label">Horario fin</label>
-                <input type="datetime-local" name="horarioFin" class="form-control"
+                <input type="datetime-local" name="horarioFin" id="fin" class="form-control"
                        th:value="${cola.horarioFin}">
             </div>
 
@@ -67,6 +67,25 @@
             <h2>Solo administradores</h2>
         </div>
     </div>
+
+            <script>
+            const inicio = document.getElementById("inicio");
+            const fin = document.getElementById("fin");
+
+            function validarFechas() {
+                if (inicio.value && fin.value) {
+                    if (inicio.value >= fin.value) {
+                        fin.setCustomValidity("La fecha de fin debe ser posterior a la de inicio");
+                    } else {
+                        fin.setCustomValidity("");
+                    }
+                }
+            }
+
+            inicio.addEventListener("change", validarFechas);
+            fin.addEventListener("change", validarFechas);
+    </script>
+
 </main>
 
 </body>

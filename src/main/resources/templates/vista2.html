@@ -83,7 +83,11 @@
 
     // Botón rojo: redirige a vista 1
     btnAbandonar.addEventListener('click', () => {
-        window.location.href = '/vista1'; // Cambia a la URL correcta de tu vista 1
+    const seguro = confirm("¿Seguro que quieres abandonar la cola?");
+    
+    if (seguro) {
+        window.location.href = '/vista1';
+    }
     });
 </script>
 
