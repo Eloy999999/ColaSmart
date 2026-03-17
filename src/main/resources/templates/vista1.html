@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <!-- Misma cabecera que Vista 2 -->
     <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Panel QR</title>
@@ -11,18 +10,7 @@
 
     <!-- Estilos específicos de Vista 1 -->
     <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 0;
-            background-color: #ffffff;
-            color: #000000;
-        }
-
-        /* 🔹 Evitar que la cabecera se vea bold (versión corregida) */
-        header nav.navbar,
-        header nav.navbar * {
-            font-weight: 400 !important;
-        }
+        
 
         /* Solo el h2 dentro de turnos-llamados es bold */
         .turnos-llamados > h2 {
@@ -138,8 +126,8 @@
 </head>
 <body class="d-flex flex-column h-100">
 
-    <!-- Cabecera Thymeleaf igual que Vista 2 -->
-    <header th:replace="~{fragments/nav.html :: nav}"></header>
+<!-- Cabecera Thymeleaf igual que Vista 2 -->
+<header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0 mt-4">
         <div class="container">
