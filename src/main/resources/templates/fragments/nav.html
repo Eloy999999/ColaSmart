@@ -13,7 +13,7 @@
             <div class="container-fluid">
                 <!-- nombre del sitio; es un enlace que lleva a la página ppal -->
                 <a class="navbar-brand" th:href="@{/}" href="/">
-                    <img th:src="@{/img/logo.png}" src="/img/logo.png" alt="logo IW" width="32" height="32" class="d-inline-block align-text-top"> IW 2024-25
+                    <img th:src="@{/img/logo.png}" src="/img/logo.png" alt="logo IW" width="32" height="32" class="d-inline-block align-text-top"> ColaSmart
                 </a>
                 <!-- menu hamburguesa si no cabe todo -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,27 +22,19 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link" th:href="@{/vista1}">Vista 1</a>
+                            <a class="nav-link" th:href="@{/vista1}">Panel QR</a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" th:href="@{/vista2}">Vista 2</a>
+                            <a class="nav-link" th:href="@{/vista2}">Tu turno</a>
                         </li>
 
                         <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
-                            <a class="nav-link" th:href="@{/vista3}">Vista 3</a>
+                            <a class="nav-link" th:href="@{/vista5}">Panel de Administración</a>
                         </li>
 
                         <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
-                            <a class="nav-link" th:href="@{/vista4}">Vista 4</a>
-                        </li>
-
-                        <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
-                            <a class="nav-link" th:href="@{/vista5}">Vista 5</a>
-                        </li>
-
-                        <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
-                            <a class="nav-link" th:href="@{/Manejar Personal}">Manejar Personal</a>
+                            <a class="nav-link" th:href="@{/vista4}">Seguimiento de Colas</a>
                         </li>
 
                         <li class="nav-item">
