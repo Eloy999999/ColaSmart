@@ -34,15 +34,7 @@
                         </li>
 
                         <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
-                            <a class="nav-link" th:href="@{/vista3}">Manejar Colas</a>
-                        </li>
-
-                        <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
                             <a class="nav-link" th:href="@{/vista4}">Seguimiento de Colas</a>
-                        </li>
-
-                        <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN')}">
-                            <a class="nav-link" th:href="@{/Manejar Personal}">Manejar Personal</a>
                         </li>
 
                         <li class="nav-item">
