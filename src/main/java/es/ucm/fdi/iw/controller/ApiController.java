@@ -2,16 +2,12 @@ package es.ucm.fdi.iw.controller;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.ui.Model;
 import org.springframework.util.ResourceUtils;
@@ -27,15 +23,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import es.ucm.fdi.iw.model.Topic;
 import es.ucm.fdi.iw.model.Message;
+import es.ucm.fdi.iw.model.Topic;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.User.Role;
-import io.karatelabs.js.Context;
-import io.karatelabs.js.Interpreter;
-import io.karatelabs.js.Node;
-import io.karatelabs.js.Parser;
-import io.karatelabs.js.Source;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -103,6 +94,8 @@ public class ApiController {
    * @param vars
    * @return
    */
+
+   /* 
   private Object eval(String source, Map<String, Object> vars) {
     Parser parser = new Parser(new Source(source));
     Node node = parser.parse();
@@ -113,9 +106,13 @@ public class ApiController {
     return Interpreter.eval(node, context);
   }
 
+  */
+
   /** 
    * Executes JS code loaded from a file in the server
    */
+
+  /* 
   @GetMapping(value = "/js", produces = MediaType.APPLICATION_JSON_VALUE)
   public Map<String,String> testJs() throws Exception{
     String start = Files.readString(
@@ -127,6 +124,8 @@ public class ApiController {
       "exampleExternalVar", "patata"));
     return Map.of("result", result.toString());
   }
+
+  */
 
   @Autowired
   private SimpMessagingTemplate messagingTemplate;
