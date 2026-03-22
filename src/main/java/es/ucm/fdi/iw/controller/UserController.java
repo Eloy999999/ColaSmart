@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.ucm.fdi.iw.LocalData;
+import es.ucm.fdi.iw.model.Lorem;
 import es.ucm.fdi.iw.model.Message;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
@@ -119,6 +120,38 @@ public class UserController {
     byte[] token = new byte[byteLength];
     secureRandom.nextBytes(token);
     return Base64.getUrlEncoder().withoutPadding().encodeToString(token); // base64 encoding
+  }
+
+  /**
+   * Crear paciente al darle al QR y redirigir a la vista de su turno
+   */
+
+  @GetMapping("/newQRuser")
+  public String mostararVerTurno(
+          @RequestParam(name = "username", required = false) String username,
+          HttpServletResponse response) throws IOException {
+      
+      String nombre = Lorem.nombreAlAzar();
+      String primerAp = Lorem.apellidoAlAzar();
+      String segundoAp = Lorem.apellidoAlAzar();
+      // Crear username aleatorio con 2 apellidos aleatorios
+      if (username == null || username.isBlank()) {
+          username = primerAp + segundoAp + nombre;
+      }
+
+      User u = new User();
+      u.setUsername(username);
+      u.setFirstName(nombre);
+      u.setLastName(primerAp + " " + segundoAp);
+      u.setPassword(passwordEncoder.encode("a"));
+      u.setRoles(Role.PACIENTE.name());
+      u.setEnabled(true);
+
+      // Guardar usuario en BD
+      userRepository.save(u);
+
+      // Redirigir a la Vista 2 (panel de turnos)
+      return "vista2";
   }
 
   /**

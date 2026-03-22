@@ -16,14 +16,14 @@ public class Lorem {
         "Raquel", "Sofia", "Alicia", "Clara", "Noelia", "Miriam", "Alejandra", "Eva",
         "Isabel", "Silvia", "Celia", "Lorena", "Ines", "Beatriz", "Mireia", "Laia",
         "Lidia", "Carlota", "Blanca", "Ariadna", "Adriana", "Anna", "Carolina",
-        "Monica", "Ana Maria", "Veronica",
+        "Monica", "Ana Maria", "Veronica", "Victoria", // El ultimo no esta en el top
         "Alejandro", "Pablo", "Daniel", "David", "Adrian", "Javier", "Alvaro", "Sergio",
         "Carlos", "Jorge", "Mario", "Raul", "Diego", "Manuel", "Miguel", "Ivan",
         "Antonio", "Juan", "Ruben", "Victor", "Alberto", "Jesus", "Marc", "Oscar",
         "Angel", "Francisco", "Jose", "Alex", "Marcos", "Jaime", "Ismael", "Luis",
         "Francisco Javier", "Miguel Angel", "Pedro", "Samuel", "Cristian", "Pau",
         "Andres", "Iker", "Jose Antonio", "Guillermo", "Ignacio", "Rafael", "Fernando",
-        "Jose Manuel", "Nicolas", "Gonzalo", "Gabriel", "Hugo", "Joel"
+        "Jose Manuel", "Nicolas", "Gonzalo", "Gabriel", "Hugo", "Joel", "Eloy", "Pietro" // Los ultimos 2 no estan en el top
     };
 
     public static String lastNames[] = {
@@ -40,7 +40,7 @@ public class Lorem {
         "Pascual", "Herrero", "Montero", "Gimenez", "Hidalgo", "Lorenzo", "Vargas",
         "Ibañez", "Santiago", "Duran", "Benitez", "Ferrer", "Arias", "Mora", "Carmona",
         "Vicente", "Crespo", "Soto", "Roman", "Rojas", "Pastor", "Velasco", "Saez",
-        "Parra", "Moya", "Bravo", "Soler", "Gallardo", "Esteban"
+        "Parra", "Moya", "Bravo", "Soler", "Gallardo", "Esteban", "Saura", "Magpali", "Pescador", "Ceacero", "de Stefano" // Los ultimos 5 no estan en el top
     };
 
     public static String alAzar(String[] posibles) {

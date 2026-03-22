@@ -2,183 +2,85 @@
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <meta charset="UTF-8">
     <title>Panel QR</title>
 
-    <!-- Bootstrap -->
+    <!-- Bootstrap (para tipografía y estilos) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Estilos específicos de Vista 1 -->
-    <style>
-        
-
-        /* Solo el h2 dentro de turnos-llamados es bold */
-        .turnos-llamados > h2 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 40px;
-            font-weight: bold;
-        }
-
-        .grid-turnos {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            font-size: 54px;
-            text-align: center;
-        }
-
-        .turno {
-            background-color: #f5f5f5;
-            padding: 10px 20px;
-            border-radius: 10px;
-            border: 2px solid #ccc;
-        }
-
-        .escanee {
-            font-size: 40px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .turno-actual-label {
-            font-size: 40px;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-            font-weight: bold;
-        }
-
-        .turno-actual {
-            font-size: 80px;
-            font-weight: bold;
-            color: #000;
-        }
-
-        /* BOTÓN PAUSA Y VOLVER IGUAL ALTURA */
-        .boton-pausa,
-        .boton-volver {
-            padding: 8px 15px;
-            font-size: 14px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .boton-pausa {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background-color: #444;
-            color: white;
-        }
-
-        .boton-pausa:hover {
-            background-color: #000;
-        }
-
-        .boton-volver {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background-color: black;
-            color: white;
-        }
-
-        .boton-volver:hover {
-            background-color: #444;
-        }
-
-        /* OVERLAY VOLVEMOS EN */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #ffffff, #f2f2f2);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            flex-direction: column;
-            text-align: center;
-        }
-
-        .overlay .titulo {
-            font-size: 60px;
-            letter-spacing: 8px;
-            font-weight: 300;
-            margin-bottom: 20px;
-        }
-
-        .overlay .minutos {
-            font-size: 180px;
-            font-weight: 900;
-            line-height: 1;
-        }
-
-        .overlay .texto-minutos {
-            font-size: 50px;
-            letter-spacing: 6px;
-            margin-top: 10px;
-        }
-    </style>
+    <!-- Librería QRCode -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body class="d-flex flex-column h-100">
 
-<!-- Cabecera Thymeleaf igual que Vista 2 -->
+<!-- Cabecera Thymeleaf -->
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
-    <main class="flex-shrink-0 mt-4">
-        <div class="container">
-            <div class="row">
+<main class="flex-shrink-0 mt-4">
+    <div class="container">
+        <div class="row">
 
-                <!-- LADO IZQUIERDO: TURNOS LLAMADOS -->
-                <div class="col-md-6">
-                    <div class="turnos-llamados">
-                        <h2>TURNOS LLAMADOS</h2>
-                        <div class="grid-turnos">
-                            <div class="turno">B728 - Puesto 1</div>
-                            <div class="turno">B729 - Puesto 2</div>
-                            <div class="turno">B730 - Puesto 1</div>
-                            <div class="turno">B731 - Puesto 3</div>
-                            <div class="turno">B725 - Puesto 2</div>
-                            <div class="turno">B726 - Puesto 1</div>
-                        </div>
+            <!-- LADO IZQUIERDO: TURNOS LLAMADOS -->
+            <div class="col-md-6">
+                <div class="turnos-llamados text-center mb-4">
+                    <h2 class="fw-bold mb-4" style="font-size: 40px;">TURNOS LLAMADOS</h2>
+                    <div class="d-flex flex-column gap-3" style="font-size: 20px;">
+                        <div class="p-3 bg-light rounded border">B728 - Puesto 1</div>
+                        <div class="p-3 bg-light rounded border">B729 - Puesto 2</div>
+                        <div class="p-3 bg-light rounded border">B730 - Puesto 1</div>
+                        <div class="p-3 bg-light rounded border">B731 - Puesto 3</div>
+                        <div class="p-3 bg-light rounded border">B725 - Puesto 2</div>
+                        <div class="p-3 bg-light rounded border">B726 - Puesto 1</div>
                     </div>
                 </div>
-
-                <!-- LADO DERECHO: ESCANEAR QR Y TURNO ACTUAL -->
-                <div class="col-md-6 text-center">
-                    <div class="escanee">ESCANEE EL QR</div>
-                    <img th:src="@{/img/QR_code.png}" alt="QR" class="img-fluid mb-3">
-                    <div class="turno-actual-label">TURNO ACTUAL</div>
-                    <div class="turno-actual">B732 - Puesto 3</div>
-                </div>
-
             </div>
+
+            <!-- LADO DERECHO: ESCANEAR QR Y TURNO ACTUAL -->
+            <div class="col-md-6 text-center">
+                <div class="mb-3 fw-bold" style="font-size: 40px;">ESCANEE EL QR</div>
+
+                <!-- QR dinámico -->
+                <div id="qrcode" class="mb-3 d-flex justify-content-center"></div>
+                <script type="text/javascript">
+                    new QRCode(document.getElementById("qrcode"), "http://esto.es.una.prueba");
+                </script>
+
+                <div class="fw-bold" style="font-size: 40px; letter-spacing: 2px; margin-bottom: 10px;">TURNO ACTUAL</div>
+                <div class="fw-bold" style="font-size: 80px; color: #000;">B732 - Puesto 3</div>
+            </div>
+
         </div>
-    </main>
-
-    <!-- BOTÓN PAUSA -->
-    <button class="boton-pausa" onclick="mostrarPausa()">Pausa</button>
-
-    <!-- OVERLAY -->
-    <div class="overlay" id="overlay">
-        <div class="titulo">VOLVEMOS EN</div>
-        <div class="minutos">5</div>
-        <div class="texto-minutos">MINUTOS</div>
-        <button class="boton-volver" onclick="ocultarPausa()">Volver</button>
     </div>
+</main>
 
-    <script>
-        function mostrarPausa() {
-            document.getElementById("overlay").style.display = "flex";
-        }
+<!-- BOTÓN PAUSA -->
+<button class="btn btn-dark position-fixed bottom-0 start-0 m-3" onclick="mostrarPausa()">Pausa</button>
 
-        function ocultarPausa() {
-            document.getElementById("overlay").style.display = "none";
-        }
-    </script>
+
+<div class="text-center my-4">
+    <a href="/user/newQRuser" class="btn btn-primary btn-lg">
+        Escanear QR
+    </a>
+</div>
+
+<!-- OVERLAY -->
+<div class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center flex-column text-center bg-light" id="overlay" style="z-index: 9999;">
+    <div style="font-size: 60px; letter-spacing: 8px; font-weight: 300; margin-bottom: 20px;">VOLVEMOS EN</div>
+    <div style="font-size: 180px; font-weight: 900; line-height: 1;">5</div>
+    <div style="font-size: 50px; letter-spacing: 6px; margin-top: 10px;">MINUTOS</div>
+    <button class="btn btn-dark mt-3" onclick="ocultarPausa()">Volver</button>
+</div>
+
+<script>
+    function mostrarPausa() {
+        document.getElementById("overlay").classList.remove("d-none");
+        document.getElementById("overlay").classList.add("d-flex");
+    }
+
+    function ocultarPausa() {
+        document.getElementById("overlay").classList.remove("d-flex");
+        document.getElementById("overlay").classList.add("d-none");
+    }
+</script>
+
 </body>
 </html>
