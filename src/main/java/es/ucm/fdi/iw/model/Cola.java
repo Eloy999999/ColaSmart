@@ -1,23 +1,11 @@
 package es.ucm.fdi.iw.model;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
-//import jakarta.persistence.Column;
-//import jakarta.persistence.Entity;
-//import jakarta.persistence.Enumerated;
-//import jakarta.persistence.GeneratedValue;
-//import jakarta.persistence.GenerationType;
-//import jakarta.persistence.Id;
-//import jakarta.persistence.JoinColumn;
-//import jakarta.persistence.ManyToMany;
-//import jakarta.persistence.ManyToOne;
-//import jakarta.persistence.NamedQueries;
-//import jakarta.persistence.NamedQuery;
-//import jakarta.persistence.OneToMany;
-//import jakarta.persistence.SequenceGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,8 +34,8 @@ public class Cola {
   private int capacidad;
 
   @ManyToOne
-    @JoinColumn(name = "encargado_id")
-    private User encargado;
+  @JoinColumn(name = "encargado_id")
+  private User encargado;
 
   @OneToMany
   private List<User> listaClientes;
@@ -58,15 +46,23 @@ public class Cola {
   private Boolean abierto = false;
   private int tiempo;
 
-   // Trabajadores asignados (bidireccional)
-    @ManyToMany(mappedBy = "colasAsignadas")
-    private List<User> trabajadores = new ArrayList<>();
+  // Turno actual: hora en que empezó
+  private LocalTime inicioTurnoActual;
 
-    public void abrir(){
-      abierto = true;
-    }
+  // Último turno atendido
+  private String ultimoTurno;
+  private LocalTime inicioUltimoTurno;
+  private LocalTime finUltimoTurno;
 
-    public void cerrar(){
-      abierto = false;
-    }
+  // Trabajadores asignados (bidireccional)
+  @ManyToMany(mappedBy = "colasAsignadas")
+  private List<User> trabajadores = new ArrayList<>();
+
+  public void abrir(){
+    abierto = true;
+  }
+
+  public void cerrar(){
+    abierto = false;
+  }
 }
