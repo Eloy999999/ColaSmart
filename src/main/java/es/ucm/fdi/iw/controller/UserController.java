@@ -13,6 +13,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.Random;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -80,7 +81,7 @@ public class UserController {
 
   @ModelAttribute
   public void populateModel(HttpSession session, Model model) {
-    for (String name : new String[] { "u", "url", "ws", "topics"}) {
+    for (String name : new String[] { "u", "url", "ws", "topics" }) {
       model.addAttribute(name, session.getAttribute(name));
     }
   }
@@ -128,30 +129,30 @@ public class UserController {
 
   @GetMapping("/newQRuser")
   public String mostararVerTurno(
-          @RequestParam(name = "username", required = false) String username,
-          HttpServletResponse response) throws IOException {
-      
-      String nombre = Lorem.nombreAlAzar();
-      String primerAp = Lorem.apellidoAlAzar();
-      String segundoAp = Lorem.apellidoAlAzar();
-      // Crear username aleatorio con 2 apellidos aleatorios
-      if (username == null || username.isBlank()) {
-          username = primerAp + segundoAp + nombre;
-      }
+      @RequestParam(name = "username", required = false) String username,
+      HttpServletResponse response) throws IOException {
 
-      User u = new User();
-      u.setUsername(username);
-      u.setFirstName(nombre);
-      u.setLastName(primerAp + " " + segundoAp);
-      u.setPassword(passwordEncoder.encode("a"));
-      u.setRoles(Role.PACIENTE.name());
-      u.setEnabled(true);
+    // String nombre = Lorem.nombreAlAzar();
+    // String primerAp = Lorem.apellidoAlAzar();
+    // String segundoAp = Lorem.apellidoAlAzar();
+    // Crear username aleatorio con 2 apellidos aleatorios
+    // if (username == null || username.isBlank()) {
+    // username = primerAp + segundoAp + nombre;
+    // }
 
-      // Guardar usuario en BD
-      userRepository.save(u);
+    User u = new User();
+    u.setUsername(generarUsernameUnico());
+    // u.setFirstName(nombre);
+    // u.setLastName(primerAp + " " + segundoAp);
+    u.setPassword(passwordEncoder.encode("a"));
+    u.setRoles(Role.PACIENTE.name());
+    u.setEnabled(true);
 
-      // Redirigir a la Vista 2 (panel de turnos)
-      return "vista2";
+    // Guardar usuario en BD
+    userRepository.save(u);
+
+    // Redirigir a la Vista 2 (panel de turnos)
+    return "vista2";
   }
 
   /**
@@ -367,21 +368,19 @@ public class UserController {
     return "{\"result\": \"message sent.\"}";
   }
 
-
-
-@GetMapping("/modificar_personal/{id}")
-public String mostrarModificarPersonal(@PathVariable Long id, Model model) {
+  @GetMapping("/modificar_personal/{id}")
+  public String mostrarModificarPersonal(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
     model.addAttribute("personal", personal);
     return "modificar_personal";
-}
+  }
 
-@PostMapping("/editar/{id}")
-public String actualizarPersonal(@PathVariable Long id, User personal) {
+  @PostMapping("/editar/{id}")
+  public String actualizarPersonal(@PathVariable Long id, User personal) {
 
     // 1️⃣ Cargar usuario existente desde la BD
     User usuarioExistente = userRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
+        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
 
     // 2️⃣ Mantener los roles del usuario existente
     personal.setRoles(usuarioExistente.getRoles());
@@ -389,9 +388,33 @@ public String actualizarPersonal(@PathVariable Long id, User personal) {
     // 3️⃣ Guardar el usuario actualizado
     userRepository.save(personal);
 
-    //personal.setId(id);
-    //userRepository.save(personal);
+    // personal.setId(id);
+    // userRepository.save(personal);
 
     return "redirect:/vista5"; // misma lógica que cola
-}
+  }
+
+  // ------ metodos auxiliares ------//
+
+  private String generarUsernameUnico() { // generar user con 3 caracteres aleatorios no repetido en la BD
+    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    Random r = new Random();
+    String username;
+
+    StringBuilder sb = new StringBuilder(); //
+    for (int i = 0; i < 3; i++) {
+      sb.append(chars.charAt(r.nextInt(chars.length())));
+    }
+    username = sb.toString();
+
+    while (userRepository.existsByUsername(username)) {
+      sb = new StringBuilder();
+      for (int i = 0; i < 3; i++) {
+        sb.append(chars.charAt(r.nextInt(chars.length())));
+      }
+      username = sb.toString();
+    }
+    return username;
+  }
+
 }

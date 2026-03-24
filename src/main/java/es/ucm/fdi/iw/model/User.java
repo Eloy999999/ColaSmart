@@ -46,82 +46,84 @@ public class User implements Transferable<User.Transfer> {
     ADMIN, // admin users
   }
 
-  
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
-    @SequenceGenerator(name = "gen", sequenceName = "gen")
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
+  @SequenceGenerator(name = "gen", sequenceName = "gen")
+  private long id;
+
+  @Column(nullable = false, unique = true)
+  private String username;
+
+  @Column(nullable = false)
+  private String password;
+
+  @Column(nullable = false)
+  private boolean enabled;
+
+  @Column(nullable = false)
+  private String roles;
+
+  @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+  private List<Message> received = new ArrayList<>();
+
+  // Otros campos que ya tenías
+  @Column(nullable = true, unique = false)
+  private String firstName;
+  private String lastName;
+  private String lugar;
+  private String ocupacion;
+  private String turno;
+  private Integer tiempoEstimado;
+  private Integer prioridad;
+
+  @ManyToMany
+  @JoinTable(name = "user_colas")
+  private List<Cola> colasAsignadas = new ArrayList<>();
+
+  @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+  private List<Turno> turnos = new ArrayList<>();
+
+  // Métodos auxiliares
+  public boolean hasRole(Role r) {
+    if (roles == null)
+      return false;
+    return Arrays.asList(roles.split(",")).contains(r.name());
+  }
+
+  // Clase Transfer (DTO)
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public static class Transfer {
     private long id;
-
-    @Column(nullable = false, unique = true)
-    private String username;
-
-    @Column(nullable = false)
-    private String password;
-
-    @Column(nullable = false)
-    private boolean enabled;
-
-    @Column(nullable = false)
-    private String roles;
-
-    @OneToMany(mappedBy="receiver", cascade=CascadeType.ALL)
-    private List<Message> received = new ArrayList<>();
-
-    // Otros campos que ya tenías
-    @Column(nullable = true, unique = true)
-    private String firstName;
-    private String lastName;
-    private String lugar;
-    private String ocupacion;
+    private String nombreCompleto;
+    private String role;
     private String turno;
-    private Integer tiempoEstimado;
-    private Integer prioridad;
-
-    @ManyToMany
-    @JoinTable(name = "user_colas")
-    private List<Cola> colasAsignadas = new ArrayList<>();
-
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Turno> turnos = new ArrayList<>();
-
-    // Métodos auxiliares
-    public boolean hasRole(Role r) {
-        if (roles == null) return false;
-        return Arrays.asList(roles.split(",")).contains(r.name());
-    }
-
-    // Clase Transfer (DTO)
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Transfer {
-        private long id;
-        private String nombreCompleto;
-        private String role;
-        private String turno;
-    }
-
-    @Override
-    public Transfer toTransfer() {
-        String nombreCompleto = (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
-        return new Transfer(id, nombreCompleto.trim(), roles, turno);
-    }
-
-    // Si el proyecto necesita getReceived() para mensajes:
-    // private List<Message> received = new ArrayList<>();
-    // public List<Message> getReceived() { return received; }
-/* 
-  @Override
-  public Transfer toTransfer() {
-    StringBuilder gs = new StringBuilder();
-    for (Topic g : groups) {
-      gs.append(g.getName()).append(", ");
-    } 
-    return new Transfer(id, username, received.size(), sent.size(), gs.toString());
   }
 
   @Override
-  public String toString() {
-    return toTransfer().toString();
-  } */
+  public Transfer toTransfer() {
+    String nombreCompleto = (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");
+    return new Transfer(id, nombreCompleto.trim(), roles, turno);
+  }
+
+  // Si el proyecto necesita getReceived() para mensajes:
+  // private List<Message> received = new ArrayList<>();
+  // public List<Message> getReceived() { return received; }
+  /*
+   * @Override
+   * public Transfer toTransfer() {
+   * StringBuilder gs = new StringBuilder();
+   * for (Topic g : groups) {
+   * gs.append(g.getName()).append(", ");
+   * }
+   * return new Transfer(id, username, received.size(), sent.size(),
+   * gs.toString());
+   * }
+   * 
+   * @Override
+   * public String toString() {
+   * return toTransfer().toString();
+   * }
+   */
 }
