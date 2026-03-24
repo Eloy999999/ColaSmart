@@ -40,6 +40,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.ucm.fdi.iw.LocalData;
+import es.ucm.fdi.iw.model.Cola;
+import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.Lorem;
 import es.ucm.fdi.iw.model.Message;
 import es.ucm.fdi.iw.model.Transferable;
@@ -77,6 +79,10 @@ public class UserController {
 
   @Autowired
   private UserRepository userRepository;
+
+  @Autowired
+  private ColaRepository colaRepository;
+
 
   @ModelAttribute
   public void populateModel(HttpSession session, Model model) {
@@ -149,6 +155,13 @@ public class UserController {
 
       // Guardar usuario en BD
       userRepository.save(u);
+
+      Cola cola = colaRepository.findById((long)975).orElse(null);
+
+      if (cola != null) {
+          cola.getListaClientes().add(u);
+          colaRepository.save(cola);
+      }
 
       // Redirigir a la Vista 2 (panel de turnos)
       return "vista2";
