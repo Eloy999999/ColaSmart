@@ -157,12 +157,12 @@ public class UserController {
     // Guardar usuario en BD
     userRepository.save(u);
 
-      Cola cola = colaRepository.findById((long)975).orElse(null);
+    Cola cola = colaRepository.findById((long)975).orElse(null);
 
-      if (cola != null) {
-          cola.getListaClientes().add(u);
-          colaRepository.save(cola);
-      }
+    if (cola != null) {
+      cola.getListaClientes().add(u);
+      colaRepository.save(cola);
+    }
 
     // Redirigir a la Vista 2 (panel de turnos)
     return "vista2";
