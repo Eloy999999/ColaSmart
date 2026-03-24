@@ -55,7 +55,7 @@ public class Cola {
   private LocalDateTime horarioFin;
   private String lugar;
   private String turnoActual;
-  private Boolean abierto;
+  private Boolean abierto = false;
   private int tiempo;
 
    // Trabajadores asignados (bidireccional)

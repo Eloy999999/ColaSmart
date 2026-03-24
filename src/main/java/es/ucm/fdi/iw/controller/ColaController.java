@@ -50,4 +50,31 @@ private ColaRepository colaRepository;
         model.addAttribute("cola", cola);
         return "modificar_cola";
     }
+
+    @GetMapping("/vista4")          // ruta HTTP
+    public String vista4(Model model) {
+        model.addAttribute("colas", colaRepository.findAll());
+        return "vista4";           // nombre de la plantilla (sin .html)
+    }
+
+    @PostMapping("/colas/{id}/abrir")
+    public String abrirCola(@PathVariable Long id) {
+        Cola cola = colaRepository.findById(id).orElse(null);
+        if (cola != null) {
+            cola.abrir();              
+            colaRepository.save(cola);
+        }
+        return "redirect:/vista4";     
+    }
+
+    @PostMapping("/colas/{id}/cerrar")
+    public String cerrarCola(@PathVariable Long id) {
+        Cola cola = colaRepository.findById(id).orElse(null);
+        if (cola != null) {
+            cola.cerrar();             
+            colaRepository.save(cola);
+        }
+        return "redirect:/vista4";
+        
+    }
 }
