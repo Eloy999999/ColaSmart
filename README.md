@@ -11,6 +11,7 @@ El personal organiza la atención y prioriza casos. Menos colas físicas, menos 
 Crea y elimina colas con su ubicación y servicio: cada cola tendrá el nombre del servicio, el tiempo estimado, el aforo máximo, el horario y su ubicación.
 Creación de códigos QR para anunciar existencias de servicios que los clientes puedan solicitar turno.
 Gestionar usuarios: podrá añadir, eliminar y buscar usuarios con rol de personal de atención.
+
 **• Personal de atención**: responsable de la gestión de turnos en una cola específica.
 Abre y cierra turnos: activa o desactiva un turno a partir de un botón.
 Llamar al siguiente: notifica al próximo usuario de la cola.
