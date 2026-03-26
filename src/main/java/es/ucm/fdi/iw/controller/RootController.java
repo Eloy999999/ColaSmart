@@ -75,7 +75,8 @@ public class RootController {
 
         Cola cola = colaRepository.findById(colaId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
-
+        int posicion = cola.getListaClientes().indexOf(user) + 1;
+        model.addAttribute("posicion", posicion);
         model.addAttribute("cola", cola);
         model.addAttribute("user", user);
 

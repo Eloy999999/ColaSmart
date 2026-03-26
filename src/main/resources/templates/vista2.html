@@ -29,13 +29,14 @@
 
             <!-- IZQUIERDA: información -->
             <div class="col-md-6">
-                <p class="fs-2"><strong>Tipo de servicio:</strong> Atención Secretaría</p>
-                <p class="fs-2"><strong>Tiempo estimado:</strong> 15 minutos</p>
+                <p class="fs-2"><strong>Tipo de servicio:</strong> <span th:text="${cola.nombre}">Atención Secretaría</span></p>
+                <p class="fs-2"><strong>Tiempo estimado:</strong> <span th:text="${cola.tiempo * posicion + ' minutos'}">15 minutos</span></p>
+                <p class="fs-2"><strong>Posición en la cola:</strong> <span th:text="${posicion}">3</span></p>
             </div>
 
             <!-- DERECHA: puesto en cola grande -->
             <div class="col-md-6 text-center">
-                <h1 class="fw-bold text-primary" style="font-size: 8rem;">B743</h1>
+                <h1 class="fw-bold text-primary" style="font-size: 8rem;"><span th:text="${user.turno}">B743</span></h1>
                 <p class="fs-4">Tu turno</p>
             </div>
 
@@ -62,7 +63,7 @@
 <!-- Contenedor del mensaje central (sin d-flex) -->
 <div id="turno-display">
     <p style="font-size: 4rem; font-weight: bold;">Es tu turno</p>
-    <h1 class="fw-bold text-primary" style="font-size: 10rem;">B743</h1>
+    <h1 class="fw-bold text-primary" style="font-size: 10rem;"><span th:text="${user.turno}">B743</span></h1>
     <p style="font-size: 2rem;">Dirígete al puesto 2</p>
 </div>
 
