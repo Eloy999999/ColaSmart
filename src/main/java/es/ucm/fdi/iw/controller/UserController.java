@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,7 +43,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import es.ucm.fdi.iw.LocalData;
 import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
-import es.ucm.fdi.iw.model.Lorem;
 import es.ucm.fdi.iw.model.Message;
 import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
@@ -133,10 +132,8 @@ public class UserController {
    * Crear paciente al darle al QR y redirigir a la vista de su turno
    */
 
-  @GetMapping("/newQRuser")
-  public String mostararVerTurno(
-      @RequestParam(name = "username", required = false) String username,
-      HttpServletResponse response) throws IOException {
+  @GetMapping("/newQRuser/{id}")
+  public String mostararVerTurno(@PathVariable("id") Long id, Model model) throws IOException {
 
     // String nombre = Lorem.nombreAlAzar();
     // String primerAp = Lorem.apellidoAlAzar();
@@ -157,7 +154,7 @@ public class UserController {
     // Guardar usuario en BD
     userRepository.save(u);
 
-    Cola cola = colaRepository.findById((long)975).orElse(null);
+    Cola cola = colaRepository.findById(id).orElseThrow(() -> new RuntimeException("Cola no encontrada"));
 
     if (cola != null) {
       cola.getListaClientes().add(u);
@@ -165,7 +162,7 @@ public class UserController {
     }
 
     // Redirigir a la Vista 2 (panel de turnos)
-    return "vista2";
+    return "redirect:/vista2?colaId=" + id + "&userId=" + u.getId(); // pasar id de cola e id de nuevo user paciente
   }
 
   /**

@@ -2,11 +2,17 @@ package es.ucm.fdi.iw.controller;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import es.ucm.fdi.iw.model.Cola;
+import es.ucm.fdi.iw.model.ColaRepository;
+import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -15,6 +21,12 @@ import jakarta.servlet.http.HttpSession;
  */
 @Controller
 public class RootController {
+
+    @Autowired
+    private ColaRepository colaRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private static final Logger log = LogManager.getLogger(RootController.class);
 
@@ -44,11 +56,29 @@ public class RootController {
 
     @GetMapping("/vista1")
     public String vista1(Model model) {
+        long idDefault = 975;
+        Cola cola = colaRepository.findById(idDefault).orElse(null);
+        model.addAttribute("cola", cola); // Le meto la cola para poder sacar de ahi toda la info de esta, y meter al user nuevo a esta cola
+        
+        if (!cola.isAbierto()) { //Si esta cerrada la cola, poner que la cola esta cerrada
+            model.addAttribute("cola", cola);
+            return "cola_cerrada";
+        }
+        
         return "vista1";
     }
 
     @GetMapping("/vista2")
-    public String vista2(Model model) {
+        public String vista2(@RequestParam("colaId") Long colaId,
+                        @RequestParam("userId") Long userId,
+                        Model model) {
+
+        Cola cola = colaRepository.findById(colaId).orElseThrow();
+        User user = userRepository.findById(userId).orElseThrow();
+
+        model.addAttribute("cola", cola);
+        model.addAttribute("user", user);
+
         return "vista2";
     }
 

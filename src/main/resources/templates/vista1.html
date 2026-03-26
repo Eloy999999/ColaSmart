@@ -16,6 +16,13 @@
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <main class="flex-shrink-0 mt-4">
+    <!-- Nombre de la cola arriba como titulo-->
+    <div class="container text-center mt-4">
+        <h1 class="fw-bold" style="font-size: 60px; letter-spacing: 4px;"
+            th:text="'Cola ' + ${cola.nombre}">
+            Cola
+        </h1>
+    </div>
     <div class="container">
         <div class="row">
 
@@ -57,7 +64,7 @@
 
 
 <div class="text-center my-4">
-    <a href="/user/newQRuser" class="btn btn-primary btn-lg">
+    <a th:href="@{/user/newQRuser/{id}(id=${cola.id})}" class="btn btn-primary btn-lg">
         Escanear QR
     </a>
 </div>

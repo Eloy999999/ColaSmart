@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:replace="~{fragments/head :: header}" />
+    <meta charset="UTF-8">
+    <title>Cola cerrada</title>
+</head>
+
+<body class="d-flex flex-column h-100">
+
+    <!-- CABECERA -->
+    <header th:replace="~{fragments/nav.html :: nav}"></header>
+
+    <!-- CONTENIDO CENTRAL -->
+    <main class="flex-grow-1 d-flex justify-content-center align-items-center text-center">
+        <div>
+            <!-- TÍTULO -->
+            <h1 class="fw-bold mb-4" style="font-size: 60px; letter-spacing: 4px;"
+                th:text="'Cola ' + ${cola.nombre}">
+                Cola
+            </h1>
+
+            <!-- MENSAJE -->
+            <h2 class="text-danger fw-bold" style="font-size: 40px;">
+                COLA CERRADA
+            </h2>
+            <h3 class="text-secondary" style="font-size: 24px; font-weight: normal;">
+                Vuelva más tarde
+            </h3>
+            <h5 class="text-secondary" style="font-size: 18px; font-weight: normal;">
+                Abriremos próximamente. Disculpe las molestias
+            </h5>
+        </div>
+    </main>
+
+</body>
+</html>
