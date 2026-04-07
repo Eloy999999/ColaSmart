@@ -83,7 +83,6 @@ public class UserController {
   @Autowired
   private ColaRepository colaRepository;
 
-
   @ModelAttribute
   public void populateModel(HttpSession session, Model model) {
     for (String name : new String[] { "u", "url", "ws", "topics" }) {
@@ -383,6 +382,15 @@ public class UserController {
     User personal = userRepository.findById(id).orElse(null);
     model.addAttribute("personal", personal);
     return "modificar_personal";
+  }
+
+  @GetMapping("/modificar_paciente/{id}")
+  public String mostrarModificarPaciente(@PathVariable Long id, Model model) {
+    User personal = userRepository.findById(id).orElse(null);
+    model.addAttribute("paciente", personal);
+    // Cola cola = colaRepository.findById(personal.getUsername).orElse(null);
+    // model.addAttribute("cola", cola);
+    return "modificar_paciente";
   }
 
   @PostMapping("/editar/{id}")

@@ -155,7 +155,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="trabajador : ${users}">
+                            <tr th:each="trabajador : ${users}" th:if="${!trabajador.hasRole('PACIENTE')}">
                                 <td th:text="${trabajador.id}">1</td>
                                 <td th:text="${trabajador.firstName + ' ' + trabajador.lastName}">Dr. Martínez</td>
                                 <td th:text="${trabajador.roles}">Pediatra</td>
@@ -187,6 +187,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- USUARIOS -->
 <div class="modal fade" id="usuariosModal" tabindex="-1">
@@ -230,7 +231,7 @@
                                           class="text-muted">Sin cola</span>
                                 </td>
                                 <td class="text-center">
-                                    <a th:href="@{/user/modificar_personal/{id}(id=${paciente.id})}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                                    <a th:href="@{/user/modificar_paciente/{id}(id=${paciente.id})}" class="btn btn-sm btn-warning">✏️ Editar</a>
                                     <form th:action="@{/vista5/personal/eliminar/{id}(id=${paciente.id})}" method="post" style="display:inline;">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                         <button type="submit"
