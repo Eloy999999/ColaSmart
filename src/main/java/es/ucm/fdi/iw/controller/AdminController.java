@@ -65,9 +65,26 @@ public class AdminController {
         log.info("Admin entra a vista5");
         List<Cola> colas = colaRepository.findAll();
         List<User> users = userRepository.findAll();
+
+        List<User> pacientes = users.stream()
+            .filter(u -> u.hasRole(User.Role.PACIENTE))
+            .collect(Collectors.toList());
+
+        // Mapa pacienteId -> Cola
+        Map<Long, Cola> colaDelPaciente = new java.util.HashMap<>();
+        for (Cola cola : colas) {
+            if (cola.getListaClientes() != null) {
+                for (User cliente : cola.getListaClientes()) {
+                    colaDelPaciente.put(cliente.getId(), cola);
+                }
+            }
+        }
+
         model.addAttribute("colas", colas);
         model.addAttribute("users", users);
-        return "vista5"; // Thymeleaf
+        model.addAttribute("pacientes", pacientes);
+        model.addAttribute("colaDelPaciente", colaDelPaciente);
+        return "vista5";
     }
 
     // Toggle estado de usuario
