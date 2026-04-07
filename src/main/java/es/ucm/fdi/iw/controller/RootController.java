@@ -69,12 +69,10 @@ public class RootController {
     }
 
     @GetMapping("/vista2")
-        public String vista2(@RequestParam("colaId") Long colaId,
-                        @RequestParam("userId") Long userId,
-                        Model model) {
+        public String vista2(HttpSession session, Model model) {
 
-        Cola cola = colaRepository.findById(colaId).orElseThrow();
-        User user = userRepository.findById(userId).orElseThrow();
+        Cola cola = (Cola) session.getAttribute("colaTemporal");
+        User user = (User) session.getAttribute("usuarioTemporal");
         int posicion = cola.getListaClientes().indexOf(user) + 1;
         model.addAttribute("posicion", posicion);
         model.addAttribute("cola", cola);

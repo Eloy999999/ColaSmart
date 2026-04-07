@@ -131,8 +131,8 @@ public class UserController {
    * Crear paciente al darle al QR y redirigir a la vista de su turno
    */
 
-  @GetMapping("/newQRuser/{id}")
-  public String mostararVerTurno(@PathVariable("id") Long id, Model model) throws IOException {
+  @GetMapping("/newQRuser")
+  public String mostararVerTurno(HttpSession session) throws IOException {
 
     // String nombre = Lorem.nombreAlAzar();
     // String primerAp = Lorem.apellidoAlAzar();
@@ -153,21 +153,24 @@ public class UserController {
     // Guardar usuario en BD
     userRepository.save(u);
 
-    Cola cola = colaRepository.findById(id).orElseThrow(() -> new RuntimeException("Cola no encontrada"));
+    Cola cola = colaRepository.findById((long)975).orElseThrow(() -> new RuntimeException("Cola no encontrada"));
 
     if (cola != null) {
       cola.getListaClientes().add(u);
       colaRepository.save(cola);
     }
 
+    session.setAttribute("usuarioTemporal", u);
+    session.setAttribute("colaTemporal", cola);
+
     // Redirigir a la Vista 2 (panel de turnos)
-    return "redirect:/vista2?colaId=" + id + "&userId=" + u.getId(); // pasar id de cola e id de nuevo user paciente
+    return "redirect:/vista2"; // pasar id de cola e id de nuevo user paciente
   }
 
   /**
    * Landing page for a user profile
    */
-  @GetMapping("{id}")
+  @GetMapping("{id:\\d+}")
   public String index(@PathVariable long id, Model model, HttpSession session) {
     User target = entityManager.find(User.class, id);
     model.addAttribute("user", target);
