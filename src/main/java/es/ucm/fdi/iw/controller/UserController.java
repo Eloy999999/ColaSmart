@@ -150,10 +150,12 @@ public class UserController {
     u.setRoles(Role.PACIENTE.name());
     u.setEnabled(true);
 
+    Cola cola = colaRepository.findById((long) 975).orElseThrow(() -> new RuntimeException("Cola no encontrada"));
+
+    u.setPosicion(Cola.calcularSiguientePosicion(cola));
+
     // Guardar usuario en BD
     userRepository.save(u);
-
-    Cola cola = colaRepository.findById((long)975).orElseThrow(() -> new RuntimeException("Cola no encontrada"));
 
     if (cola != null) {
       cola.getListaClientes().add(u);
@@ -399,14 +401,14 @@ public class UserController {
   @PostMapping("/editar/{id}")
   public String actualizarPersonal(@PathVariable Long id, User personal) {
 
-    // 1️⃣ Cargar usuario existente desde la BD
+    // Cargar usuario existente desde la BD
     User usuarioExistente = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
 
-    // 2️⃣ Mantener los roles del usuario existente
+    // Mantener los roles del usuario existente
     personal.setRoles(usuarioExistente.getRoles());
 
-    // 3️⃣ Guardar el usuario actualizado
+    // Guardar el usuario actualizado
     userRepository.save(personal);
 
     // personal.setId(id);
@@ -423,14 +425,14 @@ public class UserController {
     String username;
 
     StringBuilder sb = new StringBuilder(); //
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {
       sb.append(chars.charAt(r.nextInt(chars.length())));
     }
     username = sb.toString();
 
     while (userRepository.existsByUsername(username)) {
       sb = new StringBuilder();
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < 5; i++) {
         sb.append(chars.charAt(r.nextInt(chars.length())));
       }
       username = sb.toString();

@@ -24,11 +24,14 @@ import lombok.NoArgsConstructor;
  */
 @Entity
 @Data
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "Colas")
 public class Cola {
 
-  public enum Estado { ABIERTO, CERRADO }
+  public enum Estado {
+    ABIERTO, CERRADO
+  }
 
   public Estado getEstado() {
     return (abierto != null && abierto) ? Estado.ABIERTO : Estado.CERRADO;
@@ -47,7 +50,7 @@ public class Cola {
   private User encargado;
 
   @OneToMany
-  private List<User> listaClientes;
+  private List<User> listaClientes; // Tabla intermedia que relaciona users.id con colas.id
   private LocalDateTime horarioInicio;
   private LocalDateTime horarioFin;
   private String lugar;
@@ -71,11 +74,27 @@ public class Cola {
     return abierto;
   }
 
-  public void abrir(){
+  public void abrir() {
     abierto = true;
   }
 
-  public void cerrar(){
+  public void cerrar() {
     abierto = false;
+  }
+
+  public static int calcularSiguientePosicion(Cola c) {
+    if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
+      return 0;
+    }
+
+    int max = -1;
+
+    for (User u : c.getListaClientes()) {
+      if (u.getPosicion() != null && u.getPosicion() > max) {
+        max = u.getPosicion();
+      }
+    }
+
+    return max + 1;
   }
 }

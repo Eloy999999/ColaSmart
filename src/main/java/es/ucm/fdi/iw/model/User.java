@@ -63,10 +63,12 @@ public class User implements Transferable<User.Transfer> {
   @Column(nullable = false)
   private String roles;
 
+  @Column(nullable = true)
+  private Integer posicion;
+
   @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
   private List<Message> received = new ArrayList<>();
 
-  // Otros campos que ya tenías
   @Column(nullable = true, unique = false)
   private String firstName;
   private String lastName;
