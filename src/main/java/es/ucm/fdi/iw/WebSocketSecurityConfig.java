@@ -9,23 +9,17 @@ import org.springframework.security.messaging.access.intercept.MessageMatcherDel
 
 import es.ucm.fdi.iw.model.User;
 
-/**
- * Similar to SecurityConfig, but for websockets that use STOMP.
- * 
- * @see https://docs.spring.io/spring-security/reference/servlet/integrations/websocket.html
- */
 @Configuration
-@EnableWebSocketSecurity  
+@EnableWebSocketSecurity
 public class WebSocketSecurityConfig {
 
     @Bean
-    AuthorizationManager<Message<?>> messageAuthorizationManager(MessageMatcherDelegatingAuthorizationManager.Builder messages) {
-        
-        // necesario estar logeado para poder enviar
-        // necesario ser admin para poder enviar a /admin/**, y para poder recibir de /admin/**
+    AuthorizationManager<Message<?>> messageAuthorizationManager(
+            MessageMatcherDelegatingAuthorizationManager.Builder messages) {
         messages
                 .simpDestMatchers("/admin/**").hasRole(User.Role.ADMIN.toString())
                 .simpSubscribeDestMatchers("/admin/**").hasRole(User.Role.ADMIN.toString())
+                .simpSubscribeDestMatchers("/topic/cola/**").authenticated()
                 .anyMessage().authenticated();
         return messages.build();
     }

@@ -134,33 +134,25 @@ public class UserController {
   @GetMapping("/newQRuser")
   public String mostararVerTurno(HttpSession session) throws IOException {
 
-    // String nombre = Lorem.nombreAlAzar();
-    // String primerAp = Lorem.apellidoAlAzar();
-    // String segundoAp = Lorem.apellidoAlAzar();
-    // Crear username aleatorio con 2 apellidos aleatorios
-    // if (username == null || username.isBlank()) {
-    // username = primerAp + segundoAp + nombre;
-    // }
-
     User u = new User();
     u.setUsername(generarUsernameUnico());
-    // u.setFirstName(nombre);
-    // u.setLastName(primerAp + " " + segundoAp);
     u.setPassword(passwordEncoder.encode("a"));
     u.setRoles(Role.PACIENTE.name());
     u.setEnabled(true);
-
-    Cola cola = colaRepository.findById((long) 975).orElseThrow(() -> new RuntimeException("Cola no encontrada"));
-
-    u.setPosicion(Cola.calcularSiguientePosicion(cola));
-
-    // Guardar usuario en BD
     userRepository.save(u);
 
-    if (cola != null) {
-      cola.getListaClientes().add(u);
-      colaRepository.save(cola);
-    }
+    Cola cola = colaRepository.findById((long) 975)
+        .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
+
+    u.setPosicion(Cola.calcularSiguientePosicion(cola));
+    cola.getListaClientes().add(u);
+    colaRepository.save(cola);
+
+    log.info("Enviando WebSocket a /topic/cola/{}/actualizar", cola.getId());
+    messagingTemplate.convertAndSend(
+        "/topic/cola/" + cola.getId() + "/actualizar",
+        "{\"colaId\":" + cola.getId() + ", \"tipo\":\"NUEVO_USUARIO\"}");
+    log.info("WebSocket enviado correctamente");
 
     session.setAttribute("usuarioTemporal", u);
     session.setAttribute("colaTemporal", cola);
