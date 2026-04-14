@@ -31,7 +31,7 @@
             <div class="col-md-6">
                 <p class="fs-2"><strong>Tipo de servicio:</strong> <span th:text="${cola.nombre}">Atención Secretaría</span></p>
                 <p class="fs-2"><strong>Tiempo estimado:</strong> <span th:text="${cola.tiempo * posicion + ' minutos'}">15 minutos</span></p>
-                <p class="fs-2"><strong>Posición en la cola:</strong> <span th:text="${posicion}">3</span></p>
+                <p class="fs-2"><strong>Posición en la cola:</strong> <span th:text="${user.posicion}">3</span></p>
             </div>
 
             <!-- DERECHA: puesto en cola grande -->
@@ -67,20 +67,24 @@
     <p style="font-size: 2rem;">Dirígete al puesto 2</p>
 </div>
 
-<script>
+<script th:inline="javascript">
     const btnTurno = document.getElementById('btn-turno');
     const btnAbandonar = document.getElementById('btn-abandonar');
     const mainContent = document.getElementById('main-content');
     const turnoDisplay = document.getElementById('turno-display');
 
-    // Botón verde: muestra mensaje central
-    btnTurno.addEventListener('click', () => {
-        mainContent.style.display = 'none';   // Oculta el contenido original
-        turnoDisplay.style.display = 'flex';  // Muestra el mensaje central
+    const posicion = [[${user.posicion}]];
+
+    function mostrarTurno() {
+        mainContent.style.display = 'none';
+        turnoDisplay.style.display = 'flex';
         turnoDisplay.style.flexDirection = 'column';
         turnoDisplay.style.justifyContent = 'center';
         turnoDisplay.style.alignItems = 'center';
-    });
+    }
+
+    // Botón verde: muestra mensaje central
+    btnTurno.addEventListener('click', mostrarTurno);
 
     // Botón rojo: redirige a vista 1
     btnAbandonar.addEventListener('click', () => {
@@ -89,6 +93,11 @@
     if (seguro) {
         window.location.href = '/panelQR';
     }
+
+    if (posicion <= 0) {
+        mostrarTurno();
+    }
+
     });
 </script>
 
