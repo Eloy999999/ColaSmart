@@ -4,6 +4,8 @@
     <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Seguimiento de Colas</title> <!-- antiguo vista 4 -->
+
+        <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
     <style>
         #modalDetalle {
             display: none;
@@ -140,10 +142,64 @@
 
     let colaIdActual = null;
 
-    document.querySelectorAll('tr.fila-cola').forEach(fila => {
-        fila.addEventListener('click', () => {
-            abrirModal(fila.dataset.colaId);
+    document.addEventListener('DOMContentLoaded', function () {
+
+        document.querySelectorAll('tr.fila-cola').forEach(fila => {
+            fila.addEventListener('click', () => {
+                abrirModal(fila.dataset.colaId);
+            });
         });
+
+        // Conexión STOMP
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const stompClient = new StompJs.Client({
+            brokerURL: wsProtocol + '//' + window.location.host + '/ws',
+            reconnectDelay: 5000,
+            debug: str => console.log('STOMP:', str),
+            connectHeaders: {
+                'X-CSRF-TOKEN': csrfToken
+            }
+        });
+
+        stompClient.onConnect = function () {
+            console.log('OK STOMP conectado');
+
+            document.querySelectorAll('tr.fila-cola').forEach(fila => {
+                const id = fila.dataset.colaId;
+                console.log('OK Suscrito a /topic/cola/' + id + '/actualizar');
+
+                stompClient.subscribe(`/topic/cola/${id}/actualizar`, async function (msg) {
+                    console.log('OK Mensaje recibido cola ' + id + ':', msg.body);
+
+                    // Actualizar "N Esperando" en la tabla
+                    try {
+                        const res = await fetch(`/colas/${id}/detalle`);
+                        const cola = await res.json();
+                        const filaEl = document.querySelector(`tr[data-cola-id="${id}"]`);
+                        if (filaEl) {
+                            filaEl.querySelector('.badge.bg-danger').textContent =
+                                cola.listaClientes.length;
+                        }
+                        // Si el modal de esa cola está abierto, refrescarlo también
+                        if (colaIdActual === id) {
+                            renderModal(cola);
+                        }
+                    } catch (e) {
+                        console.error('Error actualizando cola ' + id, e);
+                    }
+                });
+            });
+        };
+
+        stompClient.onStompError = function (frame) {
+            console.error('ERR Error STOMP:', frame);
+        };
+
+        stompClient.onDisconnect = function () {
+            console.warn('ERR STOMP desconectado');
+        };
+
+        stompClient.activate();
     });
 
     async function abrirModal(colaId) {
@@ -239,6 +295,7 @@
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') cerrarModal();
     });
+
     // Actualizar datos del modal cada 60 segundos
     setInterval(async () => {
         if (colaIdActual !== null) {
