@@ -36,7 +36,7 @@ import jakarta.transaction.Transactional;
  * Acceso autenticado: solo admins
  */
 @Controller
-@RequestMapping("vista5")
+@RequestMapping("panelAdmin")
 public class AdminController {
 
     @Autowired
@@ -61,8 +61,8 @@ public class AdminController {
 
     // GET principal que carga colas y usuarios
     @GetMapping({"", "/"})
-    public String vista5(Model model, HttpSession session) {
-        log.info("Admin entra a vista5");
+    public String panelAdmin(Model model, HttpSession session) {
+        log.info("Admin entra a panelAdmin");
         List<Cola> colas = colaRepository.findAll();
         List<User> users = userRepository.findAll();
 
@@ -84,7 +84,7 @@ public class AdminController {
         model.addAttribute("users", users);
         model.addAttribute("pacientes", pacientes);
         model.addAttribute("colaDelPaciente", colaDelPaciente);
-        return "vista5";
+        return "panelAdmin";
     }
 
     // Toggle estado de usuario
@@ -115,7 +115,7 @@ public class AdminController {
     @Transactional
     public String crearCola(@ModelAttribute Cola nuevaCola) {
         entityManager.persist(nuevaCola);
-        return "redirect:/vista5/";
+        return "redirect:/panelAdmin/";
     }
 
     // Crear nuevo personal
@@ -126,7 +126,7 @@ public class AdminController {
         nuevoPersonal.setEnabled(true);
         nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
         entityManager.persist(nuevoPersonal);
-        return "redirect:/vista5/";
+        return "redirect:/panelAdmin/";
     }
 
     // Abrir/Cerrar cola
@@ -149,7 +149,7 @@ public class AdminController {
         if (colaRepository.existsById(id)) {
             colaRepository.deleteById(id);
         }
-        return "redirect:/vista5/";
+        return "redirect:/panelAdmin/";
     }
 
     // Eliminar personal
@@ -158,7 +158,7 @@ public class AdminController {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
         }
-        return "redirect:/vista5/";
+        return "redirect:/panelAdmin/";
     }
 
     // Método opcional para poblar DB con datos de prueba

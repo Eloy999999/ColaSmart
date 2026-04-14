@@ -46,14 +46,14 @@ public class ColaController {
         } else {
             redirectAttrs.addFlashAttribute("msg", "La cola no existe");
         }
-        return "redirect:/vista5";
+        return "redirect:/panelAdmin";
     }
 
-    @PostMapping("/vista5/colas/editar/{id}")
+    @PostMapping("/panelAdmin/colas/editar/{id}")
     public String actualizarCola(@PathVariable Long id, Cola cola) {
         cola.setId(id);
         colaRepository.save(cola);
-        return "redirect:/vista5";
+        return "redirect:/panelAdmin";
     }
 
     @GetMapping("/modificar_cola/{id}")
@@ -63,10 +63,10 @@ public class ColaController {
         return "modificar_cola";
     }
 
-    @GetMapping("/vista4")
-    public String vista4(Model model) {
+    @GetMapping("/seguimientoCola")
+    public String seguimientoCola(Model model) {
         model.addAttribute("colas", colaRepository.findAll());
-        return "vista4";
+        return "seguimientoCola";
     }
 
     @PostMapping("/colas/{id}/abrir")
@@ -76,7 +76,7 @@ public class ColaController {
             cola.abrir();
             colaRepository.save(cola);
         }
-        return "redirect:/vista4";
+        return "redirect:/seguimientoCola";
     }
 
     @PostMapping("/colas/{id}/cerrar")
@@ -86,7 +86,7 @@ public class ColaController {
             cola.cerrar();
             colaRepository.save(cola);
         }
-        return "redirect:/vista4";
+        return "redirect:/seguimientoCola";
     }
 
     @GetMapping("/colas/{id}/detalle")

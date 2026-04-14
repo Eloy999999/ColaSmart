@@ -13,7 +13,7 @@
  <main class="flex-shrink-0">
         <div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
             <h1>Vista de configuración de un nuevo miembro del personal</h1>
-            <form class="row g-3 mt-4" th:action="@{/vista5/personal}" method="post">
+            <form class="row g-3 mt-4" th:action="@{/panelAdmin/personal}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 
                 <div class="col-md-6">

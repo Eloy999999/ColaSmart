@@ -15,7 +15,7 @@
         <h1>Modificar cola con id <span th:text="${cola.id}"></span></h1>
 
         <form class="row g-3 mt-4" 
-              th:action="@{/vista5/colas/editar/{id}(id=${cola.id})}" 
+              th:action="@{/panelAdmin/colas/editar/{id}(id=${cola.id})}" 
               method="post">
 
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

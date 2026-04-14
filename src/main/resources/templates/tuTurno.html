@@ -3,7 +3,7 @@
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
-    <title>Tu turno</title>
+    <title>Tu turno</title> <!-- antiguo vista 2 -->
     <style>
         /* Contenedor centrado para el mensaje de turno */
         #turno-display {
@@ -87,7 +87,7 @@
     const seguro = confirm("¿Seguro que quieres abandonar la cola?");
     
     if (seguro) {
-        window.location.href = '/vista1';
+        window.location.href = '/panelQR';
     }
     });
 </script>

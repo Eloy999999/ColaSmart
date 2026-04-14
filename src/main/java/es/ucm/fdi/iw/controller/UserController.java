@@ -166,7 +166,7 @@ public class UserController {
     session.setAttribute("colaTemporal", cola);
 
     // Redirigir a la Vista 2 (panel de turnos)
-    return "redirect:/vista2"; // pasar id de cola e id de nuevo user paciente
+    return "redirect:/tuTurno"; // pasar id de cola e id de nuevo user paciente
   }
 
   /**
@@ -414,7 +414,7 @@ public class UserController {
     // personal.setId(id);
     // userRepository.save(personal);
 
-    return "redirect:/vista5"; // misma lógica que cola
+    return "redirect:/panelAdmin"; // misma lógica que cola
   }
 
   // ------ metodos auxiliares ------//

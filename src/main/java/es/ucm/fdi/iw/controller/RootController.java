@@ -54,8 +54,8 @@ public class RootController {
         return "autor";   // página con autores
     }
 
-    @GetMapping("/vista1")
-    public String vista1(Model model) {
+    @GetMapping("/panelQR")
+    public String panelQR(Model model) {
         long idDefault = 975;
         Cola cola = colaRepository.findById(idDefault).orElse(null);
         model.addAttribute("cola", cola); // Le meto la cola para poder sacar de ahi toda la info de esta, y meter al user nuevo a esta cola
@@ -65,11 +65,11 @@ public class RootController {
             return "cola_cerrada";
         }
         
-        return "vista1";
+        return "panelQR";
     }
 
-    @GetMapping("/vista2")
-        public String vista2(HttpSession session, Model model) {
+    @GetMapping("/tuTurno")
+        public String tuTurno(HttpSession session, Model model) {
 
         Cola cola = (Cola) session.getAttribute("colaTemporal");
         User user = (User) session.getAttribute("usuarioTemporal");
@@ -78,12 +78,12 @@ public class RootController {
         model.addAttribute("cola", cola);
         model.addAttribute("user", user);
 
-        return "vista2";
+        return "tuTurno";
     }
 
-    @GetMapping("/vista3")
-    public String vista3(Model model) {
-        return "vista3";
+    @GetMapping("/configCola")
+    public String configCola(Model model) {
+        return "configCola";
     }
     /* 
     @GetMapping("/vista4")
