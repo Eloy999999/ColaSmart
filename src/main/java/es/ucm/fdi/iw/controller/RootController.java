@@ -1,5 +1,7 @@
 package es.ucm.fdi.iw.controller;
 
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 /**
- *  Non-authenticated requests only.
+ * Non-authenticated requests only.
  */
 @Controller
 public class RootController {
@@ -31,45 +33,60 @@ public class RootController {
     private static final Logger log = LogManager.getLogger(RootController.class);
 
     @ModelAttribute
-    public void populateModel(HttpSession session, Model model) {        
-        for (String name : new String[] { "u", "url", "ws", "topics"}) {
-          model.addAttribute(name, session.getAttribute(name));
+    public void populateModel(HttpSession session, Model model) {
+        for (String name : new String[] { "u", "url", "ws", "topics" }) {
+            model.addAttribute(name, session.getAttribute(name));
         }
     }
 
-	@GetMapping("/login")
+    @GetMapping("/login")
     public String login(Model model, HttpServletRequest request) {
         boolean error = request.getQueryString() != null && request.getQueryString().indexOf("error") != -1;
         model.addAttribute("loginError", error);
         return "login";
     }
 
-	@GetMapping("/")
+    @GetMapping("/")
     public String index(Model model) {
         return "index";
     }
 
-     @GetMapping("/autor")
+    @GetMapping("/autor")
     public String autor(Model model) {
-        return "autor";   // página con autores
+        return "autor"; // página con autores
     }
 
     @GetMapping("/panelQR")
     public String panelQR(Model model) {
         long idDefault = 975;
         Cola cola = colaRepository.findById(idDefault).orElse(null);
-        model.addAttribute("cola", cola); // Le meto la cola para poder sacar de ahi toda la info de esta, y meter al user nuevo a esta cola
-        
-        if (!cola.isAbierto()) { //Si esta cerrada la cola, poner que la cola esta cerrada
+        model.addAttribute("cola", cola); // Le meto la cola para poder sacar de ahi toda la info de esta, y meter al
+                                          // user nuevo a esta cola
+
+        if (!cola.isAbierto()) { // Si esta cerrada la cola, poner que la cola esta cerrada
             model.addAttribute("cola", cola);
             return "cola_cerrada";
         }
-        
+
+        // Coger posiciones de -6 a -1
+        List<User> atendidos = userRepository
+                .findByPosicionBetweenOrderByPosicionDesc(-6, -1);
+
+        while (atendidos.size() < 6) {
+            atendidos.add(null);
+        }
+
+        // Turno actual
+        User turnoActual = userRepository.findByPosicion(0);
+
+        model.addAttribute("atendidos", atendidos);
+        model.addAttribute("turnoActual", turnoActual);
+
         return "panelQR";
     }
 
     @GetMapping("/tuTurno")
-        public String tuTurno(HttpSession session, Model model) {
+    public String tuTurno(HttpSession session, Model model) {
 
         Cola cola = (Cola) session.getAttribute("colaTemporal");
         User user = (User) session.getAttribute("usuarioTemporal");
@@ -85,17 +102,21 @@ public class RootController {
     public String configCola(Model model) {
         return "configCola";
     }
-    /* 
-    @GetMapping("/vista4")
-    public String vista4(Model model) {
-        return "vista4";
-    }*/
+    /*
+     * @GetMapping("/vista4")
+     * public String vista4(Model model) {
+     * return "vista4";
+     * }
+     */
 
-    /* Explota si se descomenta esto, porque en admin ya hay un GetMapping a vista5
-    @GetMapping("/vista5")
-    public String vista5(Model model) {
-        return "vista5";
-    }*/
+    /*
+     * Explota si se descomenta esto, porque en admin ya hay un GetMapping a vista5
+     * 
+     * @GetMapping("/vista5")
+     * public String vista5(Model model) {
+     * return "vista5";
+     * }
+     */
 
     @GetMapping("/Manejar Personal")
     public String vista6(Model model) {

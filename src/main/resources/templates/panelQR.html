@@ -31,12 +31,13 @@
                 <div class="turnos-llamados text-center mb-4">
                     <h2 class="fw-bold mb-4" style="font-size: 40px;">TURNOS LLAMADOS</h2>
                     <div class="d-flex flex-column gap-3" style="font-size: 20px;">
-                        <div class="p-3 bg-light rounded border">B728 - Puesto 1</div>
-                        <div class="p-3 bg-light rounded border">B729 - Puesto 2</div>
-                        <div class="p-3 bg-light rounded border">B730 - Puesto 1</div>
-                        <div class="p-3 bg-light rounded border">B731 - Puesto 3</div>
-                        <div class="p-3 bg-light rounded border">B725 - Puesto 2</div>
-                        <div class="p-3 bg-light rounded border">B726 - Puesto 1</div>
+                        <div class="d-flex flex-column gap-3" style="font-size: 20px;">
+                            <div th:each="user : ${atendidos}"
+                                class="p-3 bg-light rounded border"
+                                style="min-height: 60px;"
+                                th:text="${user != null} ? ${user.username} + ' - Puesto 1'">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -51,8 +52,11 @@
                     new QRCode(document.getElementById("qrcode"), "http://localhost:8080/user/newQRuser");
                 </script>
 
-                <div class="fw-bold" style="font-size: 40px; letter-spacing: 2px; margin-bottom: 10px;">TURNO ACTUAL</div>
-                <div class="fw-bold" style="font-size: 80px; color: #000;" th:text="${cola.turnoActual}">B732 - Puesto 3</div>
+                <div class="fw-bold"
+                    style="font-size: 80px; color: #000;"
+                    th:if="${turnoActual != null}"
+                    th:text="${turnoActual.username} + ' - Puesto 1'">
+                </div>
             </div>
 
         </div>
