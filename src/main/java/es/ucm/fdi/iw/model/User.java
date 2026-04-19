@@ -109,6 +109,9 @@ public class User implements Transferable<User.Transfer> {
     return new Transfer(id, nombreCompleto.trim(), roles, turno);
   }
 
+  public int getPosicion() { return posicion; }
+  public void setPosicion(int posicion) { this.posicion = posicion; }
+
   // Si el proyecto necesita getReceived() para mensajes:
   // private List<Message> received = new ArrayList<>();
   // public List<Message> getReceived() { return received; }
