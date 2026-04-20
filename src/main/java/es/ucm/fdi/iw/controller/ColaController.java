@@ -1,5 +1,6 @@
 package es.ucm.fdi.iw.controller;
 
+import java.io.*;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -15,14 +16,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import es.ucm.fdi.iw.LocalData;
 import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.User;
@@ -32,11 +40,16 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class ColaController {
 
+    private static final Logger log = LogManager.getLogger(ColaController.class);
+
     @Autowired
     private ColaRepository colaRepository;
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private LocalData localData;
 
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
@@ -57,9 +70,23 @@ public class ColaController {
     }
 
     @PostMapping("/panelAdmin/colas/editar/{id}")
-    public String actualizarCola(@PathVariable Long id, Cola cola) {
+    public String actualizarCola(@PathVariable Long id, Cola cola,
+            @RequestParam(value = "imagen", required = false) MultipartFile imagen) throws IOException {
         cola.setId(id);
         colaRepository.save(cola);
+
+        if (imagen != null && !imagen.isEmpty()) {
+            log.info("Subiendo imagen para cola {}, tamaño: {} bytes", id, imagen.getSize());
+            File f = localData.getFile("cola", id + ".jpg");
+            log.info("Guardando en: {}", f.getAbsolutePath());
+            try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(f))) {
+                stream.write(imagen.getBytes());
+                log.info("Imagen guardada correctamente");
+            }
+        } else {
+            log.warn("No se recibió imagen o estaba vacía. imagen={}", imagen);
+        }
+
         return "redirect:/panelAdmin";
     }
 
@@ -223,5 +250,27 @@ public class ColaController {
             "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/colas/{id}/imagen")
+    @ResponseBody
+    public String subirImagenCola(@RequestParam("imagen") MultipartFile imagen,
+            @PathVariable long id) throws IOException {
+
+        File f = localData.getFile("cola", id + ".jpg");
+        try (BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(f))) {
+            stream.write(imagen.getBytes());
+        }
+        return "{\"status\":\"ok\"}";
+    }
+
+    @GetMapping("/colas/{id}/imagen")
+    public StreamingResponseBody getImagenCola(@PathVariable long id) throws IOException {
+        File f = localData.getFile("cola", id + ".jpg");
+        InputStream in = new BufferedInputStream(
+            f.exists() ? new FileInputStream(f) : 
+            UserController.class.getClassLoader().getResourceAsStream("static/img/default-bg.jpg")
+        );
+        return os -> FileCopyUtils.copy(in, os);
     }
 }

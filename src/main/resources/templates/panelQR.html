@@ -14,7 +14,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
 
 </head>
-<body class="d-flex flex-column h-100">
+<body class="d-flex flex-column h-100" 
+      th:style="'background-image: url(/colas/' + ${cola.id} + '/imagen); background-size: cover; background-position: center;'">
 
 <!-- Cabecera Thymeleaf -->
 <header th:replace="~{fragments/nav.html :: nav}"></header>
