@@ -60,15 +60,15 @@ public class AdminController {
     }
 
     // GET principal que carga colas y usuarios
-    @GetMapping({"", "/"})
+    @GetMapping({ "", "/" })
     public String panelAdmin(Model model, HttpSession session) {
         log.info("Admin entra a panelAdmin");
         List<Cola> colas = colaRepository.findAll();
         List<User> users = userRepository.findAll();
 
         List<User> pacientes = users.stream()
-            .filter(u -> u.hasRole(User.Role.PACIENTE))
-            .collect(Collectors.toList());
+                .filter(u -> u.hasRole(User.Role.PACIENTE))
+                .collect(Collectors.toList());
 
         // Mapa pacienteId -> Cola
         Map<Long, Cola> colaDelPaciente = new java.util.HashMap<>();
@@ -161,6 +161,32 @@ public class AdminController {
         return "redirect:/panelAdmin/";
     }
 
+    // Eliminar Pacientes
+    @PostMapping("/pacientes/eliminar/{id}")
+    public String eliminarPacientes(@PathVariable Long id) {
+
+        User paciente = userRepository.findById(id).orElse(null);
+
+        if (paciente != null) {
+
+            List<Cola> colas = colaRepository.findAll();
+
+            for (Cola cola : colas) {
+                if (cola.getListaClientes() != null &&
+                        cola.getListaClientes().contains(paciente)) {
+
+                    cola.getListaClientes().remove(paciente);
+                    Cola.adelantarPacientesDetrasUno(cola, paciente.getPosicion());
+                    colaRepository.save(cola);
+                }
+            }
+
+            userRepository.delete(paciente);
+        }
+
+        return "redirect:/panelAdmin/";
+    }
+
     // Método opcional para poblar DB con datos de prueba
     @RequestMapping("/populate")
     @ResponseBody
@@ -184,8 +210,10 @@ public class AdminController {
             u.setFirstName(Lorem.nombreAlAzar());
             u.setLastName(Lorem.apellidoAlAzar());
             entityManager.persist(u);
-            if (i % 2 == 0) g1.getMembers().add(u);
-            if (i % 3 == 0) g2.getMembers().add(u);
+            if (i % 2 == 0)
+                g1.getMembers().add(u);
+            if (i % 3 == 0)
+                g2.getMembers().add(u);
         }
         return "{\"admin\": \"populated\"}";
     }

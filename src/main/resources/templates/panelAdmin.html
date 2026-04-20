@@ -206,17 +206,18 @@
                         <thead class="table-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Nombre</th>
+                            <!-- <th>Nombre</th> -->
                             <th>Usuario</th>
                             <th>ID Cola</th>
                             <th>Nombre Cola</th>
+                            <th>Posicion</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                         </thead>
                         <tbody>
                             <tr th:each="paciente : ${pacientes}">
                                 <td th:text="${paciente.id}">1</td>
-                                <td th:text="${paciente.firstName + ' ' + paciente.lastName}">Juan García</td>
+                                <!-- <td th:text="${paciente.firstName + ' ' + paciente.lastName}">Juan García</td> -->
                                 <td th:text="${paciente.username}">jgarcia</td>
                                 <td>
                                     <span th:if="${colaDelPaciente[paciente.id] != null}"
@@ -230,9 +231,15 @@
                                     <span th:unless="${colaDelPaciente[paciente.id] != null}"
                                           class="text-muted">Sin cola</span>
                                 </td>
+                                <td>
+                                    <span th:if="${colaDelPaciente[paciente.id] != null}"
+                                          th:text="${paciente.Posicion}">Cola General</span>
+                                    <span th:unless="${colaDelPaciente[paciente.id] != null}"
+                                          class="text-muted">Sin cola</span>
+                                </td>
                                 <td class="text-center">
                                     <a th:href="@{/user/modificar_paciente/{id}(id=${paciente.id})}" class="btn btn-sm btn-warning">✏️ Editar</a>
-                                    <form th:action="@{/panelAdmin/personal/eliminar/{id}(id=${paciente.id})}" method="post" style="display:inline;">
+                                    <form th:action="@{/panelAdmin/pacientes/eliminar/{id}(id=${paciente.id})}" method="post" style="display:inline;">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                         <button type="submit"
                                                 class="btn btn-sm btn-danger"
