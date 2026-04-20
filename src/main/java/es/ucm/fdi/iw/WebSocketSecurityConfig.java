@@ -20,6 +20,7 @@ public class WebSocketSecurityConfig {
                 .simpDestMatchers("/admin/**").hasRole(User.Role.ADMIN.toString())
                 .simpSubscribeDestMatchers("/admin/**").hasRole(User.Role.ADMIN.toString())
                 .simpSubscribeDestMatchers("/topic/cola/**").authenticated()
+                //.simpSubscribeDestMatchers("/topic/cola/**").permitAll()
                 .anyMessage().authenticated();
         return messages.build();
     }

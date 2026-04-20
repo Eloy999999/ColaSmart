@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -172,6 +173,8 @@ public class ColaController {
         return ResponseEntity.ok().build();
     }
          */
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/colas/{id}/siguiente")
     @ResponseBody
@@ -197,7 +200,7 @@ public class ColaController {
         for (User u : lista) {
             u.setPosicion(u.getPosicion() - 1);
         }
-
+        
         // 3. Eliminar los de posicion -7
         Iterator<User> it = lista.iterator();
         List<User> toDelete = new ArrayList<>();
@@ -212,8 +215,12 @@ public class ColaController {
         }
 
         colaRepository.saveAndFlush(cola);
-
         userRepository.deleteAll(toDelete);
+
+        // Notifica
+        messagingTemplate.convertAndSend(
+            "/topic/cola/" + id + "/actualizar",
+            "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
 
         return ResponseEntity.ok().build();
     }

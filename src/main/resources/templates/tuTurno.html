@@ -16,6 +16,9 @@
             align-items: center;
         }
     </style>
+    <!-- Stomp -->
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
 </head>
 
 <body class="d-flex flex-column h-100">
@@ -74,7 +77,7 @@
     const mainContent = document.getElementById('main-content');
     const turnoDisplay = document.getElementById('turno-display');
 
-    const posicion = [[${user.posicion}]];
+    const posicion = /*[[${user.posicion}]]*/ 0;
 
     function mostrarTurno() {
         mainContent.style.display = 'none';
@@ -100,6 +103,46 @@
     }
 
     });
+    
+    const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+    const colaId = /*[[${cola.id}]]*/ '';
+    const userId = /*[[${user.id}]]*/ '';
+
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const stompClient = new StompJs.Client({
+        brokerURL: wsProtocol + '//' + window.location.host + '/ws',
+        reconnectDelay: 5000,
+        connectHeaders: { 'X-CSRF-TOKEN': csrfToken }
+    });
+
+    stompClient.onConnect = function () {
+        stompClient.subscribe(`/topic/cola/${colaId}/actualizar`, async function () {
+            const res = await fetch(`/colas/${colaId}/detalle`);
+            const cola = await res.json();
+
+            // Buscar la posición actualizada de este usuario
+            const yo = cola.listaClientes.find(c => c.id == userId);
+
+            if (!yo) return; // ya fue eliminado
+
+            // Actualizar posición en pantalla
+            document.querySelector('[th\\:text="${user.posicion}"]')
+                ?.closest('p')
+                ?.querySelector('span')
+                && (document.querySelector('span[th\\:text]').textContent = yo.posicion);
+
+            // Actualizar tiempo estimado
+            const spanTiempo = document.querySelectorAll('.fs-2 span')[1];
+            if (spanTiempo) spanTiempo.textContent = (cola.tiempo * yo.posicion) + ' minutos';
+
+            // Si es su turno (posicion 0), mostrar pantalla de turno
+            if (yo.posicion <= 0) {
+                mostrarTurno();
+            }
+        });
+    };
+
+    stompClient.activate();
 </script>
 
 </body>

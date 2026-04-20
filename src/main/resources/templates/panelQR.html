@@ -9,6 +9,10 @@
 
     <!-- Librería QRCode -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Stomp-->
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+
 </head>
 <body class="d-flex flex-column h-100">
 
@@ -91,6 +95,68 @@
         document.getElementById("overlay").classList.remove("d-flex");
         document.getElementById("overlay").classList.add("d-none");
     }
+</script>
+
+<script th:inline="javascript">
+    const csrfToken = /*[[${_csrf.token}]]*/ '';
+    const colaId = /*[[${cola.id}]]*/ '';
+
+    console.log('colaId:', colaId); //logs depuración
+
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const stompClient = new StompJs.Client({
+        brokerURL: wsProtocol + '//' + window.location.host + '/ws',
+        reconnectDelay: 5000,
+        connectHeaders: { 'X-CSRF-TOKEN': csrfToken }
+    });
+
+    stompClient.onConnect = function () {
+        console.log('OK panelQR STOMP conectado, cola:', colaId); //logs depuración
+
+        stompClient.subscribe(`/topic/cola/${colaId}/actualizar`, async function (msg) {
+            console.log('OK panelQR recibió mensaje:', msg.body); //logs depuración
+
+            const res = await fetch(`/colas/${colaId}/detalle`);
+            const cola = await res.json();
+
+            const ordenados = cola.listaClientes
+                .slice()
+                .sort((a, b) => a.posicion - b.posicion);
+
+            // Turno actual (posicion 0)
+            const actual = ordenados.find(c => c.posicion === 0);
+            const divTurno = document.querySelector('.fw-bold[style*="80px"]');
+            if (divTurno) {
+                divTurno.textContent = actual ? actual.username + ' - Puesto 1' : '';
+            }
+
+            // Lista de atendidos (posicion negativa)
+            const atendidos = ordenados
+                .filter(c => c.posicion < 0)
+                .sort((a, b) => b.posicion - a.posicion) // -1 primero, luego -2, etc.
+                .slice(0, 5);
+
+            const contenedor = document.querySelector('.d-flex.flex-column.gap-3 .d-flex.flex-column.gap-3');
+            if (contenedor) {
+                if (atendidos.length === 0) {
+                    contenedor.innerHTML = '<div class="p-3 bg-light rounded border" style="min-height: 60px;"></div>';
+                } else {
+                    contenedor.innerHTML = atendidos.map(c => `
+                        <div class="p-3 bg-light rounded border" style="min-height: 60px;">
+                            ${c.username} - Puesto 1
+                        </div>`).join('');
+                }
+            } else {
+                console.warn('No se encontró el contenedor de atendidos');
+            }
+        });
+    };
+
+    stompClient.onStompError = function (frame) {
+        console.error('NO OK panelQR Error STOMP:', frame); //logs depuración
+    };
+
+    stompClient.activate();
 </script>
 
 </body>
