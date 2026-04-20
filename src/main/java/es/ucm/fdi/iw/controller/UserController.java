@@ -391,20 +391,18 @@ public class UserController {
   }
 
   @PostMapping("/editar/{id}")
-  public String actualizarPersonal(@PathVariable Long id, User personal) {
+  public String actualizarPersonal(@PathVariable Long id, @ModelAttribute("personal") User personal) {
 
     // Cargar usuario existente desde la BD
     User usuarioExistente = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
 
-    // Mantener los roles del usuario existente
-    personal.setRoles(usuarioExistente.getRoles());
-
+    usuarioExistente.setTurno(personal.getTurno());
+    usuarioExistente.setLugar(personal.getLugar());
     // Guardar el usuario actualizado
-    userRepository.save(personal);
+    userRepository.save(usuarioExistente);
 
     // personal.setId(id);
-    // userRepository.save(personal);
 
     return "redirect:/panelAdmin"; // misma lógica que cola
   }
