@@ -210,6 +210,7 @@
                             <th>Usuario</th>
                             <th>ID Cola</th>
                             <th>Nombre Cola</th>
+                            <th>Sala</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                         </thead>
@@ -230,6 +231,13 @@
                                     <span th:unless="${colaDelPaciente[paciente.id] != null}"
                                           class="text-muted">Sin cola</span>
                                 </td>
+                                <td>
+                                    <span th:if="${paciente.lugar != null}"
+                                          th:text="${paciente.lugar}">Sala 3</span>
+                                    <span th:unless="${paciente.lugar != null}"
+                                          class="text-muted">-</span>
+                                </td>
+
                                 <td class="text-center">
                                     <a th:href="@{/user/modificar_paciente/{id}(id=${paciente.id})}" class="btn btn-sm btn-warning">✏️ Editar</a>
                                     <form th:action="@{/panelAdmin/personal/eliminar/{id}(id=${paciente.id})}" method="post" style="display:inline;">
