@@ -81,7 +81,7 @@
                             </li>
                             <li class="nav-item debug align-self-center" th:if="${application.debug}">
                                 <form class="d-flex" th:action="@{/login}" method="post">
-                                    <input type="hidden" name="username" value="b">
+                                    <input type="hidden" name="username" value="usertres">
                                     <input type="hidden" name="password" value="aa">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <button type="submit" class="btn btn-outline-danger btn-sm">b</button>

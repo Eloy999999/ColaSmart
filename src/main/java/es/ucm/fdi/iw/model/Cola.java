@@ -83,18 +83,18 @@ public class Cola {
   }
 
   public static int calcularSiguientePosicion(Cola c) {
-    if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
-      return 0;
-    }
-
-    int max = -1;
-
-    for (User u : c.getListaClientes()) {
-      if (u.getPosicion() != null && u.getPosicion() > max) {
-        max = u.getPosicion();
+      if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
+          return 0;
       }
-    }
 
-    return max + 1;
+      int max = -1;
+
+      for (User u : c.getListaClientes()) {
+          if (u.getPosicion() > max) {
+              max = u.getPosicion();
+          }
+      }
+
+      return max + 1;
   }
 }

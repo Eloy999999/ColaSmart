@@ -155,21 +155,21 @@
         const stompClient = new StompJs.Client({
             brokerURL: wsProtocol + '//' + window.location.host + '/ws',
             reconnectDelay: 5000,
-            debug: str => console.log('STOMP:', str),
+            debug: str => console.log('STOMP:', str), // logs depuracion
             connectHeaders: {
                 'X-CSRF-TOKEN': csrfToken
             }
         });
 
         stompClient.onConnect = function () {
-            console.log('OK STOMP conectado');
+            console.log('OK STOMP conectado'); // logs depuracion
 
             document.querySelectorAll('tr.fila-cola').forEach(fila => {
                 const id = fila.dataset.colaId;
-                console.log('OK Suscrito a /topic/cola/' + id + '/actualizar');
+                console.log('OK Suscrito a /topic/cola/' + id + '/actualizar'); // logs depuracion
 
                 stompClient.subscribe(`/topic/cola/${id}/actualizar`, async function (msg) {
-                    console.log('OK Mensaje recibido cola ' + id + ':', msg.body);
+                    console.log('OK Mensaje recibido cola ' + id + ':', msg.body); // logs depuracion
 
                     // Actualizar "N Esperando" en la tabla
                     try {
@@ -219,50 +219,71 @@
     }
 
     function renderModal(cola) {
-        document.getElementById('modal-nombre').textContent = cola.nombre;
+    document.getElementById('modal-nombre').textContent = cola.nombre;
 
-        // Turno actual
-        const turnoDiv = document.getElementById('modal-turno-actual');
-        if (cola.turnoActual) {
-            turnoDiv.innerHTML = `
-                <p class="fs-4 mb-1"><strong>Número de turno:</strong>
-                    <span class="badge bg-success fs-5">${cola.turnoActual}</span>
-                </p>
-                <p class="mb-1"><strong>Hora de inicio:</strong> ${cola.inicioTurnoActual ?? '-'}</p>
-                <p class="mb-0"><strong>Tiempo transcurrido:</strong> ${cola.minutosTurnoActual} minutos</p>`;
-        } else {
-            turnoDiv.innerHTML = '<p class="text-muted">Ninguna persona siendo atendida ahora mismo.</p>';
-        }
+    // 🔹 ordenar por posicion
+    const ordenados = cola.listaClientes
+        .slice()
+        .sort((a, b) => a.posicion - b.posicion);
 
-        // Última persona atendida
-        const ultimoDiv = document.getElementById('modal-ultimo-turno');
-        if (cola.ultimoTurno) {
-            ultimoDiv.innerHTML = `
-                <p class="mb-1"><strong>Número de turno:</strong> ${cola.ultimoTurno}</p>
-                <p class="mb-1"><strong>Hora de inicio:</strong> ${cola.inicioUltimoTurno ?? '-'}</p>
-                <p class="mb-1"><strong>Hora de fin:</strong> ${cola.finUltimoTurno ?? '-'}</p>
-                <p class="mb-0"><strong>Tiempo total:</strong> ${cola.minutosUltimoTurno} minutos</p>`;
-        } else {
-            ultimoDiv.innerHTML = '<p class="text-muted">Ninguna persona atendida aún.</p>';
-        }
+    const actual = ordenados.find(c => c.posicion === 0);
+    const espera = ordenados.filter(c => c.posicion > 0);
 
-        // Lista de espera
-        const listaDiv = document.getElementById('modal-lista-espera');
-        document.getElementById('modal-badge-espera').textContent = cola.listaClientes.length;
+    // =======================
+    // Turno actual
+    // =======================
+    const turnoDiv = document.getElementById('modal-turno-actual');
 
-        if (cola.listaClientes.length === 0) {
-            listaDiv.innerHTML = '<p class="text-muted">No hay nadie esperando.</p>';
-        } else {
-            const items = cola.listaClientes.map((c, i) => `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>${c.username}</span>
-                    ${i === 0 ? '<span class="badge bg-warning text-dark">Siguiente</span>' : '<span></span>'}
-                </li>`).join('');
-            listaDiv.innerHTML = `<ol class="list-group list-group-numbered">${items}</ol>`;
-        }
-
-        document.getElementById('btn-siguiente').disabled = cola.listaClientes.length === 0;
+    if (actual) {
+        turnoDiv.innerHTML = `
+            <p class="fs-4 mb-1"><strong>Número de turno:</strong>
+                <span class="badge bg-success fs-5">${actual.username}</span>
+            </p>
+            <p class="mb-1"><strong>Hora de inicio:</strong> ${cola.inicioTurnoActual ?? '-'}</p>
+            <p class="mb-0"><strong>Tiempo transcurrido:</strong> ${cola.minutosTurnoActual} minutos</p>
+        `;
+    } else {
+        turnoDiv.innerHTML = '<p class="text-muted">Ninguna persona siendo atendida ahora mismo.</p>';
     }
+
+    // =======================
+    // Última persona atendida
+    // =======================
+    const ultimoDiv = document.getElementById('modal-ultimo-turno');
+
+    if (cola.ultimoTurno) {
+        ultimoDiv.innerHTML = `
+            <p class="mb-1"><strong>Número de turno:</strong> ${cola.ultimoTurno}</p>
+            <p class="mb-1"><strong>Hora de inicio:</strong> ${cola.inicioUltimoTurno ?? '-'}</p>
+            <p class="mb-1"><strong>Hora de fin:</strong> ${cola.finUltimoTurno ?? '-'}</p>
+            <p class="mb-0"><strong>Tiempo total:</strong> ${cola.minutosUltimoTurno} minutos</p>
+        `;
+    } else {
+        ultimoDiv.innerHTML = '<p class="text-muted">Ninguna persona atendida aún.</p>';
+    }
+
+    // =======================
+    // Lista de espera
+    // =======================
+    const listaDiv = document.getElementById('modal-lista-espera');
+    document.getElementById('modal-badge-espera').textContent = espera.length;
+
+    if (espera.length === 0) {
+        listaDiv.innerHTML = '<p class="text-muted">No hay nadie esperando.</p>';
+    } else {
+        const items = espera.map((c) => `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>${c.username}</span>
+                <span class="badge bg-secondary">${c.posicion}</span>
+            </li>
+        `).join('');
+
+        listaDiv.innerHTML = `<ol class="list-group list-group-numbered">${items}</ol>`;
+    }
+
+    // botón siguiente
+    document.getElementById('btn-siguiente').disabled = espera.length === 0;
+}
 
     async function llamarSiguiente() {
         try {

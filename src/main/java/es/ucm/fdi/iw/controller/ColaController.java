@@ -2,7 +2,9 @@ package es.ucm.fdi.iw.controller;
 
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -10,6 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +26,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.UserRepository;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -30,6 +34,9 @@ public class ColaController {
 
     @Autowired
     private ColaRepository colaRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
@@ -132,12 +139,14 @@ public class ColaController {
         }
 
         data.put("listaClientes", cola.getListaClientes().stream()
-            .map(u -> Map.of("id", u.getId(), "username", u.getUsername()))
+            .map(u -> Map.of("id", u.getId(), "username", u.getUsername(),  "posicion", u.getPosicion()))
             .collect(Collectors.toList()));
 
         return data;
     }
 
+
+    /*
     @PostMapping("/colas/{id}/siguiente")
     @ResponseBody
     public ResponseEntity<?> llamarSiguiente(@PathVariable long id) {
@@ -145,7 +154,7 @@ public class ColaController {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         List<User> lista = cola.getListaClientes();
-        if (!lista.isEmpty()) {
+        if (!lista.isEmpty()) { 
             // Guardar el turno actual como último antes de avanzar
             if (cola.getTurnoActual() != null) {
                 cola.setUltimoTurno(cola.getTurnoActual());
@@ -160,6 +169,58 @@ public class ColaController {
 
             colaRepository.save(cola);
         }
+
+        return ResponseEntity.ok().build();
+    }
+         */
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    @PostMapping("/colas/{id}/siguiente")
+    @ResponseBody
+    public ResponseEntity<?> llamarSiguiente(@PathVariable long id) {
+
+        Cola cola = colaRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        List<User> lista = cola.getListaClientes();
+
+        // 1. Guardar el actual (posicion 0)
+        User actual = lista.stream()
+            .filter(u -> u.getPosicion() == 0)
+            .findFirst()
+            .orElse(null);
+
+        if (actual != null) {
+            cola.setUltimoTurno(actual.getUsername());
+            cola.setFinUltimoTurno(LocalTime.now());
+        }
+
+        // 2. Restar 1 a todos
+        for (User u : lista) {
+            u.setPosicion(u.getPosicion() - 1);
+        }
+        
+        // 3. Eliminar los de posicion -7
+        Iterator<User> it = lista.iterator();
+        List<User> toDelete = new ArrayList<>();
+
+        while (it.hasNext()) {
+            User u = it.next();
+
+            if (u.getPosicion() <= -7) {
+                it.remove();
+                toDelete.add(u);
+            }
+        }
+
+        colaRepository.saveAndFlush(cola);
+        userRepository.deleteAll(toDelete);
+
+        // Notifica
+        messagingTemplate.convertAndSend(
+            "/topic/cola/" + id + "/actualizar",
+            "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
 
         return ResponseEntity.ok().build();
     }
