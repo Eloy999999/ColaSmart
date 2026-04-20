@@ -40,7 +40,7 @@
                             <div th:each="user : ${atendidos}"
                                 class="p-3 bg-light rounded border"
                                 style="min-height: 60px;"
-                                th:text="${user != null} ? ${user.username} + ' - Puesto 1'">
+                                th:text="${user != null} ? ${user.username} + ' - ' + ${user.lugar} : 'Puesto ?'">
                             </div>
                         </div>
                     </div>
@@ -60,7 +60,7 @@
                 <div class="fw-bold"
                     style="font-size: 80px; color: #000;"
                     th:if="${turnoActual != null}"
-                    th:text="${turnoActual.username} + ' - Puesto 1'">
+                    th:text="${turnoActual != null} ? ${turnoActual.username} + ' - ' + (${turnoActual.lugar} != null ? ${turnoActual.lugar} : 'Puesto ?') : ''">
                 </div>
             </div>
 
@@ -128,7 +128,7 @@
             const actual = ordenados.find(c => c.posicion === 0);
             const divTurno = document.querySelector('.fw-bold[style*="80px"]');
             if (divTurno) {
-                divTurno.textContent = actual ? actual.username + ' - Puesto 1' : '';
+                divTurno.textContent = actual ? actual.username + ' - ' + (actual.lugar || 'Puesto ?') : '';
             }
 
             // Lista de atendidos (posicion negativa)

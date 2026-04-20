@@ -205,7 +205,7 @@ public class ColaController {
 
     @PostMapping("/colas/{id}/siguiente")
     @ResponseBody
-    public ResponseEntity<?> llamarSiguiente(@PathVariable long id) {
+    public ResponseEntity<?> llamarSiguiente(@PathVariable long id, @RequestParam int sala) {
 
         Cola cola = colaRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
@@ -227,6 +227,16 @@ public class ColaController {
         for (User u : lista) {
             u.setPosicion(u.getPosicion() - 1);
         }
+
+        // 2.5. El nuevo actual (posicion 0) pasa a sala
+        User nuevoActual = lista.stream()
+            .filter(u -> u.getPosicion() == 0)
+            .findFirst()
+            .orElse(null);
+
+        if (nuevoActual != null) {
+            nuevoActual.setLugar("Puesto " + sala);
+}
         
         // 3. Eliminar los de posicion -7
         Iterator<User> it = lista.iterator();
