@@ -385,8 +385,9 @@ public class UserController {
   public String mostrarModificarPaciente(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
     model.addAttribute("paciente", personal);
-    // Cola cola = colaRepository.findById(personal.getUsername).orElse(null);
-    // model.addAttribute("cola", cola);
+    
+    List<Cola> colas = colaRepository.findAll();
+    model.addAttribute("colas", colas);
     return "modificar_paciente";
   }
 
