@@ -47,8 +47,9 @@
 
                 <!-- QR dinámico -->
                 <div id="qrcode" class="mb-3 d-flex justify-content-center"></div>
-                <script type="text/javascript">
-                    new QRCode(document.getElementById("qrcode"), "http://localhost:8080/user/newQRuser");
+                <script th:inline="javascript">
+                    const url = /*[[@{/user/newQRuser}]]*/ '/user/newQRuser';
+                    new QRCode(document.getElementById("qrcode"), url);
                 </script>
 
                 <div class="fw-bold" style="font-size: 40px; letter-spacing: 2px; margin-bottom: 10px;">TURNO ACTUAL</div>
