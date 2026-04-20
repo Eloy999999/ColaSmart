@@ -391,7 +391,9 @@ public class UserController {
   }
 
   @PostMapping("/editar/{id}")
-  public String actualizarPersonal(@PathVariable Long id, @ModelAttribute("personal") User personal) {
+  public String actualizarPersonal(@PathVariable Long id,
+    @ModelAttribute("personal") User personal,
+    @RequestParam("colaId") Long colaId) {
 
     // Cargar usuario existente desde la BD
     User usuarioExistente = userRepository.findById(id)
@@ -399,8 +401,22 @@ public class UserController {
 
     usuarioExistente.setTurno(personal.getTurno());
     usuarioExistente.setLugar(personal.getLugar());
+
+    // 1. Quitar de la cola actual
+    for (Cola c : colaRepository.findAll()) {
+        c.getListaClientes().remove(usuarioExistente);
+    }
+
+    // 2. Añadir a la nueva cola
+    Cola nuevaCola = colaRepository.findById(colaId)
+        .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
+
+    nuevaCola.getListaClientes().add(usuarioExistente);
+
+
     // Guardar el usuario actualizado
     userRepository.save(usuarioExistente);
+    colaRepository.save(nuevaCola);
 
     // personal.setId(id);
 

@@ -237,6 +237,7 @@
                                     <span th:unless="${colaDelPaciente[paciente.id] != null}"
                                           class="text-muted">Sin cola</span>
                                 </td>
+
                                 <td class="text-center">
                                     <a th:href="@{/user/modificar_paciente/{id}(id=${paciente.id})}" class="btn btn-sm btn-warning">✏️ Editar</a>
                                     <form th:action="@{/panelAdmin/pacientes/eliminar/{id}(id=${paciente.id})}" method="post" style="display:inline;">

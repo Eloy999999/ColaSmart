@@ -23,24 +23,21 @@
             <div class="col-md-6">
                 <label class="form-label">Turno</label>
                 <input type="text" name="turno" class="form-control"
-                       th:value="${paciente.turno}" required>
+                       th:value="${paciente.posicion}" required>
             </div>
-
+            
             <div class="col-md-6">
-                <label class="form-label">Sala asignada</label>
-                <input type="text" name="lugar" class="form-control"
-                       th:value="${paciente.lugar}" required>
-            </div>
-
-        <!--    <div class="col-md-6">
                 <label class="form-label">Cola</label>
-                <input type="text" name="Cola" class="form-control"
-                       th:value="${paciente.lugar}" required>
+                <select name="colaId" class="form-control" required>
+                    <option value="">-- Selecciona una cola --</option>
+                    <option th:each="cola : ${colas}"
+                            th:value="${cola.id}"
+                            th:text="${cola.nombre}">
+                    </option>
+                </select>
             </div>
-        -->
-
+        
             <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
-
         </form>
     </div>
 
