@@ -61,7 +61,7 @@
                     <div id="contenedor-atendidos" class="d-flex flex-column gap-3" style="font-size: 20px;">
                         <div th:each="user : ${atendidos}"
                              class="item-atendido"
-                             th:text="${user != null} ? ${user.username} + ' - ' + ${user.lugar} : 'Puesto ?'">
+                             th:text="${user != null} ? ${user.username} + ' - ' + ${user.lugar} : ''">
                         </div>
                     </div>
                 </div>
