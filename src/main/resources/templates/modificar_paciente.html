@@ -32,7 +32,8 @@
                     <option value="">-- Selecciona una cola --</option>
                     <option th:each="cola : ${colas}"
                             th:value="${cola.id}"
-                            th:text="${cola.nombre}">
+                            th:text="${cola.nombre}"
+                            th:selected="${colaDelPaciente != null and cola.id == colaDelPaciente.id}">
                     </option>
                 </select>
             </div>

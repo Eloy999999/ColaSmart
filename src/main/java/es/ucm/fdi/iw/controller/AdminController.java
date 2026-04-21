@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import es.ucm.fdi.iw.model.Cola;
@@ -51,6 +53,9 @@ public class AdminController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     private static final Logger log = LogManager.getLogger(AdminController.class);
 
@@ -139,7 +144,6 @@ public class AdminController {
     public String crearCola(@ModelAttribute Cola nuevaCola) {
         entityManager.persist(nuevaCola);
         return "redirect:/panelAdmin?modal=listas";
-
     }
 
     // Crear nuevo personal
@@ -178,11 +182,23 @@ public class AdminController {
 
     // Eliminar personal
     @PostMapping("/personal/eliminar/{id}")
-    public String eliminarPersonal(@PathVariable Long id) {
+    public String eliminarPersonal(@PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "/panelAdmin") String redirect) {
+
         if (userRepository.existsById(id)) {
+            // Buscar en qué cola está y notificar
+            for (Cola cola : colaRepository.findAll()) {
+                boolean estaba = cola.getListaClientes().removeIf(u -> u.getId() == id);
+                if (estaba) {
+                    colaRepository.save(cola);
+                    messagingTemplate.convertAndSend(
+                            "/topic/cola/" + cola.getId() + "/actualizar",
+                            "{\"colaId\":" + cola.getId() + ", \"tipo\":\"ABANDONAR\"}");
+                }
+            }
             userRepository.deleteById(id);
         }
-        return "redirect:/panelAdmin?modal=personal";
+        return "redirect:" + redirect;
     }
 
     // Eliminar Pacientes
