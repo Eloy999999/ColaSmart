@@ -94,7 +94,12 @@
                                 <td th:text="${cola.id}">1</td>
                                 <td th:text="${cola.nombre}">Cola General</td>
                                 <td th:text="${cola.trabajadores.size()}">4</td>
-                                <td><span class="badge bg-danger" th:text="${cola.listaClientes != null ? cola.listaClientes.size() : 0}">15</span></td>
+                                <td>
+                                    <span th:if="${maxPuestoPorCola[cola.id] != null}"
+                                          class="badge bg-danger" th:text="${maxPuestoPorCola[cola.id]}">3</span>
+                                    <span th:unless="${maxPuestoPorCola[cola.id] != null}"
+                                          class="text-muted">-</span>
+                                </td>
                                 <td th:text="${cola.tiempo}">25 min</td> <!-- Añadir campo tiempo -->
                                 <td th:text="${cola.capacidad}">40</td>
                                 <td th:text="${cola.lugar}">Sala 3</td>

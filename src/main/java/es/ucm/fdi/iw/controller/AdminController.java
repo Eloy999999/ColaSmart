@@ -1,5 +1,6 @@
 package es.ucm.fdi.iw.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,10 +81,32 @@ public class AdminController {
             }
         }
 
+        // Mapa colaId -> MaxPosicion::Integer
+        Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
+
+        for (Cola cola : colas) {
+            int maxPuesto = 0;
+
+            if (cola.getListaClientes() != null) {
+                maxPuesto = cola.getListaClientes().stream()
+                        .mapToInt(User::getPosicion)
+                        .max()
+                        .orElse(0);
+            }
+
+            if (maxPuesto < 1) {
+                maxPuesto = 0;
+            }
+
+            maxPuestoPorCola.put(cola.getId(), maxPuesto);
+        }
+
         model.addAttribute("colas", colas);
         model.addAttribute("users", users);
         model.addAttribute("pacientes", pacientes);
         model.addAttribute("colaDelPaciente", colaDelPaciente);
+        model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
+
         return "panelAdmin";
     }
 
@@ -115,7 +138,8 @@ public class AdminController {
     @Transactional
     public String crearCola(@ModelAttribute Cola nuevaCola) {
         entityManager.persist(nuevaCola);
-        return "redirect:/panelAdmin?modal=listas";;
+        return "redirect:/panelAdmin?modal=listas";
+
     }
 
     // Crear nuevo personal

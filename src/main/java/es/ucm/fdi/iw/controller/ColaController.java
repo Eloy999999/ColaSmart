@@ -53,7 +53,7 @@ public class ColaController {
 
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
-        for (String name : new String[] { "u", "url", "ws", "topics"}) {
+        for (String name : new String[] { "u", "url", "ws", "topics" }) {
             model.addAttribute(name, session.getAttribute(name));
         }
     }
@@ -74,7 +74,7 @@ public class ColaController {
             @RequestParam(value = "imagen", required = false) MultipartFile imagen) throws IOException {
 
         Cola colaExistente = colaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
 
         cola.setId(id);
         cola.setAbierto(colaExistente.getAbierto());
@@ -139,7 +139,7 @@ public class ColaController {
     @ResponseBody
     public Map<String, Object> detalleCola(@PathVariable long id) {
         Cola cola = colaRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         Map<String, Object> data = new HashMap<>();
         data.put("id", cola.getId());
@@ -178,40 +178,40 @@ public class ColaController {
         }
 
         data.put("listaClientes", cola.getListaClientes().stream()
-            .map(u -> Map.of("id", u.getId(), "username", u.getUsername(),  "posicion", u.getPosicion()))
-            .collect(Collectors.toList()));
+                .map(u -> Map.of("id", u.getId(), "username", u.getUsername(), "posicion", u.getPosicion()))
+                .collect(Collectors.toList()));
 
         return data;
     }
 
-
     /*
-    @PostMapping("/colas/{id}/siguiente")
-    @ResponseBody
-    public ResponseEntity<?> llamarSiguiente(@PathVariable long id) {
-        Cola cola = colaRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        List<User> lista = cola.getListaClientes();
-        if (!lista.isEmpty()) { 
-            // Guardar el turno actual como último antes de avanzar
-            if (cola.getTurnoActual() != null) {
-                cola.setUltimoTurno(cola.getTurnoActual());
-                cola.setInicioUltimoTurno(cola.getInicioTurnoActual());
-                cola.setFinUltimoTurno(LocalTime.now());
-            }
-
-            // Avanzar al siguiente
-            User siguiente = lista.remove(0);
-            cola.setTurnoActual(siguiente.getUsername());
-            cola.setInicioTurnoActual(LocalTime.now());
-
-            colaRepository.save(cola);
-        }
-
-        return ResponseEntity.ok().build();
-    }
-         */
+     * @PostMapping("/colas/{id}/siguiente")
+     * 
+     * @ResponseBody
+     * public ResponseEntity<?> llamarSiguiente(@PathVariable long id) {
+     * Cola cola = colaRepository.findById(id)
+     * .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+     * 
+     * List<User> lista = cola.getListaClientes();
+     * if (!lista.isEmpty()) {
+     * // Guardar el turno actual como último antes de avanzar
+     * if (cola.getTurnoActual() != null) {
+     * cola.setUltimoTurno(cola.getTurnoActual());
+     * cola.setInicioUltimoTurno(cola.getInicioTurnoActual());
+     * cola.setFinUltimoTurno(LocalTime.now());
+     * }
+     * 
+     * // Avanzar al siguiente
+     * User siguiente = lista.remove(0);
+     * cola.setTurnoActual(siguiente.getUsername());
+     * cola.setInicioTurnoActual(LocalTime.now());
+     * 
+     * colaRepository.save(cola);
+     * }
+     * 
+     * return ResponseEntity.ok().build();
+     * }
+     */
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
@@ -220,15 +220,15 @@ public class ColaController {
     public ResponseEntity<?> llamarSiguiente(@PathVariable long id, @RequestParam int sala) {
 
         Cola cola = colaRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         List<User> lista = cola.getListaClientes();
 
         // 1. Guardar el actual (posicion 0)
         User actual = lista.stream()
-            .filter(u -> u.getPosicion() == 0)
-            .findFirst()
-            .orElse(null);
+                .filter(u -> u.getPosicion() == 0)
+                .findFirst()
+                .orElse(null);
 
         if (actual != null) {
             cola.setUltimoTurno(actual.getUsername());
@@ -242,34 +242,38 @@ public class ColaController {
 
         // 2.5. El nuevo actual (posicion 0) pasa a sala
         User nuevoActual = lista.stream()
-            .filter(u -> u.getPosicion() == 0)
-            .findFirst()
-            .orElse(null);
+                .filter(u -> u.getPosicion() == 0)
+                .findFirst()
+                .orElse(null);
 
         if (nuevoActual != null) {
             nuevoActual.setLugar("Puesto " + sala);
-}
-        
-        // 3. Eliminar los de posicion -7
-        Iterator<User> it = lista.iterator();
-        List<User> toDelete = new ArrayList<>();
-
-        while (it.hasNext()) {
-            User u = it.next();
-
-            if (u.getPosicion() <= -7) {
-                it.remove();
-                toDelete.add(u);
-            }
         }
 
+        // 3. Eliminar los de posicion -7
+        // Iterator<User> it = lista.iterator();
+
+        /*
+         * List<User> toDelete = new ArrayList<>();
+         * 
+         * while (it.hasNext()) {
+         * User u = it.next();
+         * 
+         * if (u.getPosicion() <= -7) {
+         * it.remove();
+         * toDelete.add(u);
+         * }
+         * }
+         * 
+         */
+
         colaRepository.saveAndFlush(cola);
-        userRepository.deleteAll(toDelete);
+        // userRepository.deleteAll(toDelete);
 
         // Notifica
         messagingTemplate.convertAndSend(
-            "/topic/cola/" + id + "/actualizar",
-            "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
+                "/topic/cola/" + id + "/actualizar",
+                "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
 
         return ResponseEntity.ok().build();
     }
@@ -290,9 +294,8 @@ public class ColaController {
     public StreamingResponseBody getImagenCola(@PathVariable long id) throws IOException {
         File f = localData.getFile("cola", id + ".jpg");
         InputStream in = new BufferedInputStream(
-            f.exists() ? new FileInputStream(f) : 
-            UserController.class.getClassLoader().getResourceAsStream("static/img/default-bg.jpg")
-        );
+                f.exists() ? new FileInputStream(f)
+                        : UserController.class.getClassLoader().getResourceAsStream("static/img/default-bg.jpg"));
         return os -> FileCopyUtils.copy(in, os);
     }
 }
