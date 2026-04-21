@@ -66,13 +66,25 @@ public class ColaController {
         } else {
             redirectAttrs.addFlashAttribute("msg", "La cola no existe");
         }
-        return "redirect:/panelAdmin";
+        return "redirect:/panelAdmin?modal=listas";
     }
 
     @PostMapping("/panelAdmin/colas/editar/{id}")
     public String actualizarCola(@PathVariable Long id, Cola cola,
             @RequestParam(value = "imagen", required = false) MultipartFile imagen) throws IOException {
+
+        Cola colaExistente = colaRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
+
         cola.setId(id);
+        cola.setAbierto(colaExistente.getAbierto());
+        cola.setListaClientes(colaExistente.getListaClientes());
+        cola.setTurnoActual(colaExistente.getTurnoActual());
+        cola.setInicioTurnoActual(colaExistente.getInicioTurnoActual());
+        cola.setUltimoTurno(colaExistente.getUltimoTurno());
+        cola.setInicioUltimoTurno(colaExistente.getInicioUltimoTurno());
+        cola.setFinUltimoTurno(colaExistente.getFinUltimoTurno());
+
         colaRepository.save(cola);
 
         if (imagen != null && !imagen.isEmpty()) {
@@ -87,7 +99,7 @@ public class ColaController {
             log.warn("No se recibió imagen o estaba vacía. imagen={}", imagen);
         }
 
-        return "redirect:/panelAdmin";
+        return "redirect:/panelAdmin?modal=listas";
     }
 
     @GetMapping("/modificar_cola/{id}")

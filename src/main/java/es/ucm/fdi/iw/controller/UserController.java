@@ -421,7 +421,7 @@ public class UserController {
 
     // personal.setId(id);
 
-    return "redirect:/panelAdmin"; // misma lógica que cola
+    return "redirect:/panelAdmin?modal=usuarios"; // misma lógica que cola
   }
 
   // ------ metodos auxiliares ------//

@@ -115,7 +115,7 @@ public class AdminController {
     @Transactional
     public String crearCola(@ModelAttribute Cola nuevaCola) {
         entityManager.persist(nuevaCola);
-        return "redirect:/panelAdmin/";
+        return "redirect:/panelAdmin?modal=listas";;
     }
 
     // Crear nuevo personal
@@ -126,7 +126,7 @@ public class AdminController {
         nuevoPersonal.setEnabled(true);
         nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
         entityManager.persist(nuevoPersonal);
-        return "redirect:/panelAdmin/";
+        return "redirect:/panelAdmin?modal=personal";
     }
 
     // Abrir/Cerrar cola
@@ -149,7 +149,7 @@ public class AdminController {
         if (colaRepository.existsById(id)) {
             colaRepository.deleteById(id);
         }
-        return "redirect:/panelAdmin/";
+        return "redirect:/panelAdmin?modal=listas";
     }
 
     // Eliminar personal
@@ -158,7 +158,7 @@ public class AdminController {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
         }
-        return "redirect:/panelAdmin/";
+        return "redirect:/panelAdmin?modal=personal";
     }
 
     // Eliminar Pacientes
@@ -184,7 +184,7 @@ public class AdminController {
             userRepository.delete(paciente);
         }
 
-        return "redirect:/panelAdmin/";
+        return "redirect:/panelAdmin?modal=usuarios";
     }
 
     // Método opcional para poblar DB con datos de prueba
