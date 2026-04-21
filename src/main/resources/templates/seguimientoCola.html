@@ -57,8 +57,14 @@
                             <td th:text="${cola.id}"></td>
                             <td th:text="${cola.nombre}"></td>
                             <td th:text="${cola.trabajadores.size()}"></td>
-                            <td><span class="badge bg-danger"
-                                th:text="${cola.listaClientes != null ? cola.listaClientes.size() : 0}"></span></td>
+                            <td>
+                                <span th:if="${cola != null and cola.id != null and maxPuestoPorCola != null and maxPuestoPorCola.get(cola.id) != null}"
+                                    class="badge bg-danger"
+                                    th:text="${maxPuestoPorCola.get(cola.id)}">3</span>
+
+                                <span th:unless="${cola != null and cola.id != null and maxPuestoPorCola != null and maxPuestoPorCola.get(cola.id) != null}"
+                                    class="text-muted">-</span>
+                            </td>
                             <td th:text="${cola.tiempo}"></td>
                             <td th:text="${cola.capacidad}"></td>
                             <td th:text="${cola.lugar}"></td>

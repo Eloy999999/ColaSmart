@@ -1,15 +1,21 @@
 package es.ucm.fdi.iw.controller;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import es.ucm.fdi.iw.LocalData;
 import es.ucm.fdi.iw.model.Cola;
@@ -111,7 +115,30 @@ public class ColaController {
 
     @GetMapping("/seguimientoCola")
     public String seguimientoCola(Model model) {
-        model.addAttribute("colas", colaRepository.findAll());
+        List<User> users = userRepository.findAll();
+        List<Cola> colas = colaRepository.findAll();
+
+        Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
+
+        for (Cola cola : colas) {
+            int maxPuesto = 0;
+
+            if (cola.getListaClientes() != null) {
+                maxPuesto = cola.getListaClientes().stream()
+                        .mapToInt(User::getPosicion)
+                        .max()
+                        .orElse(0);
+            }
+
+            if (maxPuesto < 1) {
+                maxPuesto = 0;
+            }
+
+            maxPuestoPorCola.put(cola.getId(), maxPuesto);
+        }
+
+        model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
+        model.addAttribute("colas", colas);
         return "seguimientoCola";
     }
 
