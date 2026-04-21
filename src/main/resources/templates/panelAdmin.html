@@ -283,12 +283,10 @@
     function abrirModalSinFade(id) {
         const modalEl = document.getElementById(id);
         modalEl.classList.remove('fade');
-        setTimeout(() => {
-            new bootstrap.Modal(modalEl).show();
-            modalEl.addEventListener('hidden.bs.modal', () => {
-                modalEl.classList.add('fade');
-            }, { once: true });
-        }, 50);
+        new bootstrap.Modal(modalEl).show();
+        modalEl.addEventListener('hidden.bs.modal', () => {
+            modalEl.classList.add('fade');
+        }, { once: true });
     }
 </script>
 
