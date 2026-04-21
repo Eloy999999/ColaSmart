@@ -388,6 +388,12 @@ public class UserController {
     
     List<Cola> colas = colaRepository.findAll();
     model.addAttribute("colas", colas);
+
+    Cola colaDelPaciente = colaRepository.findAll().stream()
+        .filter(c -> c.getListaClientes().contains(personal))
+        .findFirst()
+        .orElse(null);
+    model.addAttribute("colaDelPaciente", colaDelPaciente);
     return "modificar_paciente";
   }
 
