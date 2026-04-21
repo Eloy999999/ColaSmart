@@ -230,8 +230,11 @@ public class ColaController {
                 .findFirst()
                 .orElse(null);
 
+        LocalTime inicioActual = cola.getInicioTurnoActual(); // 👈 guardar copia segura
+
         if (actual != null) {
             cola.setUltimoTurno(actual.getUsername());
+            cola.setInicioUltimoTurno(inicioActual);
             cola.setFinUltimoTurno(LocalTime.now());
         }
 
@@ -248,6 +251,8 @@ public class ColaController {
 
         if (nuevoActual != null) {
             nuevoActual.setLugar("Puesto " + sala);
+
+            cola.setInicioTurnoActual(LocalTime.now());
         }
 
         // 3. Eliminar los de posicion -7
