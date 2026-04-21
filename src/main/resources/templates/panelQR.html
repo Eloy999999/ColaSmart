@@ -89,32 +89,9 @@
     </div>
 </main>
 
-<!-- BOTÓN PAUSA -->
-<button class="btn btn-dark position-fixed bottom-0 start-0 m-3" onclick="mostrarPausa()">Pausa</button>
-
 <div class="text-center my-4">
     <a th:href="@{/user/newQRuser}" class="btn btn-primary btn-lg">Escanear QR</a>
 </div>
-
-<!-- OVERLAY -->
-<div class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center flex-column text-center bg-light"
-     id="overlay" style="z-index: 9999;">
-    <div style="font-size: 60px; letter-spacing: 8px; font-weight: 300; margin-bottom: 20px;">VOLVEMOS EN</div>
-    <div style="font-size: 180px; font-weight: 900; line-height: 1;">5</div>
-    <div style="font-size: 50px; letter-spacing: 6px; margin-top: 10px;">MINUTOS</div>
-    <button class="btn btn-dark mt-3" onclick="ocultarPausa()">Volver</button>
-</div>
-
-<script>
-    function mostrarPausa() {
-        document.getElementById("overlay").classList.remove("d-none");
-        document.getElementById("overlay").classList.add("d-flex");
-    }
-    function ocultarPausa() {
-        document.getElementById("overlay").classList.remove("d-flex");
-        document.getElementById("overlay").classList.add("d-none");
-    }
-</script>
 
 <script th:inline="javascript">
     const csrfToken = /*[[${_csrf.token}]]*/ '';
