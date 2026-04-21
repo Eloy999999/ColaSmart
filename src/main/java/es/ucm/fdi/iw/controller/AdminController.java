@@ -115,7 +115,7 @@ public class AdminController {
     @Transactional
     public String crearCola(@ModelAttribute Cola nuevaCola) {
         entityManager.persist(nuevaCola);
-        return "redirect:/panelAdmin?modal=listas";;
+        return "redirect:/panelAdmin?modal=listas";
     }
 
     // Crear nuevo personal
