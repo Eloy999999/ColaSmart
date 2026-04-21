@@ -378,6 +378,15 @@ public class UserController {
   public String mostrarModificarPersonal(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
     model.addAttribute("personal", personal);
+
+    List<Cola> colas = colaRepository.findAll();
+    model.addAttribute("colas", colas);
+
+    Cola colaDelPaciente = colaRepository.findAll().stream()
+        .filter(c -> c.getListaClientes().contains(personal))
+        .findFirst()
+        .orElse(null);
+    model.addAttribute("colaDelPaciente", colaDelPaciente);
     return "modificar_personal";
   }
 
@@ -397,8 +406,8 @@ public class UserController {
     return "modificar_paciente";
   }
 
-  @PostMapping("/editar/{id}")
-  public String actualizarPersonal(@PathVariable Long id,
+  @PostMapping("/editarPaciente/{id}")
+  public String actualizarPaciente(@PathVariable Long id,
     @ModelAttribute("personal") User personal,
     @RequestParam("colaId") Long colaId) {
 
@@ -427,7 +436,42 @@ public class UserController {
 
     // personal.setId(id);
 
-    return "redirect:/panelAdmin?modal=usuarios"; // misma lógica que cola
+    return "redirect:/panelAdmin?modal=usuarios";
+  }
+
+  @PostMapping("/editarPersonal/{id}")
+  public String actualizarPersonal(@PathVariable Long id,
+    @ModelAttribute("personal") User personal,
+    @RequestParam(required = false) List<Long> colasId) {
+
+    // Cargar usuario existente desde la BD
+    User usuarioExistente = userRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
+
+    usuarioExistente.setTurno(personal.getTurno());
+    usuarioExistente.setLugar(personal.getLugar());
+
+    // 1. quitarlo de todas las colas actuales
+    for (Cola c : colaRepository.findAll()) {
+        c.getListaClientes().remove(usuarioExistente);
+        colaRepository.save(c);
+    }
+
+    // 2. añadirlo a todas las colas seleccionadas
+    if (colasId != null) {
+        for (Long colaId : colasId) {
+            Cola cola = colaRepository.findById(colaId)
+                .orElseThrow(() -> new RuntimeException("Cola no encontrada: " + colaId));
+
+            cola.getListaClientes().add(usuarioExistente);
+            colaRepository.save(cola);
+        }
+    }
+
+    // Guardar el usuario actualizado
+    userRepository.save(usuarioExistente);
+
+    return "redirect:/panelAdmin?modal=personal";
   }
 
   // ------ metodos auxiliares ------//
