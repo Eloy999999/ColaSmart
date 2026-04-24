@@ -14,7 +14,7 @@
         <h1>Modificar paciente con id <span th:text="${paciente.id}"></span></h1>
 
         <form class="row g-3 mt-4"
-              th:action="@{/user/editar/{id}(id=${paciente.id})}"
+              th:action="@{/user/editarPaciente/{id}(id=${paciente.id})}"
               method="post">
 
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -23,23 +23,22 @@
             <div class="col-md-6">
                 <label class="form-label">Turno</label>
                 <input type="text" name="turno" class="form-control"
-                       th:value="${paciente.turno}" required>
+                       th:value="${paciente.posicion}" required>
             </div>
-
-            <div class="col-md-6">
-                <label class="form-label">Sala asignada</label>
-                <input type="text" name="Sala asignada" class="form-control"
-                       th:value="${paciente.lugar}" required>
-            </div>
-
+            
             <div class="col-md-6">
                 <label class="form-label">Cola</label>
-                <input type="text" name="Cola" class="form-control"
-                       th:value="${paciente.lugar}" required>
+                <select name="colaId" class="form-control" required>
+                    <option value="">-- Selecciona una cola --</option>
+                    <option th:each="cola : ${colas}"
+                            th:value="${cola.id}"
+                            th:text="${cola.nombre}"
+                            th:selected="${colaDelPaciente != null and cola.id == colaDelPaciente.id}">
+                    </option>
+                </select>
             </div>
-
+        
             <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
-
         </form>
     </div>
 

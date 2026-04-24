@@ -378,6 +378,15 @@ public class UserController {
   public String mostrarModificarPersonal(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
     model.addAttribute("personal", personal);
+
+    List<Cola> colas = colaRepository.findAll();
+    model.addAttribute("colas", colas);
+
+    Cola colaDelPaciente = colaRepository.findAll().stream()
+        .filter(c -> c.getListaClientes().contains(personal))
+        .findFirst()
+        .orElse(null);
+    model.addAttribute("colaDelPaciente", colaDelPaciente);
     return "modificar_personal";
   }
 
@@ -385,28 +394,84 @@ public class UserController {
   public String mostrarModificarPaciente(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
     model.addAttribute("paciente", personal);
-    // Cola cola = colaRepository.findById(personal.getUsername).orElse(null);
-    // model.addAttribute("cola", cola);
+    
+    List<Cola> colas = colaRepository.findAll();
+    model.addAttribute("colas", colas);
+
+    Cola colaDelPaciente = colaRepository.findAll().stream()
+        .filter(c -> c.getListaClientes().contains(personal))
+        .findFirst()
+        .orElse(null);
+    model.addAttribute("colaDelPaciente", colaDelPaciente);
     return "modificar_paciente";
   }
 
-  @PostMapping("/editar/{id}")
-  public String actualizarPersonal(@PathVariable Long id, User personal) {
+  @PostMapping("/editarPaciente/{id}")
+  public String actualizarPaciente(@PathVariable Long id,
+    @ModelAttribute("personal") User personal,
+    @RequestParam("colaId") Long colaId) {
 
     // Cargar usuario existente desde la BD
     User usuarioExistente = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
 
-    // Mantener los roles del usuario existente
-    personal.setRoles(usuarioExistente.getRoles());
+    usuarioExistente.setTurno(personal.getTurno());
+    usuarioExistente.setLugar(personal.getLugar());
+
+    // 1. Quitar de la cola actual
+    for (Cola c : colaRepository.findAll()) {
+        c.getListaClientes().remove(usuarioExistente);
+    }
+
+    // 2. Añadir a la nueva cola
+    Cola nuevaCola = colaRepository.findById(colaId)
+        .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
+
+    nuevaCola.getListaClientes().add(usuarioExistente);
+
 
     // Guardar el usuario actualizado
-    userRepository.save(personal);
+    userRepository.save(usuarioExistente);
+    colaRepository.save(nuevaCola);
 
     // personal.setId(id);
-    // userRepository.save(personal);
 
-    return "redirect:/panelAdmin"; // misma lógica que cola
+    return "redirect:/panelAdmin?modal=usuarios";
+  }
+
+  @PostMapping("/editarPersonal/{id}")
+  public String actualizarPersonal(@PathVariable Long id,
+    @ModelAttribute("personal") User personal,
+    @RequestParam(required = false) List<Long> colasId) {
+
+    // Cargar usuario existente desde la BD
+    User usuarioExistente = userRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
+
+    usuarioExistente.setTurno(personal.getTurno());
+    usuarioExistente.setLugar(personal.getLugar());
+
+    // 1. quitarlo de todas las colas actuales
+    for (Cola c : colaRepository.findAll()) {
+        c.getListaClientes().remove(usuarioExistente);
+        colaRepository.save(c);
+    }
+
+    // 2. añadirlo a todas las colas seleccionadas
+    if (colasId != null) {
+        for (Long colaId : colasId) {
+            Cola cola = colaRepository.findById(colaId)
+                .orElseThrow(() -> new RuntimeException("Cola no encontrada: " + colaId));
+
+            cola.getListaClientes().add(usuarioExistente);
+            colaRepository.save(cola);
+        }
+    }
+
+    // Guardar el usuario actualizado
+    userRepository.save(usuarioExistente);
+
+    return "redirect:/panelAdmin?modal=personal";
   }
 
   // ------ metodos auxiliares ------//

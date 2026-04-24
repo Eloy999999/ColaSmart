@@ -86,18 +86,30 @@ public class Cola {
   }
 
   public static int calcularSiguientePosicion(Cola c) {
-      if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
-          return 1;
+    if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
+      return 0;
+    }
+
+    int max = -1;
+
+    for (User u : c.getListaClientes()) {
+      if (u.getPosicion() > max) {
+        max = u.getPosicion();
       }
+    }
 
-      int max = 0;
+    return max + 1;
+  }
 
-      for (User u : c.getListaClientes()) {
-          if (u.getPosicion() > max) {
-              max = u.getPosicion();
-          }
+  public static void adelantarPacientesDetrasUno(Cola c, int pos) {
+    if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
+      return;
+    }
+
+    for (User u : c.getListaClientes()) {
+      if (u.getPosicion() > pos) {
+        u.setPosicion(u.getPosicion() - 1);
       }
-
-      return max + 1;
+    }
   }
 }

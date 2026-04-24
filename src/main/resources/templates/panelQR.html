@@ -2,53 +2,75 @@
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:replace="~{fragments/head :: header}" />
-    <title>Panel QR</title> <!-- antiguo vista 1 -->
+    <title>Panel QR</title>
 
-    <!-- Bootstrap (para tipografía y estilos) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Librería QRCode -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <!-- Stomp-->
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
 
+    <style>
+        .panel-card {
+            background: rgba(255, 255, 255, 0.75);
+            color: #1a1a1a;
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.9);
+        }
+        .panel-card h1, .panel-card h2, .panel-card div, .panel-card p {
+            color: #1a1a1a !important;
+        }
+        .titulo-cola {
+            background: rgba(255, 255, 255, 0.75);
+            color: #1a1a1a !important;
+            border-radius: 16px;
+            padding: 0.5rem 2rem;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            display: inline-block;
+        }
+        .item-atendido {
+            min-height: 60px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+    </style>
 </head>
-<body class="d-flex flex-column h-100">
 
-<!-- Cabecera Thymeleaf -->
+<body class="d-flex flex-column h-100"
+      th:style="'background-image: url(/colas/' + ${cola.id} + '/imagen); background-size: cover; background-position: center;'">
+
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <main class="flex-shrink-0 mt-4">
-    <!-- Nombre de la cola arriba como titulo-->
+
     <div class="container text-center mt-4">
-        <h1 class="fw-bold" style="font-size: 60px; letter-spacing: 4px;"
-            th:text="'Cola ' + ${cola.nombre}">
-            Cola
-        </h1>
+        <h1 class="fw-bold titulo-cola" style="font-size: 60px; letter-spacing: 4px;"
+            th:text="'' + ${cola.nombre}">Cola</h1>
     </div>
-    <div class="container">
-        <div class="row">
+
+    <div class="container mt-4">
+        <div class="row g-4">
 
             <!-- LADO IZQUIERDO: TURNOS LLAMADOS -->
             <div class="col-md-6">
-                <div class="turnos-llamados text-center mb-4">
+                <div class="panel-card text-center">
                     <h2 class="fw-bold mb-4" style="font-size: 40px;">TURNOS LLAMADOS</h2>
-                    <div class="d-flex flex-column gap-3" style="font-size: 20px;">
-                        <div class="d-flex flex-column gap-3" style="font-size: 20px;">
-                            <div th:each="user : ${atendidos}"
-                                class="p-3 bg-light rounded border"
-                                style="min-height: 60px;"
-                                th:text="${user != null} ? ${user.username} + ' - Puesto 1'">
-                            </div>
+                    <div id="contenedor-atendidos" class="d-flex flex-column gap-3" style="font-size: 20px;">
+                        <div th:each="user : ${atendidos}"
+                             class="item-atendido"
+                             th:text="${user != null} ? ${user.username} + ' - ' + ${user.lugar} : ''">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- LADO DERECHO: ESCANEAR QR Y TURNO ACTUAL -->
-            <div class="col-md-6 text-center">
-                <div class="mb-3 fw-bold" style="font-size: 40px;">ESCANEE EL QR</div>
+            <!-- LADO DERECHO: QR Y TURNO ACTUAL -->
+            <div class="col-md-6">
+                <div class="panel-card text-center">
+                    <div class="fw-bold mb-3" style="font-size: 40px;">ESCANEE EL QR</div>
 
                 <!-- QR dinámico -->
                 <div id="qrcode" class="mb-3 d-flex justify-content-center" th:title="${'https://vm044.containers.fdi.ucm.es/tuTurno'}"></div>
@@ -57,10 +79,11 @@
                     new QRCode(document.getElementById("qrcode"), url);
                 </script>
 
-                <div class="fw-bold"
-                    style="font-size: 80px; color: #000;"
-                    th:if="${turnoActual != null}"
-                    th:text="${turnoActual.username} + ' - Puesto 1'">
+                    <div id="turno-actual" class="fw-bold mt-3"
+                         style="font-size: 80px;"
+                         th:if="${turnoActual != null}"
+                         th:text="${turnoActual.username} + ' - ' + (${turnoActual.lugar} != null ? ${turnoActual.lugar} : 'Puesto ?')">
+                    </div>
                 </div>
             </div>
 
@@ -68,41 +91,17 @@
     </div>
 </main>
 
-<!-- BOTÓN PAUSA -->
-<button class="btn btn-dark position-fixed bottom-0 start-0 m-3" onclick="mostrarPausa()">Pausa</button>
-
-
 <div class="text-center my-4">
     <a th:href="@{/user/newQRuser(token=${cola.qrToken})}" class="btn btn-primary btn-lg">
         Escanear QR
     </a>
 </div>
 
-<!-- OVERLAY -->
-<div class="position-fixed top-0 start-0 w-100 h-100 d-none justify-content-center align-items-center flex-column text-center bg-light" id="overlay" style="z-index: 9999;">
-    <div style="font-size: 60px; letter-spacing: 8px; font-weight: 300; margin-bottom: 20px;">VOLVEMOS EN</div>
-    <div style="font-size: 180px; font-weight: 900; line-height: 1;">5</div>
-    <div style="font-size: 50px; letter-spacing: 6px; margin-top: 10px;">MINUTOS</div>
-    <button class="btn btn-dark mt-3" onclick="ocultarPausa()">Volver</button>
-</div>
-
-<script>
-    function mostrarPausa() {
-        document.getElementById("overlay").classList.remove("d-none");
-        document.getElementById("overlay").classList.add("d-flex");
-    }
-
-    function ocultarPausa() {
-        document.getElementById("overlay").classList.remove("d-flex");
-        document.getElementById("overlay").classList.add("d-none");
-    }
-</script>
-
 <script th:inline="javascript">
     const csrfToken = /*[[${_csrf.token}]]*/ '';
     const colaId = /*[[${cola.id}]]*/ '';
 
-    console.log('colaId:', colaId); //logs depuración
+    console.log('colaId:', colaId);
 
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const stompClient = new StompJs.Client({
@@ -112,10 +111,10 @@
     });
 
     stompClient.onConnect = function () {
-        console.log('OK panelQR STOMP conectado, cola:', colaId); //logs depuración
+        console.log('OK panelQR STOMP conectado, cola:', colaId);
 
         stompClient.subscribe(`/topic/cola/${colaId}/actualizar`, async function (msg) {
-            console.log('OK panelQR recibió mensaje:', msg.body); //logs depuración
+            console.log('OK panelQR recibió mensaje:', msg.body);
 
             const res = await fetch(`/colas/${colaId}/detalle`);
             const cola = await res.json();
@@ -126,35 +125,35 @@
 
             // Turno actual (posicion 0)
             const actual = ordenados.find(c => c.posicion === 0);
-            const divTurno = document.querySelector('.fw-bold[style*="80px"]');
+            const divTurno = document.getElementById('turno-actual');
             if (divTurno) {
-                divTurno.textContent = actual ? actual.username + ' - Puesto 1' : '';
+                divTurno.textContent = actual
+                    ? actual.username + ' - ' + (actual.lugar || 'Puesto ?')
+                    : '';
             }
 
             // Lista de atendidos (posicion negativa)
             const atendidos = ordenados
                 .filter(c => c.posicion < 0)
-                .sort((a, b) => b.posicion - a.posicion) // -1 primero, luego -2, etc.
+                .sort((a, b) => b.posicion - a.posicion)
                 .slice(0, 5);
 
-            const contenedor = document.querySelector('.d-flex.flex-column.gap-3 .d-flex.flex-column.gap-3');
+            const contenedor = document.getElementById('contenedor-atendidos');
             if (contenedor) {
                 if (atendidos.length === 0) {
-                    contenedor.innerHTML = '<div class="p-3 bg-light rounded border" style="min-height: 60px;"></div>';
+                    contenedor.innerHTML = '<div class="item-atendido"></div>';
                 } else {
                     contenedor.innerHTML = atendidos.map(c => `
-                        <div class="p-3 bg-light rounded border" style="min-height: 60px;">
-                            ${c.username} - Puesto 1
+                        <div class="item-atendido">
+                            ${c.username} - ${c.lugar || 'Puesto ?'}
                         </div>`).join('');
                 }
-            } else {
-                console.warn('No se encontró el contenedor de atendidos');
             }
         });
     };
 
     stompClient.onStompError = function (frame) {
-        console.error('NO OK panelQR Error STOMP:', frame); //logs depuración
+        console.error('NO OK panelQR Error STOMP:', frame);
     };
 
     stompClient.activate();

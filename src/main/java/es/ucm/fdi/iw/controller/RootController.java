@@ -90,7 +90,7 @@ public class RootController {
 
         Cola cola = (Cola) session.getAttribute("colaTemporal");
         User user = (User) session.getAttribute("usuarioTemporal");
-        int posicion = cola.getListaClientes().indexOf(user) + 1;
+        Integer posicion = user.getPosicion();
         model.addAttribute("posicion", posicion);
         model.addAttribute("cola", cola);
         model.addAttribute("user", user);

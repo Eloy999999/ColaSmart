@@ -1,5 +1,6 @@
 package es.ucm.fdi.iw.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -7,6 +8,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import es.ucm.fdi.iw.model.Cola;
@@ -51,6 +54,9 @@ public class AdminController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     private static final Logger log = LogManager.getLogger(AdminController.class);
 
     // Popula datos comunes
@@ -60,15 +66,15 @@ public class AdminController {
     }
 
     // GET principal que carga colas y usuarios
-    @GetMapping({"", "/"})
+    @GetMapping({ "", "/" })
     public String panelAdmin(Model model, HttpSession session) {
         log.info("Admin entra a panelAdmin");
         List<Cola> colas = colaRepository.findAll();
         List<User> users = userRepository.findAll();
 
         List<User> pacientes = users.stream()
-            .filter(u -> u.hasRole(User.Role.PACIENTE))
-            .collect(Collectors.toList());
+                .filter(u -> u.hasRole(User.Role.PACIENTE))
+                .collect(Collectors.toList());
 
         // Mapa pacienteId -> Cola
         Map<Long, Cola> colaDelPaciente = new java.util.HashMap<>();
@@ -80,10 +86,32 @@ public class AdminController {
             }
         }
 
+        // Mapa colaId -> MaxPosicion::Integer
+        Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
+
+        for (Cola cola : colas) {
+            int maxPuesto = 0;
+
+            if (cola.getListaClientes() != null) {
+                maxPuesto = cola.getListaClientes().stream()
+                        .mapToInt(User::getPosicion)
+                        .max()
+                        .orElse(0);
+            }
+
+            if (maxPuesto < 1) {
+                maxPuesto = 0;
+            }
+
+            maxPuestoPorCola.put(cola.getId(), maxPuesto);
+        }
+
         model.addAttribute("colas", colas);
         model.addAttribute("users", users);
         model.addAttribute("pacientes", pacientes);
         model.addAttribute("colaDelPaciente", colaDelPaciente);
+        model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
+
         return "panelAdmin";
     }
 
@@ -116,7 +144,7 @@ public class AdminController {
     public String crearCola(@ModelAttribute Cola nuevaCola) {
         nuevaCola.setQrToken(java.util.UUID.randomUUID().toString());
         entityManager.persist(nuevaCola);
-        return "redirect:/panelAdmin/";
+        return "redirect:/panelAdmin?modal=listas";
     }
 
     // Crear nuevo personal
@@ -127,7 +155,7 @@ public class AdminController {
         nuevoPersonal.setEnabled(true);
         nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
         entityManager.persist(nuevoPersonal);
-        return "redirect:/panelAdmin/";
+        return "redirect:/panelAdmin?modal=personal";
     }
 
     // Abrir/Cerrar cola
@@ -150,16 +178,54 @@ public class AdminController {
         if (colaRepository.existsById(id)) {
             colaRepository.deleteById(id);
         }
-        return "redirect:/panelAdmin/";
+        return "redirect:/panelAdmin?modal=listas";
     }
 
     // Eliminar personal
     @PostMapping("/personal/eliminar/{id}")
-    public String eliminarPersonal(@PathVariable Long id) {
+    public String eliminarPersonal(@PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "/panelAdmin") String redirect) {
+
         if (userRepository.existsById(id)) {
+            // Buscar en qué cola está y notificar
+            for (Cola cola : colaRepository.findAll()) {
+                boolean estaba = cola.getListaClientes().removeIf(u -> u.getId() == id);
+                if (estaba) {
+                    colaRepository.save(cola);
+                    messagingTemplate.convertAndSend(
+                            "/topic/cola/" + cola.getId() + "/actualizar",
+                            "{\"colaId\":" + cola.getId() + ", \"tipo\":\"ABANDONAR\"}");
+                }
+            }
             userRepository.deleteById(id);
         }
-        return "redirect:/panelAdmin/";
+        return "redirect:" + redirect;
+    }
+
+    // Eliminar Pacientes
+    @PostMapping("/pacientes/eliminar/{id}")
+    public String eliminarPacientes(@PathVariable Long id) {
+
+        User paciente = userRepository.findById(id).orElse(null);
+
+        if (paciente != null) {
+
+            List<Cola> colas = colaRepository.findAll();
+
+            for (Cola cola : colas) {
+                if (cola.getListaClientes() != null &&
+                        cola.getListaClientes().contains(paciente)) {
+
+                    cola.getListaClientes().remove(paciente);
+                    Cola.adelantarPacientesDetrasUno(cola, paciente.getPosicion());
+                    colaRepository.save(cola);
+                }
+            }
+
+            userRepository.delete(paciente);
+        }
+
+        return "redirect:/panelAdmin?modal=usuarios";
     }
 
     // Método opcional para poblar DB con datos de prueba
@@ -185,8 +251,10 @@ public class AdminController {
             u.setFirstName(Lorem.nombreAlAzar());
             u.setLastName(Lorem.apellidoAlAzar());
             entityManager.persist(u);
-            if (i % 2 == 0) g1.getMembers().add(u);
-            if (i % 3 == 0) g2.getMembers().add(u);
+            if (i % 2 == 0)
+                g1.getMembers().add(u);
+            if (i % 3 == 0)
+                g2.getMembers().add(u);
         }
         return "{\"admin\": \"populated\"}";
     }
