@@ -114,6 +114,7 @@ public class AdminController {
     @PostMapping("/colas")
     @Transactional
     public String crearCola(@ModelAttribute Cola nuevaCola) {
+        nuevaCola.setQrToken(java.util.UUID.randomUUID().toString());
         entityManager.persist(nuevaCola);
         return "redirect:/panelAdmin/";
     }
@@ -188,6 +189,21 @@ public class AdminController {
             if (i % 3 == 0) g2.getMembers().add(u);
         }
         return "{\"admin\": \"populated\"}";
+    }
+
+    @GetMapping("/colas/inicializar-tokens")
+    @Transactional
+    @ResponseBody
+    public String inicializarTokensColas() {
+        List<Cola> colas = colaRepository.findAll();
+
+        for (Cola cola : colas) {
+            if (cola.getQrToken() == null || cola.getQrToken().isBlank()) {
+                cola.setQrToken(java.util.UUID.randomUUID().toString());
+            }
+        }
+
+        return "Tokens inicializados correctamente";
     }
 
 }

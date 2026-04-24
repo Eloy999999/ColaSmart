@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,7 +19,6 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 /**
  * A group of users, with an associated chat.
  */
@@ -44,6 +44,9 @@ public class Cola {
 
   private String nombre;
   private int capacidad;
+
+  @Column(unique = true)
+  private String qrToken;
 
   @ManyToOne
   @JoinColumn(name = "encargado_id")
@@ -84,10 +87,10 @@ public class Cola {
 
   public static int calcularSiguientePosicion(Cola c) {
       if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
-          return 0;
+          return 1;
       }
 
-      int max = -1;
+      int max = 0;
 
       for (User u : c.getListaClientes()) {
           if (u.getPosicion() > max) {

@@ -51,9 +51,9 @@
                 <div class="mb-3 fw-bold" style="font-size: 40px;">ESCANEE EL QR</div>
 
                 <!-- QR dinámico -->
-                <div id="qrcode" class="mb-3 d-flex justify-content-center"></div>
+                <div id="qrcode" class="mb-3 d-flex justify-content-center" th:title="${'https://vm044.containers.fdi.ucm.es/tuTurno'}"></div>
                 <script th:inline="javascript">
-                    const url = /*[[@{/user/newQRuser}]]*/ '/user/newQRuser';
+                     const url = /*[[${'http://vm044.containers.fdi.ucm.es/user/newQRuser?token=' + cola.qrToken}]]*/ '';
                     new QRCode(document.getElementById("qrcode"), url);
                 </script>
 
@@ -73,7 +73,7 @@
 
 
 <div class="text-center my-4">
-    <a th:href="@{/user/newQRuser}" class="btn btn-primary btn-lg">
+    <a th:href="@{/user/newQRuser(token=${cola.qrToken})}" class="btn btn-primary btn-lg">
         Escanear QR
     </a>
 </div>

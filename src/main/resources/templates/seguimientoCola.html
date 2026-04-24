@@ -72,6 +72,10 @@
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <button type="submit" class="btn btn-sm btn-danger">Cerrar</button>
                                 </form>
+                                <form th:action="@{/panelQR/{id}(id=${cola.id})}" method="get" style="display:inline;">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button type="submit" class="btn btn-sm btn-success">Mostrar panelQR</button>
+                                </form>
                             </td>
                         </tr>
                     </tbody>

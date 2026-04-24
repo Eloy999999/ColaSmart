@@ -132,7 +132,7 @@ public class UserController {
    */
 
   @GetMapping("/newQRuser")
-  public String mostararVerTurno(HttpSession session) throws IOException {
+  public String mostararVerTurno(@RequestParam("token") String token, HttpSession session) throws IOException {
 
     User u = new User();
     u.setUsername(generarUsernameUnico());
@@ -141,7 +141,7 @@ public class UserController {
     u.setEnabled(true);
     userRepository.save(u);
 
-    Cola cola = colaRepository.findById((long) 975)
+    Cola cola = colaRepository.findByQrToken(token)
         .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
 
     u.setPosicion(Cola.calcularSiguientePosicion(cola));

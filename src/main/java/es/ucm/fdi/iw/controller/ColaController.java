@@ -224,4 +224,41 @@ public class ColaController {
 
         return ResponseEntity.ok().build();
     }
+    
+    @GetMapping("/panelQR/{id}")
+    public String mostrarPanelQR(@PathVariable Long id, Model model) {
+        long idDefault = id;
+        Cola cola = colaRepository.findById(idDefault).orElse(null);
+        model.addAttribute("cola", cola); // Le meto la cola para poder sacar de ahi toda la info de esta, y meter al
+                                          // user nuevo a esta cola
+
+        if (!cola.isAbierto()) { // Si esta cerrada la cola, poner que la cola esta cerrada
+            model.addAttribute("cola", cola);
+            return "cola_cerrada";
+        }
+
+        // Coger posiciones de -6 a -1
+        List<User> atendidos = userRepository
+                .findByPosicionBetweenOrderByPosicionDesc(-6, -1);
+
+        while (atendidos.size() < 6) {
+            atendidos.add(null);
+        }
+
+        // Turno actual
+        User turnoActual = userRepository.findByPosicion(0);
+
+        model.addAttribute("atendidos", atendidos);
+        model.addAttribute("turnoActual", turnoActual);
+
+        return "panelQR";
+    }
+   /* 
+   @GetMapping("/panelQR/{id}")
+    public String mostrarPanelQR(@PathVariable Long id, Model model) {
+        Cola cola = colaRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Cola no encontrada: " + id));
+        model.addAttribute("cola", cola);
+        return "panelQR";
+    }*/
 }

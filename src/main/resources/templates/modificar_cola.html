@@ -20,6 +20,7 @@
 
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
             <input type="hidden" name="id" th:value="${cola.id}">
+            <input type="hidden" name="qrToken" th:value="${cola.qrToken}">
 
             <div class="col-md-6">
                 <label class="form-label">Nombre servicio</label>
