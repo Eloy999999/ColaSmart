@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -322,16 +323,19 @@ public class ColaController {
             return "cola_cerrada";
         }
 
-        // Coger posiciones de -6 a -1
-        List<User> atendidos = userRepository
-                .findByPosicionBetweenOrderByPosicionDesc(-6, -1);
+        // Coger posiciones de -6 a -1 por cola
+        List<User> atendidos = userRepository.findAtendidosByColaId(idDefault, -6, -1);
 
         while (atendidos.size() < 6) {
             atendidos.add(null);
         }
 
-        // Turno actual
-        User turnoActual = userRepository.findByPosicion(0);
+        // Turno actual por cola
+        Optional<User> turnoActualOpt = userRepository.findTurnoActualByColaId(idDefault,0);
+        User turnoActual = turnoActualOpt.orElse(null);
+
+        //posiciones globales
+        //User turnoActual = userRepository.findByPosicion(0);
 
         model.addAttribute("atendidos", atendidos);
         model.addAttribute("turnoActual", turnoActual);
