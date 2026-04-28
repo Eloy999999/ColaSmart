@@ -100,9 +100,43 @@
 <!-- ===================== MODAL FULL-SCREEN ===================== -->
 <div id="modalDetalle">
 
-    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-        <h1 id="modal-nombre" class="mb-0">Cola</h1>
-        <button class="btn btn-outline-secondary" onclick="cerrarModal()">← Volver a la lista</button>
+    <div class="d-flex align-items-center justify-content-between flex-wrap mb-4 border-bottom pb-3">
+
+        <!-- IZQUIERDA: nombre + sala -->
+        <div class="d-flex align-items-center gap-4">
+            <h1 id="modal-nombre" class="mb-0">Cola</h1>
+
+            <div class="d-flex align-items-center">
+
+                <!-- CONTENEDOR SALA OCULTO -->
+                <div id="contenedorSala" class="d-none align-items-center">
+                    <label class="me-2 mb-0 fs-3"></label>
+
+                    <span id="textoSala" class="fs-3">Puesto 1</span>
+
+                    <input type="text"
+                        id="inputSala"
+                        class="form-control ms-2"
+                        style="width: 100px; font-size: 1.5rem; height: 48px; display: none;"
+                        value="Puesto 1">
+                </div>
+
+                <!-- BOTÓN -->
+                <button id="btnEditarSala"
+                        class="btn btn-outline-primary ms-3"
+                        onclick="toggleEditarSala()">
+                    Editar
+                </button>
+
+
+            </div>
+        </div>
+
+        <!-- DERECHA: botón -->
+        <button class="btn btn-outline-secondary btn-sm" onclick="cerrarModal()">
+            ← Volver a la lista
+        </button>
+
     </div>
 
     <!-- Turno actual -->
@@ -142,11 +176,6 @@
             ▶ Llamar siguiente
         </button>
     </div>
-    <div class="col-md-6">
-        <label class="form-label">Sala</label>
-        <input type="number" id="inputSala" class="form-control" value="1">
-    </div>
-            
 
 </div>
 <!-- ============================================================= -->
@@ -233,72 +262,129 @@
         }
     }
 
+    let nombreColaActual = '';
+
+    let editandoSala = false;
+
+    function toggleEditarSala() {
+        const contenedor = document.getElementById('contenedorSala');
+        const input = document.getElementById('inputSala');
+        const texto = document.getElementById('textoSala');
+        const btn = document.getElementById('btnEditarSala');
+
+        if (!editandoSala) {
+            // 👉 Mostrar contenedor
+            contenedor.classList.remove('d-none');
+
+            input.style.display = 'block';
+            texto.style.display = 'none';
+
+            input.focus();
+
+            btn.textContent = 'Guardar';
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-success');
+
+        } else {
+            // 👉 Guardar y ocultar TODO
+            texto.textContent = input.value;
+
+            contenedor.classList.add('d-none');
+
+            input.style.display = 'none';
+            texto.style.display = 'block';
+
+            btn.textContent = 'Editar';
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+
+            actualizarTituloConSala();
+        }
+
+        editandoSala = !editandoSala;
+    }
+
+    function actualizarTituloConSala() {
+        if (colaIdActual !== null) {
+            const salaNombre = document.getElementById('inputSala').value;
+            document.getElementById('modal-nombre').textContent =
+                nombreColaActual + ' - ' + salaNombre;
+        }
+    }
+
     function renderModal(cola) {
-    document.getElementById('modal-nombre').textContent = cola.nombre;
+        nombreColaActual = cola.nombre;
 
-    // 🔹 ordenar por posicion
-    const ordenados = cola.listaClientes
-        .slice()
-        .sort((a, b) => a.posicion - b.posicion);
+        const sala = document.getElementById('inputSala').value;
 
-    const actual = ordenados.find(c => c.posicion === 0);
-    const espera = ordenados.filter(c => c.posicion > 0);
+        document.getElementById('modal-nombre').textContent =
+            nombreColaActual + ' - ' + sala;
 
-    // =======================
-    // Turno actual
-    // =======================
-    const turnoDiv = document.getElementById('modal-turno-actual');
+        document.getElementById('textoSala').textContent = sala;
 
-    if (actual) {
-        turnoDiv.innerHTML = `
-            <p class="fs-4 mb-1"><strong>Número de turno:</strong>
-                <span class="badge bg-success fs-5">${actual.username}</span>
-            </p>
-            <p class="mb-1"><strong>Hora de inicio:</strong> ${cola.inicioTurnoActual ?? '-'}</p>
-            <p class="mb-0"><strong>Tiempo transcurrido:</strong> ${cola.minutosTurnoActual} minutos</p>
-        `;
-    } else {
-        turnoDiv.innerHTML = '<p class="text-muted">Ninguna persona siendo atendida ahora mismo.</p>';
+        // 🔹 ordenar por posicion
+        const ordenados = cola.listaClientes
+            .slice()
+            .sort((a, b) => a.posicion - b.posicion);
+
+        const actual = ordenados.find(c => c.posicion === 0);
+        const espera = ordenados.filter(c => c.posicion > 0);
+
+        // =======================
+        // Turno actual
+        // =======================
+        const turnoDiv = document.getElementById('modal-turno-actual');
+
+        if (actual) {
+            turnoDiv.innerHTML = `
+                <p class="fs-4 mb-1"><strong>Número de turno:</strong>
+                    <span class="badge bg-success fs-5">${actual.username}</span>
+                </p>
+                <p class="mb-1"><strong>Hora de inicio:</strong> ${cola.inicioTurnoActual ?? '-'}</p>
+                <p class="mb-0"><strong>Tiempo transcurrido:</strong> ${cola.minutosTurnoActual} minutos</p>
+            `;
+        } else {
+            turnoDiv.innerHTML = '<p class="text-muted">Ninguna persona siendo atendida ahora mismo.</p>';
+        }
+
+        // =======================
+        // Última persona atendida
+        // =======================
+        const ultimoDiv = document.getElementById('modal-ultimo-turno');
+
+        if (cola.ultimoTurno) {
+            ultimoDiv.innerHTML = `
+                <p class="mb-1"><strong>Número de turno:</strong> ${cola.ultimoTurno}</p>
+                <p class="mb-1"><strong>Hora de inicio:</strong> ${cola.inicioUltimoTurno ?? '-'}</p>
+                <p class="mb-1"><strong>Hora de fin:</strong> ${cola.finUltimoTurno ?? '-'}</p>
+                <p class="mb-0"><strong>Tiempo total:</strong> ${cola.minutosUltimoTurno} minutos</p>
+            `;
+        } else {
+            ultimoDiv.innerHTML = '<p class="text-muted">Ninguna persona atendida aún.</p>';
+        }
+
+        // =======================
+        // Lista de espera
+        // =======================
+        const listaDiv = document.getElementById('modal-lista-espera');
+        document.getElementById('modal-badge-espera').textContent = espera.length;
+
+        if (espera.length === 0) {
+            listaDiv.innerHTML = '<p class="text-muted">No hay nadie esperando.</p>';
+        } else {
+            const items = espera.map((c) => `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>${c.username}</span>
+                    <span class="badge bg-secondary">${c.posicion}</span>
+                </li>
+            `).join('');
+
+            listaDiv.innerHTML = `<ol class="list-group list-group-numbered">${items}</ol>`;
+        }
+
+        // botón siguiente
+        document.getElementById('btn-siguiente').disabled = espera.length === 0;
     }
-
-    // =======================
-    // Última persona atendida
-    // =======================
-    const ultimoDiv = document.getElementById('modal-ultimo-turno');
-
-    if (cola.ultimoTurno) {
-        ultimoDiv.innerHTML = `
-            <p class="mb-1"><strong>Número de turno:</strong> ${cola.ultimoTurno}</p>
-            <p class="mb-1"><strong>Hora de inicio:</strong> ${cola.inicioUltimoTurno ?? '-'}</p>
-            <p class="mb-1"><strong>Hora de fin:</strong> ${cola.finUltimoTurno ?? '-'}</p>
-            <p class="mb-0"><strong>Tiempo total:</strong> ${cola.minutosUltimoTurno} minutos</p>
-        `;
-    } else {
-        ultimoDiv.innerHTML = '<p class="text-muted">Ninguna persona atendida aún.</p>';
-    }
-
-    // =======================
-    // Lista de espera
-    // =======================
-    const listaDiv = document.getElementById('modal-lista-espera');
-    document.getElementById('modal-badge-espera').textContent = espera.length;
-
-    if (espera.length === 0) {
-        listaDiv.innerHTML = '<p class="text-muted">No hay nadie esperando.</p>';
-    } else {
-        const items = espera.map((c) => `
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <span>${c.username}</span>
-                <span class="badge bg-secondary">${c.posicion}</span>
-            </li>
-        `).join('');
-
-        listaDiv.innerHTML = `<ol class="list-group list-group-numbered">${items}</ol>`;
-    }
-
-    // botón siguiente
-    document.getElementById('btn-siguiente').disabled = espera.length === 0;
-}
 
     async function llamarSiguiente() {
         const sala = document.getElementById("inputSala").value;
