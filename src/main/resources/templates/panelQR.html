@@ -75,7 +75,9 @@
                 <!-- QR dinámico -->
                 <div id="qrcode" class="mb-3 d-flex justify-content-center" th:title="${'https://vm044.containers.fdi.ucm.es/tuTurno'}"></div>
                 <script th:inline="javascript">
-                     const url = /*[[${'http://vm044.containers.fdi.ucm.es/user/newQRuser?token=' + cola.qrToken}]]*/ '';
+                    const path = /*[[@{/user/newQRuser(token=${cola.qrToken})}]]*/ '';
+                    const url = location.href.split("/").slice(0, -2).join("/") + path;
+                    console.log("QR URL:", url);
                     new QRCode(document.getElementById("qrcode"), url);
                 </script>
 
