@@ -33,7 +33,7 @@
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <main class="flex-shrink-0">
-<div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
+<div th:if="${u != null and u.hasRole('ADMIN') or u != null and u.hasRole('ORGANIZADOR')}" class="container">
 
     <h1 class="text-center mb-4">Seguimiento de Cola - Personal</h1>
 
@@ -92,8 +92,8 @@
 
 </div>
 
-<div th:unless="${u != null and u.hasRole('ADMIN')}" class="container text-center mt-5">
-    <div class="alert alert-danger"><h2>Solo administradores</h2></div>
+<div th:unless="${u != null and u.hasRole('ADMIN') or u != null and u.hasRole('ORGANIZADOR')}" class="container text-center mt-5">
+    <div class="alert alert-danger"><h2>Solo trabajadores o administradores</h2></div>
 </div>
 </main>
 

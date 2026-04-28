@@ -26,10 +26,6 @@
                     <input type="text" id="lastName" name="lastName" class="form-control" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Turno</label>
-                    <input type="text" name="turno" class="form-control" required>
-                </div>
-                <div class="col-md-6">
                     <label class="form-label">Sala asignada</label>
                     <input type="text" name="lugar" class="form-control" required>
                 </div>
@@ -40,6 +36,18 @@
                 <div class="col-md-6">
                     <label class="form-label">Contraseña</label>
                     <input type="password" name="password" class="form-control" required>
+                </div>
+
+                    
+                <div class="col-md-6">
+                    <label class="form-label">Colas</label>
+                    <select name="colasId" class="form-control" multiple required>
+                        <option th:each="cola : ${colas}"
+                                th:value="${cola.id}"
+                                th:text="${cola.nombre}"
+                                th:selected="${colasDelUsuario != null and colasDelUsuario.contains(cola)}">
+                        </option>
+                    </select>
                 </div>
 
                 <button type="submit" class="btn btn-success mt-3">Añadir personal</button>

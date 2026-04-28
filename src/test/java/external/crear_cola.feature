@@ -9,11 +9,7 @@ Background:
 Scenario: crear cola desde panel de administración
 
     # login como admin
-    Given driver baseUrl + '/login'
-    And input('#username', 'a')
-    And input('#password', 'aa')
-    When submit().click(".form-signin button")
-    Then waitForUrl(baseUrl + '/admin')
+    * call read('login.feature@login_a')
 
     # ir a manejar colas
     When click("a[href='/admin/colas']")
