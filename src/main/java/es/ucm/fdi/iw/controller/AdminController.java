@@ -274,4 +274,13 @@ public class AdminController {
         return "Tokens inicializados correctamente";
     }
 
+    @GetMapping("/personal/lorem")
+    @ResponseBody
+    public Map<String, String> loremPersonal() {
+        Map<String, String> datos = new HashMap<>();
+        datos.put("firstName", Lorem.nombreAlAzar());
+        datos.put("lastName", Lorem.apellidoAlAzar());
+        return datos;
+    }
+
 }

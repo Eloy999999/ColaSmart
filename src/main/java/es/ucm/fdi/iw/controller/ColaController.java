@@ -312,7 +312,8 @@ public class ColaController {
     }
     
     @GetMapping("/panelQR/{id}")
-    public String mostrarPanelQR(@PathVariable Long id, Model model) {
+    public String mostrarPanelQR(@PathVariable Long id, HttpSession session, Model model) {
+        session.setAttribute("panelQrColaId", id);
         long idDefault = id;
         Cola cola = colaRepository.findById(idDefault).orElse(null);
         model.addAttribute("cola", cola); // Le meto la cola para poder sacar de ahi toda la info de esta, y meter al
