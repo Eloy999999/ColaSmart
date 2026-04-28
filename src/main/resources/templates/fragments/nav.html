@@ -30,7 +30,7 @@
                         </li>
 
                         <li class="nav-item" th:if="${u != null and u.hasRole('ADMIN') or u != null and u.hasRole('ORGANIZADOR')}">
-                            <a class="nav-link" th:href="@{/seguimientoCola}">Seguimiento de Colas</a>
+                            <a class="nav-link" th:href="@{/seguimientoCola/{id}(id=${u.id})}">Seguimiento de Colas</a>
                         </li>
 
                         <li class="nav-item">

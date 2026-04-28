@@ -19,6 +19,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 /**
  * A group of users, with an associated chat.
  */
@@ -52,7 +53,7 @@ public class Cola {
   @JoinColumn(name = "encargado_id")
   private User encargado;
 
-  @OneToMany
+  @ManyToMany
   private List<User> listaClientes; // Tabla intermedia que relaciona users.id con colas.id
   private LocalDateTime horarioInicio;
   private LocalDateTime horarioFin;

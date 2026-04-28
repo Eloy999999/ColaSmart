@@ -15,28 +15,26 @@ public interface UserRepository extends JpaRepository<User, Long> {
     User findByPosicion(int posicion);
 
     @Query("""
-        SELECT DISTINCT u
-        FROM Cola c
-        JOIN c.listaClientes u
-        WHERE c.id = :colaId
-          AND u.posicion = :posicion
-    """)
+                SELECT DISTINCT u
+                FROM Cola c
+                JOIN c.listaClientes u
+                WHERE c.id = :colaId
+                  AND u.posicion = :posicion
+            """)
     Optional<User> findTurnoActualByColaId(
-        @Param("colaId") Long colaId,
-        @Param("posicion") int posicion
-    );
+            @Param("colaId") Long colaId,
+            @Param("posicion") int posicion);
 
     @Query("""
-        SELECT u
-        FROM Cola c
-        JOIN c.listaClientes u
-        WHERE c.id = :colaId
-          AND u.posicion BETWEEN :minPos AND :maxPos
-        ORDER BY u.posicion DESC
-    """)
+                SELECT u
+                FROM Cola c
+                JOIN c.listaClientes u
+                WHERE c.id = :colaId
+                  AND u.posicion BETWEEN :minPos AND :maxPos
+                ORDER BY u.posicion DESC
+            """)
     List<User> findAtendidosByColaId(
-        @Param("colaId") Long colaId,
-        @Param("minPos") int minPos,
-        @Param("maxPos") int maxPos
-    );
+            @Param("colaId") Long colaId,
+            @Param("minPos") int minPos,
+            @Param("maxPos") int maxPos);
 }
