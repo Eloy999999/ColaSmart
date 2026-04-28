@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
@@ -114,10 +115,51 @@ public class ColaController {
         return "modificar_cola";
     }
 
-    @GetMapping("/seguimientoCola")
-    public String seguimientoCola(Model model) {
-        List<User> users = userRepository.findAll();
-        List<Cola> colas = colaRepository.findAll();
+    /*
+     * @GetMapping("/seguimientoCola")
+     * public String seguimientoCola(Model model) {
+     * List<User> users = userRepository.findAll();
+     * List<Cola> colas = colaRepository.findAll();
+     * 
+     * Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
+     * 
+     * for (Cola cola : colas) {
+     * int maxPuesto = 0;
+     * 
+     * if (cola.getListaClientes() != null) {
+     * maxPuesto = cola.getListaClientes().stream()
+     * .mapToInt(User::getPosicion)
+     * .max()
+     * .orElse(0);
+     * }
+     * 
+     * if (maxPuesto < 1) {
+     * maxPuesto = 0;
+     * }
+     * 
+     * maxPuestoPorCola.put(cola.getId(), maxPuesto);
+     * }
+     * 
+     * model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
+     * model.addAttribute("colas", colas);
+     * return "seguimientoCola";
+     * }
+     * 
+     */
+
+    @GetMapping("/seguimientoCola/{id}")
+    public String seguimientoCola(@PathVariable Long id, Model model) {
+
+        User u = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        List<Cola> colas;
+
+        if (u.hasRole(User.Role.ADMIN)) {
+            colas = colaRepository.findAll();
+        } else {
+            colas = colaRepository.findByTrabajadores_Id(id);
+        }
 
         Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
 
@@ -140,6 +182,8 @@ public class ColaController {
 
         model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
         model.addAttribute("colas", colas);
+        model.addAttribute("u", u);
+
         return "seguimientoCola";
     }
 
@@ -310,7 +354,7 @@ public class ColaController {
 
         return ResponseEntity.ok().build();
     }
-    
+
     @GetMapping("/panelQR/{id}")
     public String mostrarPanelQR(@PathVariable Long id, Model model) {
         long idDefault = id;
@@ -331,25 +375,27 @@ public class ColaController {
         }
 
         // Turno actual por cola
-        Optional<User> turnoActualOpt = userRepository.findTurnoActualByColaId(idDefault,0);
+        Optional<User> turnoActualOpt = userRepository.findTurnoActualByColaId(idDefault, 0);
         User turnoActual = turnoActualOpt.orElse(null);
 
-        //posiciones globales
-        //User turnoActual = userRepository.findByPosicion(0);
+        // posiciones globales
+        // User turnoActual = userRepository.findByPosicion(0);
 
         model.addAttribute("atendidos", atendidos);
         model.addAttribute("turnoActual", turnoActual);
 
         return "panelQR";
     }
-   /* 
-   @GetMapping("/panelQR/{id}")
-    public String mostrarPanelQR(@PathVariable Long id, Model model) {
-        Cola cola = colaRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Cola no encontrada: " + id));
-        model.addAttribute("cola", cola);
-        return "panelQR";
-    }*/
+    /*
+     * @GetMapping("/panelQR/{id}")
+     * public String mostrarPanelQR(@PathVariable Long id, Model model) {
+     * Cola cola = colaRepository.findById(id)
+     * .orElseThrow(() -> new IllegalArgumentException("Cola no encontrada: " +
+     * id));
+     * model.addAttribute("cola", cola);
+     * return "panelQR";
+     * }
+     */
 
     @PostMapping("/colas/{id}/imagen")
     @ResponseBody
