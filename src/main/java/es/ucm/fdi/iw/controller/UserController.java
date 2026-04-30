@@ -390,6 +390,34 @@ public class UserController {
     return "modificar_personal";
   }
 
+  @GetMapping("/modificar_colas_personal/{id}")
+  public String mostrarModificarColasPersonal(@PathVariable Long id, Model model) {
+    User personal = userRepository.findById(id).orElse(null);
+    model.addAttribute("personal", personal);
+
+    List<Cola> colas = colaRepository.findAll();
+    model.addAttribute("colas", colas);
+
+    List<Cola> colasDelTrabajador = colaRepository.findAll().stream()
+      .filter(c -> c.getTrabajadores().contains(personal))
+      .toList();
+
+    model.addAttribute("colasDelTrabajador", colasDelTrabajador);
+    return "modificar_colas_personal";
+  }
+
+  @PostMapping("/asignarColaTrabajador")
+  public String asignarCola(@RequestParam Long trabajadorId,@RequestParam Long colaId) {
+
+      User trabajador = userRepository.findById(trabajadorId).orElseThrow();
+      Cola cola = colaRepository.findById(colaId).orElseThrow();
+
+      cola.getListaClientes().add(trabajador);
+      colaRepository.save(cola);
+
+      return "redirect:/user/modificar_colas_personal/" + trabajadorId;
+  }
+
   @GetMapping("/modificar_paciente/{id}")
   public String mostrarModificarPaciente(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);

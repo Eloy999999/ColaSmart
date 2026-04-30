@@ -11,9 +11,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -54,7 +54,13 @@ public class Cola {
   private User encargado;
 
   @ManyToMany
-  private List<User> listaClientes; // Tabla intermedia que relaciona users.id con colas.id
+  @JoinTable(
+      name = "colas_lista_clientes",
+      joinColumns = @JoinColumn(name = "cola_id"),
+      inverseJoinColumns = @JoinColumn(name = "lista_clientes_id")
+  )
+  private List<User> listaClientes; // lista intermedia colas.id - lientes.id
+
   private LocalDateTime horarioInicio;
   private LocalDateTime horarioFin;
   private String lugar;
@@ -72,7 +78,7 @@ public class Cola {
 
   // Trabajadores asignados (bidireccional)
   @ManyToMany(mappedBy = "colasAsignadas")
-  private List<User> trabajadores = new ArrayList<>();
+  private List<User> trabajadores = new ArrayList<>(); // USER_COLAS
 
   public boolean isAbierto() {
     return abierto;

@@ -171,6 +171,7 @@
                                 <!--    <span class="badge bg-info text-dark">Urgencias</span> -->
                                 </td>
                                 <td class="text-center">
+                                    <a th:href="@{/user/modificar_colas_personal/{id}(id=${trabajador.id})}" class="btn btn-info btn-sm">🪪 Asignar colas</a> <!-- Boton asignar colas a personal personal-->
                                     <a th:href="@{/user/modificar_personal/{id}(id=${trabajador.id})}" class="btn btn-sm btn-warning">✏️ Editar</a> <!-- Boton editar personal-->
                                     <form th:action="@{/panelAdmin/personal/eliminar/{id}(id=${trabajador.id})}" method="post" style="display:inline;"> <!-- Form eliminar personal-->
     

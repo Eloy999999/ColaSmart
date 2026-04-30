@@ -81,7 +81,9 @@ public class AdminController {
         for (Cola cola : colas) {
             if (cola.getListaClientes() != null) {
                 for (User cliente : cola.getListaClientes()) {
-                    colaDelPaciente.put(cliente.getId(), cola);
+                    if (cliente.hasRole(User.Role.PACIENTE)) {
+                        colaDelPaciente.put(cliente.getId(), cola);
+                    }
                 }
             }
         }
@@ -94,6 +96,7 @@ public class AdminController {
 
             if (cola.getListaClientes() != null) {
                 maxPuesto = cola.getListaClientes().stream()
+                        .filter(u -> u.hasRole(User.Role.PACIENTE))
                         .mapToInt(User::getPosicion)
                         .max()
                         .orElse(0);
