@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
@@ -374,19 +375,23 @@ public class UserController {
     return "{\"result\": \"message sent.\"}";
   }
 
+  @GetMapping("manejar_personal")
+  public String mostrarManejarPersonal(Model model) {
+    
+    List<String> roles = Arrays.asList("ORGANIZADOR", "ADMIN");
+    model.addAttribute("roles", roles);
+
+    return "manejar_personal";
+  }
+
   @GetMapping("/modificar_personal/{id}")
   public String mostrarModificarPersonal(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
     model.addAttribute("personal", personal);
 
-    List<Cola> colas = colaRepository.findAll();
-    model.addAttribute("colas", colas);
+    List<String> roles = Arrays.asList("ADMIN", "ORGANIZADOR");
+    model.addAttribute("roles", roles);
 
-    Cola colaDelPaciente = colaRepository.findAll().stream()
-        .filter(c -> c.getListaClientes().contains(personal))
-        .findFirst()
-        .orElse(null);
-    model.addAttribute("colaDelPaciente", colaDelPaciente);
     return "modificar_personal";
   }
 
@@ -470,7 +475,8 @@ public class UserController {
   @PostMapping("/editarPersonal/{id}")
   public String actualizarPersonal(@PathVariable Long id,
     @ModelAttribute("personal") User personal,
-    @RequestParam(required = false) List<Long> colasId) {
+    @RequestParam(required = false) List<Long> colasId,
+    @RequestParam("rol") String rol) {
 
     // Cargar usuario existente desde la BD
     User usuarioExistente = userRepository.findById(id)
@@ -478,7 +484,7 @@ public class UserController {
 
     usuarioExistente.setTurno(personal.getTurno());
     usuarioExistente.setLugar(personal.getLugar());
-
+    usuarioExistente.setRoles(rol);
     // 1. quitarlo de todas las colas actuales
     for (Cola c : colaRepository.findAll()) {
         c.getListaClientes().remove(usuarioExistente);
