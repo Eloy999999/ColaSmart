@@ -39,7 +39,7 @@
 
                 <div class="col-md-6">
                     <label class="form-label">Nombre de Usuario</label>
-                    <input type="text" name="username" class="form-control" required>
+                    <input type="text" id="username" name="username" class="form-control" required>
                 </div>
 
                 <div class="col-md-6">
@@ -61,8 +61,16 @@
         document.getElementById("btnLorem").addEventListener("click", async function () {
             const res = await fetch("/panelAdmin/personal/lorem");
             const data = await res.json();
+            const nombre = data.firstName.toLowerCase();
+
+            const apellidos = data.lastName.toLowerCase().split(" ");
+
+            const ap1 = apellidos[0]?.substring(0, 2) || "";
+            const ap2 = apellidos[1]?.substring(0, 2) || "";
+
             document.getElementById("firstName").value = data.firstName;
             document.getElementById("lastName").value = data.lastName;
+            document.getElementById("username").value = nombre + ap1 + ap2;
         });
     </script>
 

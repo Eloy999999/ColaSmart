@@ -282,7 +282,7 @@ public class AdminController {
     public Map<String, String> loremPersonal() {
         Map<String, String> datos = new HashMap<>();
         datos.put("firstName", Lorem.nombreAlAzar());
-        datos.put("lastName", Lorem.apellidoAlAzar());
+        datos.put("lastName", Lorem.apellidoAlAzar() + " " + Lorem.apellidoAlAzar());
         return datos;
     }
 
