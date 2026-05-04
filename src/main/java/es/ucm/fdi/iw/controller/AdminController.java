@@ -97,6 +97,7 @@ public class AdminController {
             if (cola.getListaClientes() != null) {
                 maxPuesto = cola.getListaClientes().stream()
                         .filter(u -> u.hasRole(User.Role.PACIENTE))
+                        .filter(u -> u.getPosicion() != null)
                         .mapToInt(User::getPosicion)
                         .max()
                         .orElse(0);

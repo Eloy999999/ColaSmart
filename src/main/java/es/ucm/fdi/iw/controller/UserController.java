@@ -450,6 +450,7 @@ public class UserController {
 
     usuarioExistente.setTurno(personal.getTurno());
     usuarioExistente.setLugar(personal.getLugar());
+    usuarioExistente.setPosicion(personal.getPosicion());
 
     // 1. Quitar de la cola actual
     for (Cola c : colaRepository.findAll()) {
@@ -482,6 +483,8 @@ public class UserController {
     User usuarioExistente = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
 
+    usuarioExistente.setFirstName(personal.getFirstName());
+    usuarioExistente.setLastName(personal.getLastName());
     usuarioExistente.setTurno(personal.getTurno());
     usuarioExistente.setLugar(personal.getLugar());
     usuarioExistente.setRoles(rol);

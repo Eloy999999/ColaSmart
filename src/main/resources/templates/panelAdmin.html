@@ -154,9 +154,8 @@
                         <tr>
                             <th>ID</th>
                             <th>Nombre</th>
+                            <th>Usuario</th>
                             <th>Rol</th>
-                            <th>Turno</th>
-                            <th>Sala Asignada</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                         </thead>
@@ -164,12 +163,8 @@
                             <tr th:each="trabajador : ${users}" th:if="${!trabajador.hasRole('PACIENTE')}">
                                 <td th:text="${trabajador.id}">1</td>
                                 <td th:text="${trabajador.firstName + ' ' + trabajador.lastName}">Dr. Martínez</td>
+                                <td th:text="${trabajador.username}">drmarti</td>
                                 <td th:text="${trabajador.roles}">Pediatra</td>
-                                <td th:text="${trabajador.turno}">Mañana</td>
-                                <td>
-                                    <span class="badge bg-primary" th:text="${trabajador.lugar}">Sala 3</span>
-                                <!--    <span class="badge bg-info text-dark">Urgencias</span> -->
-                                </td>
                                 <td class="text-center">
                                     <a th:href="@{/user/modificar_colas_personal/{id}(id=${trabajador.id})}" class="btn btn-info btn-sm">🪪 Asignar colas</a> <!-- Boton asignar colas a personal personal-->
                                     <a th:href="@{/user/modificar_personal/{id}(id=${trabajador.id})}" class="btn btn-sm btn-warning">✏️ Editar</a> <!-- Boton editar personal-->
@@ -217,7 +212,7 @@
                             <th>Usuario</th>
                             <th>ID Cola</th>
                             <th>Nombre Cola</th>
-                            <th>Posicion</th>
+                            <th>Posición</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                         </thead>
