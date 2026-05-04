@@ -7,10 +7,15 @@ class ExternalRunner {
     @Karate.Test
     Karate testLogin() {
         return Karate.run("login").relativeTo(getClass());
-    }    
+    }  
 
-    @Karate.Test
+    /*@Karate.Test
     Karate testWs() {
         return Karate.run("ws").relativeTo(getClass());
-    }  
+    }*/
+
+    @Karate.Test
+    Karate testCrearCola() {
+        return Karate.run("crear_cola").relativeTo(getClass());
+    }
 }

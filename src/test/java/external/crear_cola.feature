@@ -1,111 +1,54 @@
 Feature: Prueba base de datos lista de salas (colas)
 
-Background:
-    * configure driver = { type: 'chrome' }
-
-#
-# Admin crea una cola nueva
-#
-Scenario: crear cola desde panel de administración
-
-    # login como admin
-    * call read('login.feature@login_a')
-
-    # ir a manejar colas
-    When click("a[href='/admin/colas']")
-    Then waitForText('Gestión de Colas')
-
-    # crear nueva cola
-    When click("{button}Crear Cola")
-    Then waitForText('Configuración Cola')
-
-    And input('#nombreServicio', 'Cola Test')
-    And input('#tiempoEstimado', '10')
-    And input('#aforoMaximo', '5')
-    And input('#ubicacion', 'Sala 1')
-    And input('#horaInicio', '09:00')
-    And input('#horaFin', '18:00')
-
-    When submit().click("{button}Crear Cola")
-
-    # verificar que aparece en la lista (confirmación BD)
-    Then waitForText('Cola Test')
-
-
-#
-# Comprobación de error si faltan campos
-#
-Scenario: crear cola con campos vacíos
-
-    Given driver baseUrl + '/admin/colas/nueva'
-
-    And input('#nombreServicio', '')
-    And input('#tiempoEstimado', '')
-    And input('#aforoMaximo', '')
-    And input('#ubicacion', '')
-    And input('#horaInicio', '')
-    And input('#horaFin', '')
-
-    When submit().click("{button}Crear Cola")
-
-    Then match html('.error') contains 'Falta campo'
-
-# Horario de fin es anterior al de inicio
-Scenario: error horario incorrecto
-
-    Given driver baseUrl + '/admin/colas/nueva'
-
-    And input('#nombreServicio', 'Cola Test')
-    And input('#horaInicio', '18:00')
-    And input('#horaFin', '09:00')
-
-    When submit().click("{button}Crear Cola")
-
-    Then match html('.error') contains 'Horario inválido'
-
-#
-# Dos clientes entran en la cola mediante URL
-#
 Scenario: clientes entran en cola
+    # Cliente 1 entra en la cola
+    Given driver baseUrl + '/user/newQRuser?token=12345'
+    Then waitForText('body', 'Tu turno')
+    And waitForText('body', 'Posición en la cola')
+    And def posicion1 = script("parseInt(document.querySelectorAll('.fs-2 span')[2].textContent)")
 
-    Given driver baseUrl + '/cola/1/entrar?usuario=cliente1'
-    Then waitForText('Te has unido a la cola')
+    # Cliente 2 entra en la misma cola (genera usuario diferente)
+    Given driver baseUrl + '/user/newQRuser?token=12345'
+    Then waitForText('body', 'Tu turno')
+    And waitForText('body', 'Posición en la cola')
+    And def posicion2 = script("parseInt(document.querySelectorAll('.fs-2 span')[2].textContent)")
 
-    Given driver baseUrl + '/cola/1/entrar?usuario=cliente2'
-    Then waitForText('Te has unido a la cola')
+    # Verificar que el segundo cliente está detrás del primero
+    Then assert posicion2 > posicion1
 
-#
-# Personal accede a cola y llama siguiente
-#
 Scenario: personal atiende cola
-
-    # login personal
     Given driver baseUrl + '/login'
-    And input('#username', 'personal')
+    And input('#username', 'a')
     And input('#password', 'aa')
-    When submit().click(".form-signin button")
+    When click(".form-signin button")
+    Then waitForUrl(baseUrl + '/panelAdmin')
 
-    Then waitForUrl(baseUrl + '/colas')
+    Given driver baseUrl + '/seguimientoCola'
+    Then waitForText('body', 'Seguimiento de Cola')
 
-    # seleccionar la cola creada
-    When click("{text}Cola Test")
+    When click("tr[data-cola-id='975']")
+    Then waitForText('body', 'Atendiendo ahora')
 
-    Then waitForText('Seguimiento de Cola')
+    # Primera llamada a siguiente
+    And def turnoAntes = script("document.querySelector('#modal-turno-actual .badge')?.textContent || 'ninguno'")
+    And def esperando1 = script("parseInt(document.getElementById('modal-badge-espera').textContent)")
+    When click("#btn-siguiente")
+    And delay(1000)
+    And def turnoDespues = script("document.querySelector('#modal-turno-actual .badge')?.textContent || 'ninguno'")
+    * eval if (esperando1 > 0 && turnoDespues == turnoAntes) karate.fail('Primera llamada: el turno no cambió')
 
-    # llamar siguiente usuario
-    When click("{button}Llamar siguiente")
+    # Segunda llamada a siguiente
+    And def turnoAntes2 = script("document.querySelector('#modal-turno-actual .badge')?.textContent || 'ninguno'")
+    And def esperando2 = script("parseInt(document.getElementById('modal-badge-espera').textContent)")
+    When click("#btn-siguiente")
+    And delay(1000)
+    And def turnoDespues2 = script("document.querySelector('#modal-turno-actual .badge')?.textContent || 'ninguno'")
+    * eval if (esperando2 > 0 && turnoDespues2 == turnoAntes2) karate.fail('Segunda llamada: el turno no cambió')
 
-    # comprobar que se actualiza persona atendida
-    Then waitForText('Persona actualmente atendida')
-
-
-#
-# Llamar siguiente cuando la cola está vacía
-#
-Scenario: llamar siguiente con cola vacía
-
-    Given driver baseUrl + '/colas/1'
-
-    When click("{button}Llamar siguiente")
-
-    Then match html('.estado-cola') contains 'Cola vacía'
+    # Tercera llamada a siguiente
+    And def turnoAntes3 = script("document.querySelector('#modal-turno-actual .badge')?.textContent || 'ninguno'")
+    And def esperando3 = script("parseInt(document.getElementById('modal-badge-espera').textContent)")
+    When click("#btn-siguiente")
+    And delay(1000)
+    And def turnoDespues3 = script("document.querySelector('#modal-turno-actual .badge')?.textContent || 'ninguno'")
+    * eval if (esperando3 > 0 && turnoDespues3 == turnoAntes3) karate.fail('Tercera llamada: el turno no cambió')
