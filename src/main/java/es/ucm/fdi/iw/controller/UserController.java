@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -377,7 +378,7 @@ public class UserController {
 
   @GetMapping("manejar_personal")
   public String mostrarManejarPersonal(Model model) {
-    
+
     List<String> roles = Arrays.asList("ORGANIZADOR", "ADMIN");
     model.addAttribute("roles", roles);
 
@@ -404,30 +405,54 @@ public class UserController {
     model.addAttribute("colas", colas);
 
     List<Cola> colasDelTrabajador = colaRepository.findAll().stream()
-      .filter(c -> c.getTrabajadores().contains(personal))
-      .toList();
+        .filter(c -> c.getListaClientes().stream()
+            .anyMatch(t -> t.getId() == personal.getId()))
+        .toList();
 
     model.addAttribute("colasDelTrabajador", colasDelTrabajador);
+
+    Map<Long, Boolean> colaAsignada = colaRepository.findAll().stream()
+        .collect(Collectors.toMap(
+            Cola::getId,
+            c -> c.getListaClientes().stream()
+                .anyMatch(t -> Objects.equals(t.getId(), personal.getId()))));
+
+    model.addAttribute("colaAsignada", colaAsignada);
     return "modificar_colas_personal";
   }
 
   @PostMapping("/asignarColaTrabajador")
-  public String asignarCola(@RequestParam Long trabajadorId,@RequestParam Long colaId) {
+  public String asignarCola(@RequestParam Long trabajadorId, @RequestParam Long colaId) {
 
-      User trabajador = userRepository.findById(trabajadorId).orElseThrow();
-      Cola cola = colaRepository.findById(colaId).orElseThrow();
+    User trabajador = userRepository.findById(trabajadorId).orElseThrow();
+    Cola cola = colaRepository.findById(colaId).orElseThrow();
 
-      cola.getListaClientes().add(trabajador);
+    if (!cola.getTrabajadores().contains(trabajador)) {
+      cola.getTrabajadores().add(trabajador);
       colaRepository.save(cola);
+    }
 
-      return "redirect:/user/modificar_colas_personal/" + trabajadorId;
+    return "redirect:/user/modificar_colas_personal/" + trabajadorId;
+  }
+
+  @PostMapping("/user/desasignarColaTrabajador")
+  public String desasignarCola(@RequestParam Long trabajadorId,
+      @RequestParam Long colaId) {
+
+    User trabajador = userRepository.findById(trabajadorId).orElseThrow();
+    Cola cola = colaRepository.findById(colaId).orElseThrow();
+
+    cola.getTrabajadores().remove(trabajador);
+    colaRepository.save(cola);
+
+    return "redirect:/user/modificar_colas_personal/" + trabajadorId;
   }
 
   @GetMapping("/modificar_paciente/{id}")
   public String mostrarModificarPaciente(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
     model.addAttribute("paciente", personal);
-    
+
     List<Cola> colas = colaRepository.findAll();
     model.addAttribute("colas", colas);
 
@@ -441,8 +466,8 @@ public class UserController {
 
   @PostMapping("/editarPaciente/{id}")
   public String actualizarPaciente(@PathVariable Long id,
-    @ModelAttribute("personal") User personal,
-    @RequestParam("colaId") Long colaId) {
+      @ModelAttribute("personal") User personal,
+      @RequestParam("colaId") Long colaId) {
 
     // Cargar usuario existente desde la BD
     User usuarioExistente = userRepository.findById(id)
@@ -450,11 +475,10 @@ public class UserController {
 
     usuarioExistente.setTurno(personal.getTurno());
     usuarioExistente.setLugar(personal.getLugar());
-    usuarioExistente.setPosicion(personal.getPosicion());
 
     // 1. Quitar de la cola actual
     for (Cola c : colaRepository.findAll()) {
-        c.getListaClientes().remove(usuarioExistente);
+      c.getListaClientes().remove(usuarioExistente);
     }
 
     // 2. Añadir a la nueva cola
@@ -462,7 +486,6 @@ public class UserController {
         .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
 
     nuevaCola.getListaClientes().add(usuarioExistente);
-
 
     // Guardar el usuario actualizado
     userRepository.save(usuarioExistente);
@@ -475,34 +498,32 @@ public class UserController {
 
   @PostMapping("/editarPersonal/{id}")
   public String actualizarPersonal(@PathVariable Long id,
-    @ModelAttribute("personal") User personal,
-    @RequestParam(required = false) List<Long> colasId,
-    @RequestParam("rol") String rol) {
+      @ModelAttribute("personal") User personal,
+      @RequestParam(required = false) List<Long> colasId,
+      @RequestParam("rol") String rol) {
 
     // Cargar usuario existente desde la BD
     User usuarioExistente = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
 
-    usuarioExistente.setFirstName(personal.getFirstName());
-    usuarioExistente.setLastName(personal.getLastName());
     usuarioExistente.setTurno(personal.getTurno());
     usuarioExistente.setLugar(personal.getLugar());
     usuarioExistente.setRoles(rol);
     // 1. quitarlo de todas las colas actuales
     for (Cola c : colaRepository.findAll()) {
-        c.getListaClientes().remove(usuarioExistente);
-        colaRepository.save(c);
+      c.getListaClientes().remove(usuarioExistente);
+      colaRepository.save(c);
     }
 
     // 2. añadirlo a todas las colas seleccionadas
     if (colasId != null) {
-        for (Long colaId : colasId) {
-            Cola cola = colaRepository.findById(colaId)
-                .orElseThrow(() -> new RuntimeException("Cola no encontrada: " + colaId));
+      for (Long colaId : colasId) {
+        Cola cola = colaRepository.findById(colaId)
+            .orElseThrow(() -> new RuntimeException("Cola no encontrada: " + colaId));
 
-            cola.getListaClientes().add(usuarioExistente);
-            colaRepository.save(cola);
-        }
+        cola.getListaClientes().add(usuarioExistente);
+        colaRepository.save(cola);
+      }
     }
 
     // Guardar el usuario actualizado
