@@ -35,6 +35,13 @@
 <main class="flex-shrink-0">
 <div th:if="${u != null and u.hasRole('ADMIN') or u != null and u.hasRole('ORGANIZADOR')}" class="container">
 
+    <div class="d-flex justify-content-end mt-4 mb-3">
+        <a href="/panelAdmin"
+        class="btn btn-outline-secondary btn-sm">
+            ← Volver al panel admin
+        </a>
+    </div>
+
     <h1 class="text-center mb-4">
         Colas asignadas a
         <span th:text="${personal.firstName + ' ' + personal.lastName}"></span>
@@ -42,17 +49,6 @@
 
 
     <div class="table-responsive">
-
-    <div class="alert alert-info">
-        <h5>DEBUG colaAsignada</h5>
-
-        <ul>
-            <li th:each="entry : ${colaAsignada}">
-                ID cola: <span th:text="${entry.key}"></span>
-                → asignada: <span th:text="${entry.value}"></span>
-            </li>
-        </ul>
-    </div>
 
     <table class="table table-striped table-hover align-middle">
 

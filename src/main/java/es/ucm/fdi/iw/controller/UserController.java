@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -398,54 +398,59 @@ public class UserController {
 
   @GetMapping("/modificar_colas_personal/{id}")
   public String mostrarModificarColasPersonal(@PathVariable Long id, Model model) {
-    User personal = userRepository.findById(id).orElse(null);
-    model.addAttribute("personal", personal);
 
-    List<Cola> colas = colaRepository.findAll();
-    model.addAttribute("colas", colas);
+      User personal = userRepository.findById(id).orElseThrow();
+      model.addAttribute("personal", personal);
 
-    List<Cola> colasDelTrabajador = colaRepository.findAll().stream()
-        .filter(c -> c.getListaClientes().stream()
-            .anyMatch(t -> t.getId() == personal.getId()))
-        .toList();
+      List<Cola> colas = colaRepository.findAll();
+      model.addAttribute("colas", colas);
 
-    model.addAttribute("colasDelTrabajador", colasDelTrabajador);
+      // Colas donde el trabajador está asignado
+      List<Cola> colasDelTrabajador = colas.stream()
+          .filter(c -> c.getTrabajadores().stream()
+              .anyMatch(t -> Objects.equals(t.getId(), personal.getId())))
+          .toList();
 
-    Map<Long, Boolean> colaAsignada = colaRepository.findAll().stream()
-        .collect(Collectors.toMap(
-            Cola::getId,
-            c -> c.getListaClientes().stream()
-                .anyMatch(t -> Objects.equals(t.getId(), personal.getId()))));
+      model.addAttribute("colasDelTrabajador", colasDelTrabajador);
 
-    model.addAttribute("colaAsignada", colaAsignada);
-    return "modificar_colas_personal";
+      // Mapa para saber si cada cola está asignada o no
+      Map<Long, Boolean> colaAsignada = colas.stream()
+          .collect(Collectors.toMap(
+              Cola::getId,
+              c -> c.getTrabajadores().stream()
+                  .anyMatch(t -> Objects.equals(t.getId(), personal.getId()))
+          ));
+
+      model.addAttribute("colaAsignada", colaAsignada);
+
+      return "modificar_colas_personal";
   }
 
   @PostMapping("/asignarColaTrabajador")
   public String asignarCola(@RequestParam Long trabajadorId, @RequestParam Long colaId) {
 
-    User trabajador = userRepository.findById(trabajadorId).orElseThrow();
-    Cola cola = colaRepository.findById(colaId).orElseThrow();
+      User trabajador = userRepository.findById(trabajadorId).orElseThrow();
+      Cola cola = colaRepository.findById(colaId).orElseThrow();
 
-    if (!cola.getTrabajadores().contains(trabajador)) {
-      cola.getTrabajadores().add(trabajador);
-      colaRepository.save(cola);
-    }
+      if (!trabajador.getColasAsignadas().contains(cola)) {
+          trabajador.getColasAsignadas().add(cola);
+          userRepository.save(trabajador); // 🔥 CLAVE
+      }
 
-    return "redirect:/user/modificar_colas_personal/" + trabajadorId;
+      return "redirect:/user/modificar_colas_personal/" + trabajadorId;
   }
 
-  @PostMapping("/user/desasignarColaTrabajador")
+  @PostMapping("/desasignarColaTrabajador")
   public String desasignarCola(@RequestParam Long trabajadorId,
-      @RequestParam Long colaId) {
+                              @RequestParam Long colaId) {
 
-    User trabajador = userRepository.findById(trabajadorId).orElseThrow();
-    Cola cola = colaRepository.findById(colaId).orElseThrow();
+      User trabajador = userRepository.findById(trabajadorId).orElseThrow();
+      Cola cola = colaRepository.findById(colaId).orElseThrow();
 
-    cola.getTrabajadores().remove(trabajador);
-    colaRepository.save(cola);
+      trabajador.getColasAsignadas().remove(cola);
+      userRepository.save(trabajador); // 🔥 CLAVE
 
-    return "redirect:/user/modificar_colas_personal/" + trabajadorId;
+      return "redirect:/user/modificar_colas_personal/" + trabajadorId;
   }
 
   @GetMapping("/modificar_paciente/{id}")

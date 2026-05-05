@@ -12,8 +12,8 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
@@ -147,6 +147,7 @@ public class ColaController {
      
 */     
 
+    /* 
     @GetMapping("/seguimientoCola")
     public String seguimientoCola(Model model) {
 
@@ -188,6 +189,46 @@ public class ColaController {
 
         return "seguimientoCola";
     }
+        */
+
+    @GetMapping("/seguimientoCola")
+public String seguimientoCola(Model model, Authentication auth) {
+
+    String username = auth.getName();
+
+    User u = userRepository.findByUsername(username)
+            .orElseThrow();
+
+    List<Cola> colas;
+
+    if (u.hasRole(User.Role.ADMIN)) {
+        colas = colaRepository.findAll();
+    } else {
+        colas = colaRepository.findByTrabajadores_Id(u.getId());
+    }
+
+    Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
+
+    for (Cola cola : colas) {
+        int maxPuesto = 0;
+
+        if (cola.getListaClientes() != null) {
+            maxPuesto = cola.getListaClientes().stream()
+                    .filter(user -> user.getPosicion() != null)
+                    .mapToInt(User::getPosicion)
+                    .max()
+                    .orElse(0);
+        }
+
+        maxPuestoPorCola.put(cola.getId(), maxPuesto);
+    }
+
+    model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
+    model.addAttribute("colas", colas);
+    model.addAttribute("u", u);
+
+    return "seguimientoCola";
+}
     
 
     @PostMapping("/colas/{id}/abrir")
