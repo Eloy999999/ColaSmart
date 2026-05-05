@@ -36,7 +36,7 @@
 <div th:if="${u != null and u.hasRole('ADMIN') or u != null and u.hasRole('ORGANIZADOR')}" class="container">
 
     <div class="d-flex justify-content-end mt-4 mb-3">
-        <a href="/panelAdmin"
+        <a href="/panelAdmin?modal=personal"
         class="btn btn-outline-secondary btn-sm">
             ← Volver al panel admin
         </a>
@@ -56,7 +56,7 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <th>Asignada</th>
+                <th class="text-center">Asignada</th>
                 <th class="text-center">Acciones</th>
             </tr>
         </thead>
@@ -75,18 +75,20 @@
                 </td>
 
                 <!-- ASIGNADA -->
-                <td class="text-center">
+                <td>
+                    <div class="d-flex justify-content-center">
 
-                    <span th:if="${colaAsignada[cola.id]}"
-                        class="badge bg-success">
-                        Sí
-                    </span>
+                        <span th:if="${colaAsignada[cola.id]}"
+                            class="badge bg-success">
+                            Sí
+                        </span>
 
-                    <span th:unless="${colaAsignada[cola.id]}"
-                        class="badge bg-secondary">
-                        No
-                    </span>
+                        <span th:unless="${colaAsignada[cola.id]}"
+                            class="badge bg-secondary">
+                            No
+                        </span>
 
+                    </div>
                 </td>
 
                 <!-- ACCIONES -->
