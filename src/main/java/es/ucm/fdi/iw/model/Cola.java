@@ -92,31 +92,22 @@ public class Cola {
     abierto = false;
   }
 
+  // Punteros de la cola
+  private int first;  // posicion del primero esperando (o siendo atendido)
+  private int last;   // posicion del último añadido
+  private int waiting;  // esperando
+
   public static int calcularSiguientePosicion(Cola c) {
-    if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
-      return 0;
-    }
-
-    int max = -1;
-
-    for (User u : c.getListaClientes()) {
-      if (u.getPosicion() > max) {
-        max = u.getPosicion();
-      }
-    }
-
-    return max + 1;
+      if (c == null) return 1;
+      c.waiting++;
+      return c.getLast() + 1;  // siempre el siguiente al último
   }
 
-  public static void adelantarPacientesDetrasUno(Cola c, int pos) {
-    if (c == null || c.getListaClientes() == null || c.getListaClientes().isEmpty()) {
-      return;
-    }
-
-    for (User u : c.getListaClientes()) {
-      if (u.getPosicion() > pos) {
-        u.setPosicion(u.getPosicion() - 1);
-      }
-    }
+  public static void adelantarPuntero(Cola c) {
+      if (c == null) return;
+      if (c.waiting > 0) c.waiting--;
+      c.setFirst(c.getFirst() + 1);  // avanza el puntero al siguiente
   }
+  
+
 }

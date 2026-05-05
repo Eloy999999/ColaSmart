@@ -115,82 +115,6 @@ public class ColaController {
         return "modificar_cola";
     }
 
-    /*
-     * @GetMapping("/seguimientoCola")
-     * public String seguimientoCola(Model model) {
-     * List<User> users = userRepository.findAll();
-     * List<Cola> colas = colaRepository.findAll();
-     * 
-     * Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
-     * 
-     * for (Cola cola : colas) {
-     * int maxPuesto = 0;
-     * 
-     * if (cola.getListaClientes() != null) {
-     * maxPuesto = cola.getListaClientes().stream()
-     * .mapToInt(User::getPosicion)
-     * .max()
-     * .orElse(0);
-     * }
-     * 
-     * if (maxPuesto < 1) {
-     * maxPuesto = 0;
-     * }
-     * 
-     * maxPuestoPorCola.put(cola.getId(), maxPuesto);
-     * }
-     * 
-     * model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
-     * model.addAttribute("colas", colas);
-     * return "seguimientoCola";
-     * }
-     * 
-     */
-
-    /*
-     * @GetMapping("/seguimientoCola")
-     * public String seguimientoCola(Model model) {
-     * 
-     * User u = (User) SecurityContextHolder.getContext()
-     * .getAuthentication()
-     * .getPrincipal();
-     * 
-     * List<Cola> colas;
-     * 
-     * if (u.hasRole(User.Role.ADMIN)) {
-     * colas = colaRepository.findAll();
-     * } else {
-     * colas = colaRepository.findByTrabajadores_Id(u.getId());
-     * }
-     * 
-     * Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
-     * 
-     * for (Cola cola : colas) {
-     * int maxPuesto = 0;
-     * 
-     * if (cola.getListaClientes() != null) {
-     * maxPuesto = cola.getListaClientes().stream()
-     * .filter(user -> user.getPosicion() != null)
-     * .mapToInt(User::getPosicion)
-     * .max()
-     * .orElse(0);
-     * }
-     * 
-     * if (maxPuesto < 1) {
-     * maxPuesto = 0;
-     * }
-     * 
-     * maxPuestoPorCola.put(cola.getId(), maxPuesto);
-     * }
-     * 
-     * model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
-     * model.addAttribute("colas", colas);
-     * model.addAttribute("u", u);
-     * 
-     * return "seguimientoCola";
-     * }
-     */
-
     @GetMapping("/seguimientoCola")
     public String seguimientoCola(Model model, Authentication auth) {
 
@@ -215,17 +139,7 @@ public class ColaController {
         Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
 
         for (Cola cola : colas) {
-            int maxPuesto = 0;
-
-            if (cola.getListaClientes() != null) {
-                maxPuesto = cola.getListaClientes().stream()
-                        .filter(user -> user.getPosicion() != null)
-                        .mapToInt(User::getPosicion)
-                        .max()
-                        .orElse(0);
-            }
-
-            maxPuestoPorCola.put(cola.getId(), maxPuesto);
+            maxPuestoPorCola.put(cola.getId(), cola.getWaiting());
         }
 
         model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);

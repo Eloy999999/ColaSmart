@@ -221,7 +221,6 @@ public class AdminController {
                         cola.getListaClientes().contains(paciente)) {
 
                     cola.getListaClientes().remove(paciente);
-                    Cola.adelantarPacientesDetrasUno(cola, paciente.getPosicion());
                     colaRepository.save(cola);
                 }
             }
