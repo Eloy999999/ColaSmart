@@ -194,6 +194,11 @@ public class ColaController {
     @GetMapping("/seguimientoCola")
     public String seguimientoCola(Model model, Authentication auth) {
 
+        if (auth == null || !auth.isAuthenticated()) {
+            model.addAttribute("u", null);
+            return "seguimientoCola";
+        }
+
         String username = auth.getName();
 
         User u = userRepository.findByUsername(username)
