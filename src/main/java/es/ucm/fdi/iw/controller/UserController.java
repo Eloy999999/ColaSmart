@@ -478,8 +478,7 @@ public class UserController {
     User usuarioExistente = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
 
-    usuarioExistente.setTurno(personal.getTurno());
-    usuarioExistente.setLugar(personal.getLugar());
+    usuarioExistente.setPosicion(personal.getPosicion());
 
     // 1. Quitar de la cola actual
     for (Cola c : colaRepository.findAll()) {
@@ -514,7 +513,12 @@ public class UserController {
     usuarioExistente.setFirstName(personal.getFirstName());
     usuarioExistente.setLastName(personal.getLastName());
     usuarioExistente.setUsername(personal.getUsername());
-    usuarioExistente.setPassword(personal.getPassword());
+
+    if (personal.getPassword() != null) {
+        // Guardar contraseña cifrada en lugar de la contraseña sin cifrar
+        usuarioExistente.setPassword(encodePassword(personal.getPassword()));
+    }
+
     usuarioExistente.setRoles(rol);
     // 1. quitarlo de todas las colas actuales
     for (Cola c : colaRepository.findAll()) {
