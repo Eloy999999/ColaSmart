@@ -221,8 +221,10 @@
                         const cola = await res.json();
                         const filaEl = document.querySelector(`tr[data-cola-id="${id}"]`);
                         if (filaEl) {
-                            filaEl.querySelector('.badge.bg-danger').textContent =
-                                cola.listaClientes.length;
+                            const esperando = cola.listaClientes.filter(c =>
+                                cola.first != null && c.posicion >= cola.first
+                            ).length;
+                            filaEl.querySelector('.badge.bg-danger').textContent = esperando;
                         }
                         // Si el modal de esa cola está abierto, refrescarlo también
                         if (colaIdActual === id) {

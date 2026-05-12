@@ -33,8 +33,14 @@
             <!-- IZQUIERDA: información -->
             <div class="col-md-6">
                 <p class="fs-2"><strong>Tipo de servicio:</strong> <span th:text="${cola.nombre}">Atención Secretaría</span></p>
-                <p class="fs-2"><strong>Tiempo estimado:</strong> <span th:text="${cola.tiempo * posicion + ' minutos'}">15 minutos</span></p>
-                <p class="fs-2"><strong>Posición en la cola:</strong> <span th:text="${user.posicion}">3</span></p>
+                <!-- Tiempo estimado -->
+                <p class="fs-2"><strong>Tiempo estimado:</strong> 
+                    <span th:text="${cola.tiempo * (user.posicion - cola.getFirst()) + ' minutos'}">15 minutos</span>
+                </p>
+                <!-- Posición en la cola -->
+                <p class="fs-2"><strong>Posición en la cola:</strong> 
+                    <span th:text="${user.posicion - cola.getFirst()}">3</span>
+                </p>
             </div>
 
             <!-- DERECHA: puesto en cola grande -->
@@ -120,18 +126,19 @@
 
             if (!yo) return; // ya fue eliminado
 
+            // Posición relativa en la cola
+            const posRelativa = yo.posicion - cola.first;
+
             // Actualizar posición en pantalla
-            document.querySelector('[th\\:text="${user.posicion}"]')
-                ?.closest('p')
-                ?.querySelector('span')
-                && (document.querySelector('span[th\\:text]').textContent = yo.posicion);
+            const spanPosicion = document.querySelectorAll('.fs-2 span')[2];
+            if (spanPosicion) spanPosicion.textContent = posRelativa;
 
             // Actualizar tiempo estimado
             const spanTiempo = document.querySelectorAll('.fs-2 span')[1];
-            if (spanTiempo) spanTiempo.textContent = (cola.tiempo * yo.posicion) + ' minutos';
+            if (spanTiempo) spanTiempo.textContent = (cola.tiempo * posRelativa) + ' minutos';
 
-            // Si es su turno (posicion 0), mostrar pantalla de turno
-            if (yo.posicion <= 0) {
+            // Si es su turno (posicion relativa <= 0), mostrar pantalla de turno
+            if (posRelativa <= 0) {
                 mostrarTurno();
             }
         });
