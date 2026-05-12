@@ -142,11 +142,13 @@ public class AdminController {
         return query.getResultList().stream().map(Transferable::toTransfer).collect(Collectors.toList());
     }
 
-    // Crear nueva cola
     @PostMapping("/colas")
     @Transactional
     public String crearCola(@ModelAttribute Cola nuevaCola) {
         nuevaCola.setQrToken(java.util.UUID.randomUUID().toString());
+        nuevaCola.setFirst(1);
+        nuevaCola.setLast(0);
+        nuevaCola.setWaiting(0);
         entityManager.persist(nuevaCola);
         return "redirect:/panelAdmin?modal=listas";
     }

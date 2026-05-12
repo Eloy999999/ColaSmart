@@ -35,11 +35,11 @@
                 <p class="fs-2"><strong>Tipo de servicio:</strong> <span th:text="${cola.nombre}">Atención Secretaría</span></p>
                 <!-- Tiempo estimado -->
                 <p class="fs-2"><strong>Tiempo estimado:</strong> 
-                    <span th:text="${cola.tiempo * (user.posicion - cola.getFirst()) + ' minutos'}">15 minutos</span>
+                    <span th:text="${cola.tiempo * (user.posicion+1 - cola.getFirst()) + ' minutos'}">15 minutos</span>
                 </p>
                 <!-- Posición en la cola -->
                 <p class="fs-2"><strong>Posición en la cola:</strong> 
-                    <span th:text="${user.posicion - cola.getFirst()}">3</span>
+                    <span th:text="${user.posicion+1 - cola.getFirst()}">3</span>
                 </p>
             </div>
 
