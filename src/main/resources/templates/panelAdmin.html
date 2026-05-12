@@ -227,17 +227,18 @@
                                     <span th:unless="${colaDelPaciente[paciente.id] != null}"
                                           class="text-muted">-</span>
                                 </td>
+                                    <td>
+                                        <span th:if="${colaDelPaciente[paciente.id] != null}"
+                                            th:text="${colaDelPaciente[paciente.id].nombre}">Cola General</span>
+                                        <span th:unless="${colaDelPaciente[paciente.id] != null}"
+                                            class="text-muted">Sin cola</span>
+                                    </td>
                                 <td>
                                     <span th:if="${colaDelPaciente[paciente.id] != null}"
-                                          th:text="${colaDelPaciente[paciente.id].nombre}">Cola General</span>
+                                        th:text="${paciente.posicion - colaDelPaciente[paciente.id].first}">
+                                    </span>
                                     <span th:unless="${colaDelPaciente[paciente.id] != null}"
-                                          class="text-muted">Sin cola</span>
-                                </td>
-                                <td>
-                                    <span th:if="${colaDelPaciente[paciente.id] != null}"
-                                          th:text="${paciente.Posicion}">Cola General</span>
-                                    <span th:unless="${colaDelPaciente[paciente.id] != null}"
-                                          class="text-muted">Sin cola</span>
+                                        class="text-muted">Sin cola</span>
                                 </td>
 
                                 <td class="text-center">

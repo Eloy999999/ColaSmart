@@ -90,24 +90,8 @@ public class AdminController {
 
         // Mapa colaId -> MaxPosicion::Integer
         Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
-
         for (Cola cola : colas) {
-            int maxPuesto = 0;
-
-            if (cola.getListaClientes() != null) {
-                maxPuesto = cola.getListaClientes().stream()
-                        .filter(u -> u.hasRole(User.Role.PACIENTE))
-                        .filter(u -> u.getPosicion() != null)
-                        .mapToInt(User::getPosicion)
-                        .max()
-                        .orElse(0);
-            }
-
-            if (maxPuesto < 1) {
-                maxPuesto = 0;
-            }
-
-            maxPuestoPorCola.put(cola.getId(), maxPuesto);
+            maxPuestoPorCola.put(cola.getId(), cola.getWaiting());
         }
 
         model.addAttribute("colas", colas);
