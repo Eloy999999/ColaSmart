@@ -116,40 +116,35 @@
     });
 
     stompClient.onConnect = function () {
-        console.log('OK panelQR STOMP conectado, cola:', colaId);
-
         stompClient.subscribe(`/topic/cola/${colaId}/actualizar`, async function (msg) {
-            console.log('OK panelQR recibió mensaje:', msg.body);
-
             const res = await fetch(`/colas/${colaId}/detalle`);
             const cola = await res.json();
 
-            const ordenados = cola.listaClientes
-                .slice()
-                .sort((a, b) => a.posicion - b.posicion);
+            // Turno actual = posicion first - 1
+            const posActual = cola.first - 1;
+            const actual = cola.listaClientes.find(c => c.posicion === posActual);
 
-            // Turno actual (posicion 0)
-            const actual = ordenados.find(c => c.posicion === 0);
             const divTurno = document.getElementById('turno-actual');
             if (divTurno) {
                 divTurno.textContent = actual
-                    ? `${actual.username} - ${(actual.lugar || 'Puesto ?')}`: '';
+                    ? `${actual.username} - ${actual.lugar || 'Puesto ?'}` : '';
             }
 
-            // Lista de atendidos (posicion negativa)
-            const atendidos = ordenados
-                .filter(c => c.posicion < 0)
-                .sort((a, b) => b.posicion - a.posicion)
-                .slice(0, 5);
+            // Últimos 6 atendidos = posiciones first-6 a first-2
+            const atendidos = [];
+            for (let i = posActual - 1; i >= posActual - 6 && i >= 0; i--) {
+                const u = cola.listaClientes.find(c => c.posicion === i);
+                atendidos.push(u || null);
+            }
 
             const contenedor = document.getElementById('contenedor-atendidos');
             if (contenedor) {
-                if (atendidos.length === 0) {
+                if (atendidos.every(a => a === null)) {
                     contenedor.innerHTML = '<div class="item-atendido"></div>';
                 } else {
                     contenedor.innerHTML = atendidos.map(c => `
                         <div class="item-atendido">
-                            ${c.username} - ${c.lugar || 'Puesto ?'}
+                            ${c ? c.username + ' - ' + (c.lugar || 'Puesto ?') : ''}
                         </div>`).join('');
                 }
             }

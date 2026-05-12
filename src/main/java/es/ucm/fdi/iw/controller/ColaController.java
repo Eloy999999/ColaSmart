@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -215,98 +216,22 @@ public class ColaController {
         }
 
         data.put("listaClientes", cola.getListaClientes().stream()
-                .map(u -> Map.of("id", u.getId(), "username", u.getUsername(), "posicion", u.getPosicion()))
-                .collect(Collectors.toList()));
+                .map(u -> {
+                    Map<String, Object> m = new HashMap<>();
+                    m.put("id", u.getId());
+                    m.put("username", u.getUsername());
+                    m.put("posicion", u.getPosicion());
+                    m.put("lugar", u.getLugar());
+                    return m;
+                }).collect(Collectors.toList()));
 
         return data;
     }
 
-    /*
-     * @PostMapping("/colas/{id}/siguiente")
-     * 
-     * @ResponseBody
-     * public ResponseEntity<?> llamarSiguiente(@PathVariable long id) {
-     * Cola cola = colaRepository.findById(id)
-     * .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-     * 
-     * List<User> lista = cola.getListaClientes();
-     * if (!lista.isEmpty()) {
-     * // Guardar el turno actual como último antes de avanzar
-     * if (cola.getTurnoActual() != null) {
-     * cola.setUltimoTurno(cola.getTurnoActual());
-     * cola.setInicioUltimoTurno(cola.getInicioTurnoActual());
-     * cola.setFinUltimoTurno(LocalTime.now());
-     * }
-     * 
-     * // Avanzar al siguiente
-     * User siguiente = lista.remove(0);
-     * cola.setTurnoActual(siguiente.getUsername());
-     * cola.setInicioTurnoActual(LocalTime.now());
-     * 
-     * colaRepository.save(cola);
-     * }
-     * 
-     * return ResponseEntity.ok().build();
-     * }
-     */
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-/* 
-
-    @PostMapping("/colas/{id}/siguiente")
-    @ResponseBody
-    public ResponseEntity<?> llamarSiguiente(@PathVariable long id, @RequestParam String sala) {
-
-        Cola cola = colaRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        List<User> lista = cola.getListaClientes();
-
-        // 1. Guardar el actual (posicion 0)
-        User actual = lista.stream()
-                .filter(u -> u.getPosicion() == 0)
-                .findFirst()
-                .orElse(null);
-
-        LocalTime inicioActual = cola.getInicioTurnoActual(); // 👈 guardar copia segura
-
-        if (actual != null) {
-            cola.setUltimoTurno(actual.getUsername());
-            cola.setInicioUltimoTurno(inicioActual);
-            cola.setFinUltimoTurno(LocalTime.now());
-        }
-
-        // 2. Restar 1 a todos
-        for (User u : lista) {
-            u.setPosicion(u.getPosicion() - 1);
-        }
-
-        // 2.5. El nuevo actual (posicion 0) pasa a sala
-        User nuevoActual = lista.stream()
-                .filter(u -> u.getPosicion() == 0)
-                .findFirst()
-                .orElse(null);
-
-        if (nuevoActual != null) {
-            nuevoActual.setLugar("Puesto " + sala);
-
-            cola.setInicioTurnoActual(LocalTime.now());
-        }
-
-
-        colaRepository.saveAndFlush(cola);
-        // userRepository.deleteAll(toDelete);
-
-        // Notifica
-        messagingTemplate.convertAndSend(
-                "/topic/cola/" + id + "/actualizar",
-                "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
-
-        return ResponseEntity.ok().build();
-    }
-
-    */
 
     @PostMapping("/colas/{id}/siguiente")
     @ResponseBody
@@ -318,37 +243,33 @@ public class ColaController {
                 .orElseThrow(() ->
                         new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        // =========================
         // Guardar ultimo atendido
-        // =========================
-
         int actual = cola.getFirst() - 1;
 
         cola.setUltimoTurno(String.valueOf(actual));
-        cola.setInicioUltimoTurno(
-                cola.getInicioTurnoActual());
-        cola.setFinUltimoTurno(
-                LocalTime.now());
+        cola.setInicioUltimoTurno(cola.getInicioTurnoActual());
+        cola.setFinUltimoTurno(LocalTime.now());
 
-        // =========================
         // Avanzar cola
-        // =========================
-
         if (cola.getWaiting() > 0) {
-
             cola.setFirst(cola.getFirst() + 1);
-
             cola.setWaiting(cola.getWaiting() - 1);
-
             cola.setInicioTurnoActual(LocalTime.now());
+
+            // Guardar sala en el nuevo turno actual
+            int nuevaPosActual = cola.getFirst() - 1;
+            cola.getListaClientes().stream()
+                .filter(u -> u.getPosicion() == nuevaPosActual)
+                .findFirst()
+                .ifPresent(u -> {
+                    u.setLugar(sala);
+                    userRepository.save(u);
+                });
         }
 
         colaRepository.saveAndFlush(cola);
 
-        // =========================
         // Websocket
-        // =========================
-
         messagingTemplate.convertAndSend(
                 "/topic/cola/" + id + "/actualizar",
                 "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
@@ -361,45 +282,36 @@ public class ColaController {
     @GetMapping("/panelQR/{id}")
     public String mostrarPanelQR(@PathVariable Long id, HttpSession session, Model model) {
         session.setAttribute("panelQrColaId", id);
-        long idDefault = id;
-        Cola cola = colaRepository.findById(idDefault).orElse(null);
-        model.addAttribute("cola", cola); // Le meto la cola para poder sacar de ahi toda la info de esta, y meter al
-                                          // user nuevo a esta cola
+        Cola cola = colaRepository.findById(id).orElse(null);
+        model.addAttribute("cola", cola);
 
-        if (!cola.isAbierto()) { // Si esta cerrada la cola, poner que la cola esta cerrada
-            model.addAttribute("cola", cola);
+        if (!cola.isAbierto()) {
             return "cola_cerrada";
         }
 
-        // Coger posiciones de -6 a -1 por cola
-        List<User> atendidos = userRepository.findAtendidosByColaId(idDefault, -6, -1);
-
-        while (atendidos.size() < 6) {
-            atendidos.add(null);
-        }
-
-        // Turno actual por cola
-        Optional<User> turnoActualOpt = userRepository.findTurnoActualByColaId(idDefault, 0);
+        // Turno actual = posicion first - 1
+        int posActual = cola.getFirst() - 1;
+        Optional<User> turnoActualOpt = cola.getListaClientes().stream()
+            .filter(u -> u.getPosicion() == posActual)
+            .findFirst();
         User turnoActual = turnoActualOpt.orElse(null);
 
-        // posiciones globales
-        // User turnoActual = userRepository.findByPosicion(0);
+        // Últimos 6 atendidos = posiciones desde first-6 hasta first-2
+        List<User> atendidos = new ArrayList<>();
+        for (int i = posActual - 1; i >= posActual - 6 && i >= 0; i--) {
+            final int pos = i;
+            cola.getListaClientes().stream()
+                .filter(u -> u.getPosicion() == pos)
+                .findFirst()
+                .ifPresentOrElse(atendidos::add, () -> atendidos.add(null));
+        }
+        while (atendidos.size() < 6) atendidos.add(null);
 
         model.addAttribute("atendidos", atendidos);
         model.addAttribute("turnoActual", turnoActual);
-
         return "panelQR";
     }
-    /*
-     * @GetMapping("/panelQR/{id}")
-     * public String mostrarPanelQR(@PathVariable Long id, Model model) {
-     * Cola cola = colaRepository.findById(id)
-     * .orElseThrow(() -> new IllegalArgumentException("Cola no encontrada: " +
-     * id));
-     * model.addAttribute("cola", cola);
-     * return "panelQR";
-     * }
-     */
+
 
     @PostMapping("/colas/{id}/imagen")
     @ResponseBody
