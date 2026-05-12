@@ -180,6 +180,9 @@ public class ColaController {
         data.put("nombre", cola.getNombre());
         data.put("turnoActual", cola.getTurnoActual());
         data.put("estado", cola.getEstado().name());
+        data.put("first", cola.getFirst());
+        data.put("last", cola.getLast());
+        data.put("waiting", cola.getWaiting());
 
         // Turno actual: hora inicio y minutos transcurridos
         if (cola.getInicioTurnoActual() != null) {
@@ -249,6 +252,8 @@ public class ColaController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+/* 
+
     @PostMapping("/colas/{id}/siguiente")
     @ResponseBody
     public ResponseEntity<?> llamarSiguiente(@PathVariable long id, @RequestParam String sala) {
@@ -289,22 +294,6 @@ public class ColaController {
             cola.setInicioTurnoActual(LocalTime.now());
         }
 
-        // 3. Eliminar los de posicion -7
-        // Iterator<User> it = lista.iterator();
-
-        /*
-         * List<User> toDelete = new ArrayList<>();
-         * 
-         * while (it.hasNext()) {
-         * User u = it.next();
-         * 
-         * if (u.getPosicion() <= -7) {
-         * it.remove();
-         * toDelete.add(u);
-         * }
-         * }
-         * 
-         */
 
         colaRepository.saveAndFlush(cola);
         // userRepository.deleteAll(toDelete);
@@ -316,6 +305,58 @@ public class ColaController {
 
         return ResponseEntity.ok().build();
     }
+
+    */
+
+    @PostMapping("/colas/{id}/siguiente")
+    @ResponseBody
+    public ResponseEntity<?> llamarSiguiente(
+            @PathVariable long id,
+            @RequestParam String sala) {
+
+        Cola cola = colaRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        // =========================
+        // Guardar ultimo atendido
+        // =========================
+
+        int actual = cola.getFirst() - 1;
+
+        cola.setUltimoTurno(String.valueOf(actual));
+        cola.setInicioUltimoTurno(
+                cola.getInicioTurnoActual());
+        cola.setFinUltimoTurno(
+                LocalTime.now());
+
+        // =========================
+        // Avanzar cola
+        // =========================
+
+        if (cola.getWaiting() > 0) {
+
+            cola.setFirst(cola.getFirst() + 1);
+
+            cola.setWaiting(cola.getWaiting() - 1);
+
+            cola.setInicioTurnoActual(LocalTime.now());
+        }
+
+        colaRepository.saveAndFlush(cola);
+
+        // =========================
+        // Websocket
+        // =========================
+
+        messagingTemplate.convertAndSend(
+                "/topic/cola/" + id + "/actualizar",
+                "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
+
+        return ResponseEntity.ok().build();
+    }
+
+
 
     @GetMapping("/panelQR/{id}")
     public String mostrarPanelQR(@PathVariable Long id, HttpSession session, Model model) {

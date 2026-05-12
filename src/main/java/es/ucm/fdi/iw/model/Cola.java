@@ -97,10 +97,23 @@ public class Cola {
   private int last;   // posicion del último añadido
   private int waiting;  // esperando
 
+  public int getFirst() {
+    return first;
+  }
+
+  public int getLast() {
+      return last;
+  }
+
+  public int getWaiting() {
+      return waiting;
+  }
+
   public static int calcularSiguientePosicion(Cola c) {
       if (c == null) return 1;
       c.waiting++;
-      return c.getLast() + 1;  // siempre el siguiente al último
+      c.setLast(c.getLast() + 1);
+      return c.getLast();  // siempre el siguiente al último
   }
 
   public static void adelantarPuntero(Cola c) {

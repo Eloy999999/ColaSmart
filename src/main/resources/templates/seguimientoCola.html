@@ -313,6 +313,8 @@
     }
 
     function renderModal(cola) {
+        console.log(cola);
+        console.log(cola.listaClientes);
         nombreColaActual = cola.nombre;
 
         const sala = document.getElementById('inputSala').value;
@@ -323,12 +325,26 @@
         document.getElementById('textoSala').textContent = sala;
 
         // 🔹 ordenar por posicion
-        const ordenados = cola.listaClientes
+       const ordenados = cola.listaClientes
             .slice()
             .sort((a, b) => a.posicion - b.posicion);
 
-        const actual = ordenados.find(c => c.posicion === 0);
-        const espera = ordenados.filter(c => c.posicion > 0);
+        // actual = first - 1
+        const actualNumero =
+            cola.first != null
+                ? cola.first - 1
+                : null;
+
+        const actual =
+            ordenados.find(c => c.posicion === actualNumero);
+
+        // esperando = numero >= first
+        console.log("FIRST:", cola.first);
+        console.log("LISTA:", cola.listaClientes);
+        const espera =
+            ordenados.filter(c =>
+                cola.first != null &&
+                c.posicion >= cola.first);
 
         // =======================
         // Turno actual
