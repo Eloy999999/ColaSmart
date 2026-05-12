@@ -273,7 +273,7 @@
         const btn = document.getElementById('btnEditarSala');
 
         if (!editandoSala) {
-            // 👉 Mostrar contenedor
+            // Mostrar contenedor
             contenedor.classList.remove('d-none');
 
             input.style.display = 'block';
@@ -286,7 +286,7 @@
             btn.classList.add('btn-success');
 
         } else {
-            // 👉 Guardar y ocultar TODO
+            // Guardar y ocultar TODO
             texto.textContent = input.value;
 
             contenedor.classList.add('d-none');
@@ -324,7 +324,7 @@
 
         document.getElementById('textoSala').textContent = sala;
 
-        // 🔹 ordenar por posicion
+        // ordenar por posicion
        const ordenados = cola.listaClientes
             .slice()
             .sort((a, b) => a.posicion - b.posicion);
@@ -346,9 +346,7 @@
                 cola.first != null &&
                 c.posicion >= cola.first);
 
-        // =======================
         // Turno actual
-        // =======================
         const turnoDiv = document.getElementById('modal-turno-actual');
 
         if (actual) {
@@ -363,9 +361,7 @@
             turnoDiv.innerHTML = '<p class="text-muted">Ninguna persona siendo atendida ahora mismo.</p>';
         }
 
-        // =======================
         // Última persona atendida
-        // =======================
         const ultimoDiv = document.getElementById('modal-ultimo-turno');
 
         if (cola.ultimoTurno) {
@@ -379,9 +375,7 @@
             ultimoDiv.innerHTML = '<p class="text-muted">Ninguna persona atendida aún.</p>';
         }
 
-        // =======================
         // Lista de espera
-        // =======================
         const listaDiv = document.getElementById('modal-lista-espera');
         document.getElementById('modal-badge-espera').textContent = espera.length;
 
