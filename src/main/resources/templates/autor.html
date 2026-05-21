@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
+        <!-- Inserta el fragmento head -->
     <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Autores</title>
 </head>
 
+<!-- Layout vertical -->
 <body class="d-flex flex-column h-100">
 
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
+    <!-- Título principal -->
 <h1>Autores del Proyecto</h1>
 
 <div>

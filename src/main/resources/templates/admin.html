@@ -2,22 +2,31 @@
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <!-- Inserta el fragmento head -->
     <th:block th:replace="~{fragments/head :: header}" />
     <title>IW: Admin</title>
+
+    <!-- CSS de tablas dinámicas -->
     <link rel="stylesheet" th:href="@{/css/simple-datatables-10.css}" href="/css/simple-datatables-10.css"
         type="text/css" />
 </head>
 
+<!-- Layout vertical completo -->
 <body class="d-flex flex-column h-100">
+    <!-- Inserta barra de navegación -->
     <header th:replace="~{fragments/nav.html :: nav}"></header>
 
     <main class="flex-shrink-0">
+                <!-- Título principal -->
         <div class="container">
             <h1 class="mt-5">Administración</h1>
         </div>
+                <!-- Tabla de usuarios -->
         <div class="container">
             <h1 class="mt-5">Usuarios</h1>
             <table>
+
+                <!-- Cabecera -->
                 <thead>
                     <tr>
                         <th>Id</th>
@@ -27,7 +36,11 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
+
+                                <!-- Datos -->
                 <tbody>
+
+                                        <!-- Recorre usuarios -->
                     <tr th:each="user : ${users}">
                         <td th:text="${user.id}">1</td>
                         <td th:text="${user.username}">paco</td>
@@ -42,8 +55,11 @@
                               <li th:text="${user.colasAsignadas}">Role</li>
                           </ul>
                       </td>
+                                              <!-- Acciones -->
                       <td>
+                                                    <!-- Formulario activar/desactivar -->
                             <form th:action="@{'/admin/toggle/' + ${user.id}}" th:method="post">
+                                                                <!-- Botones (des)habilitar -->
                                 <button th:if="${user.enabled}" type="submit"
                                     class="toggle btn btn-danger">Deshabilitar</button>
                                 <button th:unless="${user.enabled}" type="submit"
@@ -55,6 +71,7 @@
             </table>
         </div>
 
+                <!-- Tabla de mensajes -->
         <div class="container">
 
             <h2>Últimos 5 mensajes del sistema</h2>
@@ -65,6 +82,7 @@
 
     </main>
 
+        <!-- Inserta footer -->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
     <script>
         const toggles = document.querySelectorAll('.toggle');
@@ -72,12 +90,15 @@
             toggle.addEventListener('click', (e) => {
                 e.preventDefault();
                 const form = e.target.parentElement;
+                                // Petición AJAX
                 go(form.action, 'POST').then((d) => {
+                                        // Usuario habilitado
                     if (d.enabled) {
                         e.target.classList.remove('btn-primary');
                         e.target.classList.add('btn-danger');
                         e.target.textContent = 'Deshabilitar';
                     } else {
+                                            // Usuario deshabilitado
                         e.target.classList.remove('btn-danger');
                         e.target.classList.add('btn-primary');
                         e.target.textContent = 'Habilitar';
@@ -90,6 +111,7 @@
 
     </script>
 
+    <!-- Script módulo -->
     <script type="module">
         import { DataTable } from "../js/simple-datatables-10.js"
         let dt = null;

@@ -2,24 +2,29 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
+        <!-- Cabecera común (CSS, JS, config global) -->
     <th:block th:replace="~{fragments/head :: header}" />
+        <!-- Título dinámico con código de error -->
     <title th:text="|IW: Error ${status}|">IW: Error</title>
 </head>
 
 <body>
+        <!-- Barra de navegación -->
     <nav th:replace="~{fragments/nav.html :: nav}">
         Nav goes here
     </nav>
 
     <div class="container">
         <div class="main">
-
+            <!-- Código de error -->
             <h4>Error <span th:text="${status}"></span></h4>
-
+            <!-- Vista en producción -->
             <div th:unless="${application.debug}">
                 <img th:src="|https://http.cat/${status}|" alt="gato ilustrando problema" />
                 <p>Los administradores están informados. Puedes volver a intentar hacer lo que estabas haciendo de otra forma, o esperar a que solucionen el problema.</p>
             </div>
+
+            <!-- Vista en modo debug -->
             <div th:if="${application.debug}">
                 <p>Ha pasado algo feo. Mira el log del servidor para saber más detalles.</p>
 
@@ -73,7 +78,7 @@
                         </td>
                     </tr>
                 </table>
-
+                <!-- Información de la request -->
                 <h4>Otras</h4>
                 <table class="errTable" th:if="${req != null}">
                     <tr>

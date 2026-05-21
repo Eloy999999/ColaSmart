@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
+        <!-- Cabecera común (CSS, JS, config global) -->
     <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
+        <!-- Título de la pestaña -->
     <title>Crear nueva Cola</title> <!-- antiguo vista 3 -->
 </head>
 
+<!-- Layout vertical completo -->
 <body class="d-flex flex-column h-100">
-
+    <!-- Menú superior -->
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
  <main class="flex-shrink-0">
+            <!-- Solo admins pueden ver el formulario -->
         <div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
             <h1>Vista de configuración de una nueva cola</h1>
+
+            <!-- Formulario de creación de cola -->
             <form class="row g-3 mt-4" th:action="@{/panelAdmin/colas}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
@@ -44,19 +50,26 @@
                     <label class="form-label">Horario fin</label>
                     <input type="datetime-local" name="horarioFin" id="fin" class="form-control" placeholder="09:00-14:00">
                 </div>
+
+                <!-- Botón enviar -->
                 <button type="submit" class="btn btn-success mt-3">Crear Cola</button>
             </form>
         </div>
+
+        <!-- Mensaje si no es admin -->
         <div th:unless="${u != null and u.hasRole('ADMIN')}" class="container text-center mt-5">
             <div class="alert alert-danger">
                 <h2>Solo administradores</h2>
             </div>
         </div>
 
+        <!-- Script de fechas -->
         <script>
             const inicio = document.getElementById("inicio");
             const fin = document.getElementById("fin");
 
+
+            // Formatea fecha a input datetime-local
             function formatearFecha(fecha) {
                 const pad = n => n.toString().padStart(2, '0');
 
@@ -66,7 +79,7 @@
                     pad(fecha.getHours()) + ':' +
                     pad(fecha.getMinutes());
             }
-
+            // Autocompleta fechas al cargar
             window.addEventListener("load", () => { // Autorrellenar fechas al cargar la vista
                 const ahora = new Date();
                 const masUnMin = new Date(ahora.getTime() + 60000);
@@ -74,7 +87,7 @@
                 inicio.value = formatearFecha(ahora);
                 fin.value = formatearFecha(masUnMin);
             });
-
+            // Valida que fin > inicio
             function validarFechas() {
                 if (inicio.value && fin.value) {
                     if (inicio.value >= fin.value) {
