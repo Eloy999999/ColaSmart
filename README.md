@@ -3,7 +3,7 @@
 ColaSmart es una plataforma web para gestionar turnos y colas virtuales en servicios presenciales como secretarías, tutorías o laboratorios.
 Los usuarios se ponen en cola escaneando un QR desde su móvil, reciben notificaciones en tiempo real y evitan esperas innecesarias.
 
-El personal organiza la atención y prioriza casos. Menos colas físicas, menos estrés y una experiencia más eficiente para todos.
+El personal organiza la atención. Menos colas físicas, menos estrés y una experiencia más eficiente para todos.
 
 ## Roles y tareas
 
@@ -26,16 +26,10 @@ Solicita turno escaneando el QR que le llevará a una cola específica.
 Visualiza el estado en el que se encuentra en la cola y el tiempo estimado de espera
 Cancela el turno en caso de no querer seguir en la cola eliminándose de ella.
 
-## BBDD
-
-## Estado de las vistas
-**• Administrador**
-
-Puede añadir, editar y eliminar las colas y el personal.
-
-**• Personal**
-
-Puede abrir y cerrar colas.
-Aun no llama a clientes reales.
-
-**• Clientes**
+## Lista de usuarios en la BBDD
+**• Administrador**: 
+Usuario: a
+Contraseña : aa
+**• Personal de atención**:
+Usuario: b
+Contraseña : aa
