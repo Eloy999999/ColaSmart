@@ -42,41 +42,43 @@ import jakarta.transaction.Transactional;
 @RequestMapping("panelAdmin")
 public class AdminController {
 
+    // Codifica contraseñas
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    // Manejo manual de entidades JPA
     @Autowired
     private EntityManager entityManager;
-
+    // Repositorio de colas
     @Autowired
     private ColaRepository colaRepository;
-
+    // Repositorio de usuarios
     @Autowired
     private UserRepository userRepository;
-
+    // Envío de mensajes WebSocket
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     private static final Logger log = LogManager.getLogger(AdminController.class);
 
-    // Popula datos comunes
+    // Añade el usuario actual al modelo
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
         model.addAttribute("u", session.getAttribute("u"));
     }
 
-    // GET principal que carga colas y usuarios
+    // Muestra el panel principal
     @GetMapping({ "", "/" })
     public String panelAdmin(Model model, HttpSession session) {
         log.info("Admin entra a panelAdmin");
         List<Cola> colas = colaRepository.findAll();
         List<User> users = userRepository.findAll();
 
+        // Filtra solo pacientes
         List<User> pacientes = users.stream()
                 .filter(u -> u.hasRole(User.Role.PACIENTE))
                 .collect(Collectors.toList());
 
-        // Mapa pacienteId -> Cola
+        // Relaciona paciente con su cola
         Map<Long, Cola> colaDelPaciente = new java.util.HashMap<>();
         for (Cola cola : colas) {
             if (cola.getListaClientes() != null) {
@@ -88,12 +90,13 @@ public class AdminController {
             }
         }
 
-        // Mapa colaId -> MaxPosicion::Integer
+        // Guarda el tamaño de cada cola
         Map<Long, Integer> maxPuestoPorCola = new HashMap<>();
         for (Cola cola : colas) {
             maxPuestoPorCola.put(cola.getId(), cola.getWaiting());
         }
 
+        // Envía datos a la vista
         model.addAttribute("colas", colas);
         model.addAttribute("users", users);
         model.addAttribute("pacientes", pacientes);
@@ -103,7 +106,7 @@ public class AdminController {
         return "panelAdmin";
     }
 
-    // Toggle estado de usuario
+    // Activa o desactiva un usuario
     @PostMapping("/toggle/{id}")
     @Transactional
     @ResponseBody
@@ -126,9 +129,12 @@ public class AdminController {
         return query.getResultList().stream().map(Transferable::toTransfer).collect(Collectors.toList());
     }
 
+    // Crea una nueva cola
     @PostMapping("/colas")
     @Transactional
     public String crearCola(@ModelAttribute Cola nuevaCola) {
+
+        // Inicializa datos básicos
         nuevaCola.setQrToken(java.util.UUID.randomUUID().toString());
         nuevaCola.setFirst(1);
         nuevaCola.setLast(0);
@@ -141,8 +147,10 @@ public class AdminController {
     @PostMapping("/personal")
     @Transactional
     public String crearPersonal(@ModelAttribute User nuevoPersonal) {
+        // Cifra la contraseña
         nuevoPersonal.setPassword(passwordEncoder.encode(nuevoPersonal.getPassword()));
         nuevoPersonal.setEnabled(true);
+        // Asigna rol de organizador
         nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
         entityManager.persist(nuevoPersonal);
         return "redirect:/panelAdmin?modal=personal";
@@ -154,11 +162,12 @@ public class AdminController {
     @ResponseBody
     public Map<String, String> toggleCola(@PathVariable long id, HttpServletResponse response) {
         Cola cola = entityManager.find(Cola.class, id);
+        // Comprueba si existe
         if (cola == null) {
             response.setStatus(404);
             return Map.of("error", "Cola no encontrada");
         }
-        cola.abrir(); // O cerrar según tu lógica
+        cola.abrir();
         return Map.of("estado", cola.getEstado().name());
     }
 
@@ -177,11 +186,12 @@ public class AdminController {
             @RequestParam(required = false, defaultValue = "/panelAdmin") String redirect) {
 
         if (userRepository.existsById(id)) {
-            // Buscar en qué cola está y notificar
+            // Elimina al usuario de las colas
             for (Cola cola : colaRepository.findAll()) {
                 boolean estaba = cola.getListaClientes().removeIf(u -> u.getId() == id);
                 if (estaba) {
                     colaRepository.save(cola);
+                    // Notifica actualización
                     messagingTemplate.convertAndSend(
                             "/topic/cola/" + cola.getId() + "/actualizar",
                             "{\"colaId\":" + cola.getId() + ", \"tipo\":\"ABANDONAR\"}");
@@ -201,6 +211,7 @@ public class AdminController {
         if (paciente != null) {
 
             List<Cola> colas = colaRepository.findAll();
+            // Lo elimina de cualquier cola
 
             for (Cola cola : colas) {
                 if (cola.getListaClientes() != null &&
@@ -222,6 +233,7 @@ public class AdminController {
     @ResponseBody
     @Transactional
     public String populate() {
+        // Crea temas de prueba
         Topic g1 = new Topic();
         g1.setName("g1");
         g1.setKey(UserController.generateRandomBase64Token(6));
@@ -231,6 +243,7 @@ public class AdminController {
         g2.setKey(UserController.generateRandomBase64Token(6));
         entityManager.persist(g2);
 
+        // Crea usuarios aleatorios
         for (int i = 0; i < 15; i++) {
             User u = new User();
             u.setUsername("user" + i);
@@ -240,6 +253,7 @@ public class AdminController {
             u.setFirstName(Lorem.nombreAlAzar());
             u.setLastName(Lorem.apellidoAlAzar());
             entityManager.persist(u);
+            // Añade usuarios a grupos
             if (i % 2 == 0)
                 g1.getMembers().add(u);
             if (i % 3 == 0)
@@ -248,6 +262,7 @@ public class AdminController {
         return "{\"admin\": \"populated\"}";
     }
 
+    // Genera tokens para colas sin token
     @GetMapping("/colas/inicializar-tokens")
     @Transactional
     @ResponseBody
@@ -263,6 +278,7 @@ public class AdminController {
         return "Tokens inicializados correctamente";
     }
 
+    // Devuelve nombres aleatorios
     @GetMapping("/personal/lorem")
     @ResponseBody
     public Map<String, String> loremPersonal() {
