@@ -49,8 +49,10 @@
         </div>
     </main>
 
+    <!-- Footer común -->
     <th:block th:replace="~{fragments/footer.html :: footer}" />
 
+    <!-- Lógica AJAX del perfil (libros, películas, mensajes, etc.) -->
     <script th:src="@{/js/ajax-demo.js}"></script>
 </body>
 
