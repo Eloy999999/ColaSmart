@@ -127,7 +127,11 @@
     });
 
     stompClient.onConnect = function () {
+
+        // Se suscribe a cambios de la cola actual
         stompClient.subscribe(`/topic/cola/${colaId}/actualizar`, async function () {
+
+            // Pide estado actualizado de la cola al backend
             const res = await fetch(`/colas/${colaId}/detalle`);
             const cola = await res.json();
 
