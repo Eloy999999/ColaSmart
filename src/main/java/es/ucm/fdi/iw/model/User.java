@@ -22,17 +22,40 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * An authorized user of the system.
+ * Entidad que representa a un usuario del sistema.
+ * 
+ * Un usuario puede ser:
+ * - paciente
+ * - organizador
+ * - administrador
+ * 
+ * Tambien almacena informacion relacionada con:
+ * - colas asignadas
+ * - turnos
+ * - mensajes recibidos
+ * - datos personales
  */
 @Entity
 @Data
 @NoArgsConstructor
 @NamedQueries({
+
+    /**
+     * Busca un usuario activo por username.
+     */
     @NamedQuery(name = "User.byUsername", query = "SELECT u FROM User u "
         + "WHERE u.username = :username AND u.enabled = TRUE"),
+
+    /**
+     * Comprueba si ya existe un username en la BD.
+     */
     @NamedQuery(name = "User.hasUsername", query = "SELECT COUNT(u) "
         + "FROM User u "
         + "WHERE u.username = :username"),
+
+    /**
+     * Obtiene las claves de los topics a los que pertenece el usuario.
+     */
     @NamedQuery(name = "User.topics", query = "SELECT t.key "
         + "FROM Topic t JOIN t.members u "
         + "WHERE u.id = :id")
@@ -40,17 +63,26 @@ import lombok.NoArgsConstructor;
 @Table(name = "Usuarios")
 public class User implements Transferable<User.Transfer> {
 
+  /**
+   * Roles disponibles dentro del sistema.
+   */
   public enum Role {
     PACIENTE, // pacientes que esperan pacientemente la cola
     ORGANIZADOR, // organizadores de colas
     ADMIN, // admin users
   }
 
+  /**
+   * Identificador unico del usuario.
+   */
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gen")
   @SequenceGenerator(name = "gen", sequenceName = "gen")
   private long id;
 
+  /**
+   * Nombre de usuario unico.
+   */
   @Column(nullable = false, unique = true)
   private String username;
 
@@ -60,12 +92,22 @@ public class User implements Transferable<User.Transfer> {
   @Column(nullable = false)
   private boolean enabled;
 
+  /**
+   * Roles del usuario almacenados como texto.
+   * 
+   * Puede contener varios roles separados por comas.
+   */
   @Column(nullable = false)
   private String roles;
 
   @Column(nullable = true)
   private Integer posicion;
 
+  /**
+   * Lista de mensajes recibidos por el usuario.
+   * 
+   * Relacion uno a muchos con Message.
+   */
   @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
   private List<Message> received = new ArrayList<>();
 
@@ -86,6 +128,13 @@ public class User implements Transferable<User.Transfer> {
   private List<Turno> turnos = new ArrayList<>();
 
   // Métodos auxiliares
+
+  /**
+   * Comprueba si el usuario posee un rol concreto.
+   *
+   * @param r rol a comprobar
+   * @return true si el usuario tiene ese rol
+   */
   public boolean hasRole(Role r) {
     if (roles == null)
       return false;
@@ -93,6 +142,10 @@ public class User implements Transferable<User.Transfer> {
   }
 
   // Clase Transfer (DTO)
+  /**
+   * Clase DTO utilizada para transferir datos del usuario
+   * hacia el frontend o respuestas JSON.
+   */
   @Data
   @AllArgsConstructor
   @NoArgsConstructor
@@ -103,6 +156,11 @@ public class User implements Transferable<User.Transfer> {
     private String turno;
   }
 
+  /**
+   * Convierte la entidad User en un DTO Transfer.
+   *
+   * @return objeto Transfer serializable
+   */
   @Override
   public Transfer toTransfer() {
     String nombreCompleto = (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "");

@@ -57,9 +57,15 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 
 /**
- * User management.
- *
- * Access to this end-point is authenticated.
+ * Controlador encargado de la gestion de usuarios.
+ * 
+ * Incluye funcionalidades relacionadas con:
+ * - perfiles de usuario
+ * - gestion de imagenes de perfil
+ * - mensajeria interna
+ * - creacion automatica de pacientes mediante QR
+ * - asignacion de personal a colas
+ * - modificacion de pacientes y trabajadores
  */
 @Controller()
 @RequestMapping("user")
@@ -67,24 +73,35 @@ public class UserController {
 
   private static final Logger log = LogManager.getLogger(UserController.class);
 
+  // Acceso directo al EntityManager para operaciones JPA
   @Autowired
   private EntityManager entityManager;
 
+  // Acceso al almacenamiento local de archivos
   @Autowired
   private LocalData localData;
 
+  // Plantilla para enviar mensajes mediante WebSocket
   @Autowired
   private SimpMessagingTemplate messagingTemplate;
 
+  // Codificador de contraseñas
   @Autowired
   private PasswordEncoder passwordEncoder;
 
+  // Repositorio de usuarios
   @Autowired
   private UserRepository userRepository;
 
+  // Repositorio de colas
   @Autowired
   private ColaRepository colaRepository;
 
+  /**
+   * Inserta automaticamente atributos comunes de sesion en el modelo.
+   * 
+   * Esto evita repetir el mismo codigo en todos los metodos.
+   */
   @ModelAttribute
   public void populateModel(HttpSession session, Model model) {
     for (String name : new String[] { "u", "url", "ws", "topics" }) {
@@ -93,22 +110,20 @@ public class UserController {
   }
 
   /**
-   * Exception to use when denying access to unauthorized users.
-   * 
-   * In general, admins are always authorized, but users cannot modify
-   * each other's profiles.
+   * Excepcion utilizada cuando un usuario intenta acceder
+   * o modificar un perfil que no le pertenece sin ser administrador.
    */
   @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "No eres administrador, y éste no es tu perfil") // 403
   public static class NoEsTuPerfilException extends RuntimeException {
   }
 
   /**
-   * Encodes a password, so that it can be saved for future checking. Notice
-   * that encoding the same password multiple times will yield different
-   * encodings, since encodings contain a randomly-generated salt.
+   * Codifica una contraseña utilizando el encoder configurado en Spring Security.
    * 
-   * @param rawPassword to encode
-   * @return the encoded password (typically a 60-character string)
+   * Cada codificacion genera un hash distinto debido al uso de salt aleatorio.
+   * 
+   * @param rawPassword contraseña sin cifrar
+   * @return contraseña cifrada (typically a 60-character string)
    *         for example, a possible encoding of "test" is
    *         {bcrypt}$2y$12$XCKz0zjXAP6hsFyVc8MucOzx6ER6IsC1qo5zQbclxhddR1t6SfrHm
    */
@@ -117,10 +132,12 @@ public class UserController {
   }
 
   /**
-   * Generates random tokens. From https://stackoverflow.com/a/44227131/15472
+   * Genera un token aleatorio codificado en Base64 URL-safe.
    * 
-   * @param byteLength
-   * @return
+   * Utilizado para identificadores temporales o tokens de acceso.
+   *
+   * @param byteLength longitud del array aleatorio en bytes
+   * @return token aleatorio codificado
    */
   public static String generateRandomBase64Token(int byteLength) {
     SecureRandom secureRandom = new SecureRandom();
@@ -130,12 +147,23 @@ public class UserController {
   }
 
   /**
-   * Crear paciente al darle al QR y redirigir a la vista de su turno
+   * Crea automaticamente un paciente temporal al acceder mediante QR.
+   * 
+   * El usuario:
+   * - se crea automaticamente en la BD
+   * - se añade a la cola asociada al QR
+   * - recibe una posicion en la cola
+   * - se notifica mediante WebSocket a los clientes suscritos
+   * 
+   * Finalmente se redirige a la vista del turno del paciente.
+   *
+   * @param token identificador QR asociado a una cola
+   * @param session sesion HTTP actual
    */
-
   @GetMapping("/newQRuser")
   public String mostararVerTurno(@RequestParam("token") String token, HttpSession session) throws IOException {
 
+    // Crear nuevo paciente temporal
     User u = new User();
     u.setUsername(generarUsernameUnico());
     u.setPassword(passwordEncoder.encode("a"));
@@ -143,28 +171,38 @@ public class UserController {
     u.setEnabled(true);
     userRepository.save(u);
 
+    // Buscar cola asociada al token QR
     Cola cola = colaRepository.findByQrToken(token)
         .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
 
+    // Asignar posicion en la cola
     u.setPosicion(Cola.calcularSiguientePosicion(cola));
+
     cola.getListaClientes().add(u);
     colaRepository.save(cola);
 
+    // Notificar actualizacion a clientes WebSocket
     log.info("Enviando WebSocket a /topic/cola/{}/actualizar", cola.getId());
+
     messagingTemplate.convertAndSend(
         "/topic/cola/" + cola.getId() + "/actualizar",
         "{\"colaId\":" + cola.getId() + ", \"tipo\":\"NUEVO_USUARIO\"}");
+    
     log.info("WebSocket enviado correctamente");
 
+    // Guardar usuario y cola en sesion
     session.setAttribute("usuarioTemporal", u);
     session.setAttribute("colaTemporal", cola);
 
-    // Redirigir a la Vista 2 (panel de turnos)
+    // Redirigir al panel de turnos
     return "redirect:/tuTurno"; // pasar id de cola e id de nuevo user paciente
   }
 
   /**
-   * Landing page for a user profile
+   * Muestra la vista principal de un perfil de usuario.
+   *
+   * @param id ID del usuario
+   * @param model modelo de la vista
    */
   @GetMapping("{id:\\d+}")
   public String index(@PathVariable long id, Model model, HttpSession session) {
@@ -174,7 +212,19 @@ public class UserController {
   }
 
   /**
-   * Alter or create a user
+   * Crea o modifica un usuario.
+   * 
+   * Los administradores pueden crear nuevos usuarios usando ID -1.
+   * Los usuarios normales solo pueden modificar su propio perfil.
+   * 
+   * Tambien valida que las contraseñas coincidan antes de guardarlas.
+   *
+   * @param response respuesta HTTP
+   * @param id ID del usuario
+   * @param edited datos modificados
+   * @param pass2 confirmacion de contraseña
+   * @param model modelo de la vista
+   * @param session sesion HTTP
    */
   @PostMapping("/{id}")
   @Transactional
@@ -187,13 +237,19 @@ public class UserController {
 
     User requester = (User) session.getAttribute("u");
     User target = null;
+
+    // Crear nuevo usuario si el ID es -1 y el usuario es admin
     if (id == -1 && requester.hasRole(Role.ADMIN)) {
+
       // create new user with random password
       target = new User();
+
       target.setPassword(encodePassword(generateRandomBase64Token(12)));
       target.setEnabled(true);
+
       entityManager.persist(target);
       entityManager.flush(); // forces DB to add user & assign valid id
+
       id = target.getId(); // retrieve assigned id from DB
     }
 
@@ -201,11 +257,13 @@ public class UserController {
     target = entityManager.find(User.class, id);
     model.addAttribute("user", target);
 
+    // Verificar permisos
     if (requester.getId() != target.getId() &&
         !requester.hasRole(Role.ADMIN)) {
       throw new NoEsTuPerfilException();
     }
 
+    // Validar y actualizar contraseña
     if (edited.getPassword() != null) {
       if (!edited.getPassword().equals(pass2)) {
         log.warn("Passwords do not match - returning to user form");
@@ -217,11 +275,13 @@ public class UserController {
         target.setPassword(encodePassword(edited.getPassword()));
       }
     }
+
+    // Actualizar datos basicos
     target.setUsername(edited.getUsername());
     target.setFirstName(edited.getFirstName());
     target.setLastName(edited.getLastName());
 
-    // update user session so that changes are persisted in the session, too
+    // Actualizar usuario en sesion si modifica su propio perfil
     if (requester.getId() == target.getId()) {
       session.setAttribute("u", target);
     }
@@ -230,9 +290,9 @@ public class UserController {
   }
 
   /**
-   * Returns the default profile pic
-   * 
-   * @return
+   * Devuelve la imagen de perfil por defecto.
+   *
+   * @return InputStream de la imagen por defecto
    */
   private static InputStream defaultPic() {
     return new BufferedInputStream(Objects.requireNonNull(
@@ -241,11 +301,13 @@ public class UserController {
   }
 
   /**
-   * Downloads a profile pic for a user id
+   * Devuelve la imagen de perfil de un usuario.
    * 
-   * @param id
-   * @return
-   * @throws IOException
+   * Si el usuario no tiene imagen personalizada,
+   * devuelve la imagen por defecto.
+   *
+   * @param id ID del usuario
+   * @return stream con la imagen
    */
   @GetMapping("{id}/pic")
   public StreamingResponseBody getPic(@PathVariable long id) throws IOException {
@@ -255,11 +317,15 @@ public class UserController {
   }
 
   /**
-   * Uploads a profile pic for a user id
+   * Sube y guarda la imagen de perfil de un usuario.
    * 
-   * @param id
-   * @return
-   * @throws IOException
+   * Solo el propio usuario o un administrador pueden modificarla.
+   *
+   * @param photo imagen subida
+   * @param id ID del usuario
+   * @param response respuesta HTTP
+   * @param session sesion actual
+   * @param model modelo de la vista
    */
   @PostMapping("{id}/pic")
   @ResponseBody
@@ -293,6 +359,13 @@ public class UserController {
     return "{\"status\":\"photo uploaded correctly\"}";
   }
 
+  /**
+   * Muestra la pagina de error personalizada.
+   *
+   * @param model modelo de la vista
+   * @param session sesion HTTP
+   * @param request peticion HTTP
+   */
   @GetMapping("error")
   public String error(Model model, HttpSession session, HttpServletRequest request) {
     model.addAttribute("sess", session);
@@ -301,7 +374,11 @@ public class UserController {
   }
 
   /**
-   * Returns JSON with all received messages
+   * Devuelve en formato JSON todos los mensajes recibidos
+   * por el usuario autenticado.
+   *
+   * @param session sesion HTTP
+   * @return lista de mensajes serializados
    */
   @GetMapping(path = "received", produces = "application/json")
   @Transactional // para no recibir resultados inconsistentes
@@ -315,7 +392,10 @@ public class UserController {
   }
 
   /**
-   * Returns JSON with count of unread messages
+   * Devuelve el numero de mensajes no leidos del usuario actual.
+   *
+   * @param session sesion HTTP
+   * @return JSON con el numero de mensajes no leidos
    */
   @GetMapping(path = "unread", produces = "application/json")
   @ResponseBody
@@ -329,11 +409,17 @@ public class UserController {
   }
 
   /**
-   * Posts a message to a user.
+   * Envia un mensaje privado a otro usuario.
    * 
-   * @param id of target user (source user is from ID)
-   * @param o  JSON-ized message, similar to {"message": "text goes here"}
-   * @throws JsonProcessingException
+   * El mensaje:
+   * - se guarda en BD
+   * - se serializa a JSON
+   * - se envia mediante WebSocket al destinatario
+   *
+   * @param id ID del usuario destinatario
+   * @param o JSON con el contenido del mensaje
+   * @param model modelo de la vista
+   * @param session sesion HTTP
    */
   @PostMapping("/{id}/msg")
   @ResponseBody
@@ -372,10 +458,16 @@ public class UserController {
 
     log.info("Sending a message to {} with contents '{}'", id, json);
 
+    // Enviar mensaje por WebSocket
     messagingTemplate.convertAndSend("/user/" + u.getUsername() + "/queue/updates", json);
     return "{\"result\": \"message sent.\"}";
   }
 
+  /**
+   * Muestra la vista de gestion de personal.
+   *
+   * @param model modelo de la vista
+   */
   @GetMapping("manejar_personal")
   public String mostrarManejarPersonal(Model model) {
 
@@ -385,6 +477,12 @@ public class UserController {
     return "manejar_personal";
   }
 
+  /**
+   * Muestra el formulario de modificacion de personal.
+   *
+   * @param id ID del trabajador
+   * @param model modelo de la vista
+   */
   @GetMapping("/modificar_personal/{id}")
   public String mostrarModificarPersonal(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
@@ -396,6 +494,12 @@ public class UserController {
     return "modificar_personal";
   }
 
+  /**
+   * Muestra la vista para asignar o desasignar colas a un trabajador.
+   *
+   * @param id ID del trabajador
+   * @param model modelo de la vista
+   */
   @GetMapping("/modificar_colas_personal/{id}")
   public String mostrarModificarColasPersonal(@PathVariable Long id, Model model) {
 
@@ -426,6 +530,12 @@ public class UserController {
       return "modificar_colas_personal";
   }
 
+  /**
+   * Asigna una cola a un trabajador.
+   *
+   * @param trabajadorId ID del trabajador
+   * @param colaId ID de la cola
+   */
   @PostMapping("/asignarColaTrabajador")
   public String asignarCola(@RequestParam Long trabajadorId, @RequestParam Long colaId) {
 
@@ -440,6 +550,12 @@ public class UserController {
       return "redirect:/user/modificar_colas_personal/" + trabajadorId;
   }
 
+  /**
+   * Elimina la asignacion de una cola a un trabajador.
+   *
+   * @param trabajadorId ID del trabajador
+   * @param colaId ID de la cola
+   */
   @PostMapping("/desasignarColaTrabajador")
   public String desasignarCola(@RequestParam Long trabajadorId,
                               @RequestParam Long colaId) {
@@ -453,6 +569,12 @@ public class UserController {
       return "redirect:/user/modificar_colas_personal/" + trabajadorId;
   }
 
+  /**
+   * Muestra la vista de modificacion de pacientes.
+   *
+   * @param id ID del paciente
+   * @param model modelo de la vista
+   */
   @GetMapping("/modificar_paciente/{id}")
   public String mostrarModificarPaciente(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
@@ -469,6 +591,13 @@ public class UserController {
     return "modificar_paciente";
   }
 
+  /**
+   * Actualiza los datos de un paciente y lo mueve de cola si es necesario.
+   *
+   * @param id ID del paciente
+   * @param personal datos modificados
+   * @param colaId nueva cola asignada
+   */
   @PostMapping("/editarPaciente/{id}")
   public String actualizarPaciente(@PathVariable Long id,
       @ModelAttribute("personal") User personal,
@@ -500,6 +629,19 @@ public class UserController {
     return "redirect:/panelAdmin?modal=usuarios";
   }
 
+  /**
+   * Actualiza los datos de un trabajador.
+   * 
+   * Tambien permite:
+   * - cambiar contraseña
+   * - modificar rol
+   * - reasignar colas
+   *
+   * @param id ID del trabajador
+   * @param personal datos modificados
+   * @param colasId lista de colas seleccionadas
+   * @param rol nuevo rol
+   */
   @PostMapping("/editarPersonal/{id}")
   public String actualizarPersonal(@PathVariable Long id,
       @ModelAttribute("personal") User personal,
@@ -545,6 +687,13 @@ public class UserController {
 
   // ------ metodos auxiliares ------//
 
+  /**
+   * Genera un username aleatorio unico de 5 caracteres.
+   * 
+   * El metodo comprueba en BD que el username no exista previamente.
+   *
+   * @return username unico
+   */
   private String generarUsernameUnico() { // generar user con 3 caracteres aleatorios no repetido en la BD
     String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     Random r = new Random();
@@ -556,6 +705,7 @@ public class UserController {
     }
     username = sb.toString();
 
+    // Repetir mientras exista en BD
     while (userRepository.existsByUsername(username)) {
       sb = new StringBuilder();
       for (int i = 0; i < 5; i++) {
