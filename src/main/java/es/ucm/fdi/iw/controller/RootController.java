@@ -20,6 +20,8 @@ import jakarta.servlet.http.HttpSession;
 
 /**
  * Non-authenticated requests only.
+ * Controlador para peticiones que no requieren autenticación previa.
+ * Se encarga de devolver vistas públicas y de preparar datos comunes en el modelo.
  */
 @Controller
 public class RootController {
@@ -32,6 +34,10 @@ public class RootController {
 
     private static final Logger log = LogManager.getLogger(RootController.class);
 
+    /**
+     * Añade al modelo algunos atributos que pueden estar guardados en la sesión.
+     * Así se reutilizan en distintas vistas sin repetir código.
+     */
     @ModelAttribute
     public void populateModel(HttpSession session, Model model) {
         for (String name : new String[] { "u", "url", "ws", "topics" }) {
@@ -39,6 +45,10 @@ public class RootController {
         }
     }
 
+    /**
+     * Muestra la página de login.
+     * Si la URL contiene "error", se marca en el modelo para mostrar el mensaje correspondiente.
+     */
     @GetMapping("/login")
     public String login(Model model, HttpServletRequest request) {
         boolean error = request.getQueryString() != null && request.getQueryString().indexOf("error") != -1;
@@ -46,16 +56,30 @@ public class RootController {
         return "login";
     }
 
+    /**
+     * Muestra la página principal.
+     */
     @GetMapping("/")
     public String index(Model model) {
         return "index";
     }
 
+    /**
+     * Devuelve la página con información de autores.
+     */
     @GetMapping("/autor")
     public String autor(Model model) {
         return "autor"; // página con autores
     }
 
+    /**
+     * Muestra el panel QR de la cola por defecto (supermercado).
+     * Usa una cola por defecto y prepara en el modelo:
+     * - la cola
+     * - los últimos atendidos
+     * - el turno actual
+     * Si la cola está cerrada, redirige a una vista específica.
+     */
     @GetMapping("/panelQR")
     public String panelQR(Model model) {
         long idDefault = 975;
@@ -68,9 +92,10 @@ public class RootController {
             return "cola_cerrada";
         }
 
-        // Coger posiciones de -6 a -1 por cola
+        // Coger posiciones de -6 a -1 por cola, los usuarios atendidos en posiciones recientes de la cola
         List<User> atendidos = userRepository.findAtendidosByColaId(idDefault, -6, -1);
 
+        // Rellena con null hasta tener 6 elementos para la vista
         while (atendidos.size() < 6) {
             atendidos.add(null);
         }
@@ -79,15 +104,16 @@ public class RootController {
         Optional<User> turnoActualOpt = userRepository.findTurnoActualByColaId(idDefault,0);
         User turnoActual = turnoActualOpt.orElse(null);
 
-        //posiciones globales
-        //User turnoActual = userRepository.findByPosicion(0);
-
         model.addAttribute("atendidos", atendidos);
         model.addAttribute("turnoActual", turnoActual);
 
         return "panelQR";
     }
 
+    /**
+     * Muestra la pantalla "tuTurno".
+     * Recupera de sesión la cola temporal y el usuario temporal para enseñar su posición.
+     */
     @GetMapping("/tuTurno")
     public String tuTurno(HttpSession session, Model model) {
 
@@ -101,6 +127,9 @@ public class RootController {
         return "tuTurno";
     }
 
+    /**
+     * Devuelve la vista de configuración de colas.
+     */
     @GetMapping("/configCola")
     public String configCola(Model model) {
         return "configCola";
@@ -121,6 +150,9 @@ public class RootController {
      * }
      */
 
+    /**
+     * Devuelve la vista para manejar personal.
+     */
     @GetMapping("/Manejar Personal")
     public String vista6(Model model) {
         return "Manejar Personal";

@@ -1,35 +1,47 @@
 <!DOCTYPE html>
 <html class="h-100" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <!-- Inserta el bloque común del <head> desde fragments/head -->
     <th:block th:replace="~{fragments/head :: header}" />
     <meta charset="UTF-8">
     <title>Modificar Paciente</title>
 </head>
 
 <body class="d-flex flex-column h-100">
+<!-- Inserta la barra de navegación común -->
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
 <main class="flex-shrink-0">
+    <!-- Solo muestra el formulario si el usuario autenticado existe y es ADMIN -->
     <div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
+        <!-- Título con el id del paciente que se va a modificar -->
         <h1>Modificar paciente con id <span th:text="${paciente.id}"></span></h1>
 
+        <!-- Formulario de edición del paciente -->
         <form class="row g-3 mt-4"
               th:action="@{/user/editarPaciente/{id}(id=${paciente.id})}"
               method="post">
 
+            <!-- Token CSRF para permitir el envío seguro del formulario -->
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            
+            <!-- Campo oculto con el id del paciente -->
             <input type="hidden" name="id" th:value="${paciente.id}">
 
+            <!-- Campo para editar la posición del paciente -->
             <div class="col-md-6">
                 <label class="form-label">Posición</label>
                 <input type="text" name="posicion" class="form-control"
                        th:value="${paciente.posicion}" required>
             </div>
             
+            <!-- Selector para elegir la cola del paciente -->
             <div class="col-md-6">
                 <label class="form-label">Cola</label>
                 <select name="colaId" class="form-control" required>
                     <option value="">-- Selecciona una cola --</option>
+
+                    <!-- Recorre todas las colas disponibles -->
                     <option th:each="cola : ${colas}"
                             th:value="${cola.id}"
                             th:text="${cola.nombre}"
@@ -42,6 +54,7 @@
         </form>
     </div>
 
+    <!-- Mensaje mostrado si el usuario no es admin ni organizador -->
     <div th:unless="${u != null and (u.hasRole('ADMIN') or u.hasRole('ORGANIZADOR'))}" class="container text-center mt-5">
         <div class="alert alert-danger">
             <h2>Solo trabajadores</h2>

@@ -13,6 +13,7 @@
             <div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
                 <h1>Modificar personal con id <span th:text="${personal.id}"></span></h1>
 
+                 <!-- Formulario para editar los datos del trabajador -->
                 <form class="row g-3 mt-4"
                     th:action="@{/user/editarPersonal/{id}(id=${personal.id})}"
                     method="post">
@@ -20,18 +21,21 @@
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <input type="hidden" name="id" th:value="${personal.id}">
 
+                    <!-- Campo del nombre -->
                     <div class="col-md-6">
                         <label class="form-label">Nombre</label>
                         <input type="text" name="firstName" class="form-control"
                             th:value="${personal.firstName}" required>
                     </div>
 
+                    <!-- Campo de apellidos -->
                     <div class="col-md-6">
                         <label class="form-label">Apellidos</label>
                         <input type="text" name="lastName" class="form-control"
                             th:value="${personal.lastName}" required>
                     </div>
 
+                    <!-- Campo o selector para el rol del usuario -->
                     <div class="col-md-6">
                         <label class="form-label">Rol</label>
                         <select name="rol" class="form-control" required>
@@ -43,22 +47,26 @@
                         </select>
                     </div>
 
+                    <!-- Campo para el nombre de usuario -->
                     <div class="col-md-6">
                         <label class="form-label">Nombre de Usuario</label>
                         <input type="text" name="username" class="form-control"
                             th:value="${personal.username}" required>
                     </div>
 
+                    <!-- Campo para la contraseña -->
                     <div class="col-md-6">
                         <label class="form-label">Contraseña</label>
                         <input type="password" name="password" class="form-control" required>
                     </div>
                     
+                    <!-- Botón para guardar los cambios realizados -->
                     <button type="submit" class="btn btn-primary mt-3">Guardar cambios</button>
 
                 </form>
             </div>
 
+            <!-- Indicador de permisos: esta vista solo debe ser accesible por administradores -->
             <div th:unless="${u != null and u.hasRole('ADMIN')}" class="container text-center mt-5">
                 <div class="alert alert-danger">
                     <h2>Solo administradores</h2>
