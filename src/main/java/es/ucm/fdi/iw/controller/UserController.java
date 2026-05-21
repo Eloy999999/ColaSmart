@@ -434,7 +434,7 @@ public class UserController {
 
       if (!trabajador.getColasAsignadas().contains(cola)) {
           trabajador.getColasAsignadas().add(cola);
-          userRepository.save(trabajador); // 🔥 CLAVE
+          userRepository.save(trabajador);
       }
 
       return "redirect:/user/modificar_colas_personal/" + trabajadorId;
@@ -448,7 +448,7 @@ public class UserController {
       Cola cola = colaRepository.findById(colaId).orElseThrow();
 
       trabajador.getColasAsignadas().remove(cola);
-      userRepository.save(trabajador); // 🔥 CLAVE
+      userRepository.save(trabajador);
 
       return "redirect:/user/modificar_colas_personal/" + trabajadorId;
   }

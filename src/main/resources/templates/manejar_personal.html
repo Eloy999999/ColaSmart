@@ -10,69 +10,80 @@
 
 <header th:replace="~{fragments/nav.html :: nav}"></header>
 
- <main class="flex-shrink-0">
-        <div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
-            <h1>Vista de configuración de un nuevo miembro del personal</h1>
-            <button type="button" id="btnLorem" class="btn btn-success mt-3">Lorem</button>
-            <form class="row g-3 mt-4" th:action="@{/panelAdmin/personal}" method="post">
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                
-                <div class="col-md-6">
-                    <label class="form-label">Nombre</label>
-                    <input type="text" id="firstName" name="firstName" class="form-control" required>
-                </div>
+<main class="flex-shrink-0">
 
-                <div class="col-md-6">
-                    <label class="form-label">Apellidos</label>
-                    <input type="text" id="lastName" name="lastName" class="form-control" required>
-                </div>
+    <!-- Solo visible si el usuario autenticado es ADMIN -->
+    <div th:if="${u != null and u.hasRole('ADMIN')}" class="container">
+        <h1>Vista de configuración de un nuevo miembro del personal</h1>
 
-                <div class="col-md-6">
-                    <label class="form-label">Rol</label>
-                    <select name="rol" class="form-control" required>
-                        <option th:each="rol : ${roles}"
-                                th:value="${rol}"
-                                th:text="${rol}">
-                        </option>
-                    </select>
-                </div>
+        <!-- Rellena el formulario con datos aleatorios via fetch -->
+        <button type="button" id="btnLorem" class="btn btn-success mt-3">Lorem</button>
 
-                <div class="col-md-6">
-                    <label class="form-label">Nombre de Usuario</label>
-                    <input type="text" id="username" name="username" class="form-control" required>
-                </div>
+        <form class="row g-3 mt-4" th:action="@{/panelAdmin/personal}" method="post">
 
-                <div class="col-md-6">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
+            <!-- Token CSRF requerido por Spring Security -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
-                <button type="submit" class="btn btn-success mt-3">Añadir personal</button>
-            </form>
-        </div>
-        <div th:unless="${u != null and u.hasRole('ADMIN')}" class="container text-center mt-5">
-            <div class="alert alert-danger">
-                <h2>Solo administradores</h2>
+            <div class="col-md-6">
+                <label class="form-label">Nombre</label>
+                <input type="text" id="firstName" name="firstName" class="form-control" required>
             </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Apellidos</label>
+                <input type="text" id="lastName" name="lastName" class="form-control" required>
+            </div>
+
+            <!-- Lista de roles disponibles cargada desde el modelo -->
+            <div class="col-md-6">
+                <label class="form-label">Rol</label>
+                <select name="rol" class="form-control" required>
+                    <option th:each="rol : ${roles}"
+                            th:value="${rol}"
+                            th:text="${rol}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Nombre de Usuario</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-success mt-3">Añadir personal</button>
+        </form>
+    </div>
+
+    <!-- Mensaje de acceso denegado si el usuario no es ADMIN -->
+    <div th:unless="${u != null and u.hasRole('ADMIN')}" class="container text-center mt-5">
+        <div class="alert alert-danger">
+            <h2>Solo administradores</h2>
         </div>
-    </main>
+    </div>
+</main>
 
-    <script>
-        document.getElementById("btnLorem").addEventListener("click", async function () {
-            const res = await fetch("/panelAdmin/personal/lorem");
-            const data = await res.json();
-            const nombre = data.firstName.toLowerCase();
+<script>
+    // Al pulsar "Lorem", obtiene datos aleatorios del servidor y rellena el formulario.
+    // El username se genera como: nombre + primeras 2 letras de cada apellido.
+    document.getElementById("btnLorem").addEventListener("click", async function () {
+        const res = await fetch("/panelAdmin/personal/lorem");
+        const data = await res.json();
+        const nombre = data.firstName.toLowerCase();
 
-            const apellidos = data.lastName.toLowerCase().split(" ");
+        const apellidos = data.lastName.toLowerCase().split(" ");
+        const ap1 = apellidos[0]?.substring(0, 2) || "";
+        const ap2 = apellidos[1]?.substring(0, 2) || "";
 
-            const ap1 = apellidos[0]?.substring(0, 2) || "";
-            const ap2 = apellidos[1]?.substring(0, 2) || "";
-
-            document.getElementById("firstName").value = data.firstName;
-            document.getElementById("lastName").value = data.lastName;
-            document.getElementById("username").value = nombre + ap1 + ap2;
-        });
-    </script>
+        document.getElementById("firstName").value = data.firstName;
+        document.getElementById("lastName").value = data.lastName;
+        document.getElementById("username").value = nombre + ap1 + ap2;
+    });
+</script>
 
 </body>
 </html>
