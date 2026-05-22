@@ -6,6 +6,7 @@ import org.springframework.messaging.Message;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity;
 import org.springframework.security.messaging.access.intercept.MessageMatcherDelegatingAuthorizationManager;
+import org.springframework.messaging.simp.SimpMessageType;
 
 import es.ucm.fdi.iw.model.User;
 
@@ -19,8 +20,9 @@ public class WebSocketSecurityConfig {
         messages
                 .simpDestMatchers("/admin/**").hasRole(User.Role.ADMIN.toString())
                 .simpSubscribeDestMatchers("/admin/**").hasRole(User.Role.ADMIN.toString())
-                .simpSubscribeDestMatchers("/topic/cola/**").authenticated()
-                //.simpSubscribeDestMatchers("/topic/cola/**").permitAll()
+                //.simpSubscribeDestMatchers("/topic/cola/**").authenticated()
+                .simpSubscribeDestMatchers("/topic/cola/**").permitAll()
+                .simpTypeMatchers(SimpMessageType.CONNECT).permitAll()
                 .anyMessage().authenticated();
         return messages.build();
     }

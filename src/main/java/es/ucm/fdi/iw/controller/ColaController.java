@@ -248,6 +248,7 @@ public class ColaController {
         data.put("first", cola.getFirst());
         data.put("last", cola.getLast());
         data.put("waiting", cola.getWaiting());
+        data.put("tiempo", cola.getTiempo());
 
         // Informacion del turno que se esta atendiendo ahora mismo
         if (cola.getInicioTurnoActual() != null) {

@@ -149,9 +149,9 @@
                     ? `${actual.username} - ${actual.lugar || 'Puesto ?'}` : '';
             }
 
-            // Últimos 6 atendidos = posiciones first-6 a first-2
+            // Turnos llamados, incluyendo el turno actual
             const atendidos = [];
-            for (let i = posActual - 1; i >= posActual - 6 && i >= 0; i--) {
+            for (let i = posActual; i >= posActual - 5 && i >= 0; i--) {
                 const u = cola.listaClientes.find(c => c.posicion === i);
                 atendidos.push(u || null);
             }

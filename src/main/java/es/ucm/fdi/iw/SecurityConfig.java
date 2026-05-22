@@ -54,10 +54,11 @@ public class SecurityConfig {
       http.headers(header->header.frameOptions(frameOptions->frameOptions.sameOrigin()));
 		}
 
-    http
-			.csrf(csrf -> csrf
-				.ignoringRequestMatchers("/api/**")
-			)
+	http
+		.csrf(csrf -> csrf
+			.ignoringRequestMatchers("/api/**")
+			.ignoringRequestMatchers("/ws/**")
+		)
       .authorizeHttpRequests(authorize -> authorize
 				.requestMatchers("/css/**", "/js/**", "/img/**", "/", "/error").permitAll()
 				.requestMatchers("/api/**").permitAll()            // <-- public api access
