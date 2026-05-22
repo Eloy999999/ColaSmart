@@ -49,7 +49,7 @@
 <!-- Vista solo accesible para administradores y organizadores -->
 <div th:if="${u != null and u.hasRole('ADMIN') or u != null and u.hasRole('ORGANIZADOR')}" class="container">
 
-    <h1 class="text-center mb-4">Seguimiento de Cola - Personal</h1>
+    <h1 class="text-center mb-4">Seguimiento de Colas - Personal</h1>
 
     <div class="card">
         <div class="card-header"><h2 class="mb-0">Colas disponibles</h2></div>
@@ -94,6 +94,12 @@
 
                             <!-- Botones de accion -->
                             <td class="text-center" onclick="event.stopPropagation()">
+                                <button type="button"
+                                        class="btn btn-sm btn-primary"
+                                        th:onclick="'abrirModal(' + ${cola.id} + ')'">
+                                    Ver detalles
+                                </button>
+
                                 <form th:action="@{/colas/{id}/abrir(id=${cola.id})}" method="post" style="display:inline;">
                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <button type="submit" class="btn btn-sm btn-success">Abrir</button>
@@ -434,6 +440,15 @@
         const sala = document.getElementById("inputSala").value;
 
         try {
+            const datosRes = await fetch(`/colas/${colaIdActual}/detalle`);
+            const cola = await datosRes.json();
+
+            if (cola.abierto === false || cola.estado === 'CERRADO') {
+                alert('La cola está cerrada. Vuelve a la pestaña de Seguimiento de Colas para abrirla.');
+                renderModal(cola);
+                return;
+            }
+
             const res = await fetch(`/colas/${colaIdActual}/siguiente?sala=${sala}`, {
                 method: 'POST',
                 headers: {
@@ -443,9 +458,9 @@
             });
 
             if (res.ok) {
-                const datosRes = await fetch(`/colas/${colaIdActual}/detalle`);
-                const cola = await datosRes.json();
-                renderModal(cola);
+                const datosActualizadosRes = await fetch(`/colas/${colaIdActual}/detalle`);
+                const colaActualizada = await datosActualizadosRes.json();
+                renderModal(colaActualizada);
             } else {
                 alert('Error al llamar siguiente: ' + res.status);
             }
@@ -453,7 +468,6 @@
             alert('Error al llamar al siguiente: ' + e);
         }
     }
-
     function cerrarModal() {
         document.getElementById('modalDetalle').classList.remove('visible');
         document.body.style.overflow = '';
