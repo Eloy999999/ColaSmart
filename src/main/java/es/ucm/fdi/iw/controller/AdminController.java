@@ -234,7 +234,22 @@ public class AdminController {
 
                     cola.getListaClientes().remove(paciente);
                     cola.setWaiting(cola.getWaiting() - 1);
+
+                    // Si el usuario era el último de la cola, se ajusta el contador 'last'
+                    if (cola.getLast() == paciente.getPosicion()) {
+                        cola.setLast(cola.getLast() - 1);
+                    }
+
+                    // Si el usuario era el primero de la cola, se ajusta el contador 'first', pero nunca ambos a la vez.
+                    else if (cola.getFirst() == paciente.getPosicion()) {
+                        cola.setFirst(cola.getFirst() + 1);
+                    }
                     colaRepository.save(cola);
+
+                    // Incluido WebSocket para notificar a los usuarios en tiempo real en la vista tuTurno de cuándo otro usuario abandona la cola
+                        messagingTemplate.convertAndSend(
+                            "/topic/cola/" + cola.getId() + "/actualizar",
+                            "{\"colaId\":" + cola.getId() + ", \"tipo\":\"ABANDONO\"}");
                 }
             }
 
