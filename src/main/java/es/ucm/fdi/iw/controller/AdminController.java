@@ -220,10 +220,14 @@ public class AdminController {
 
                     cola.getListaClientes().remove(paciente);
                     cola.setWaiting(cola.getWaiting() - 1);
+
+                    // Si el paciente era el último de la cola, se ajusta el contador 'last'
                     if (cola.getLast() == paciente.getPosicion()) {
                         cola.setLast(cola.getLast() - 1);
                     }
-                    if (cola.getFirst() == paciente.getPosicion()) {
+
+                    // Si el paciente era el primero de la cola, se ajusta el contador 'first', pero nunca ambos a la vez.
+                    else if (cola.getFirst() == paciente.getPosicion()) {
                         cola.setFirst(cola.getFirst() + 1);
                     }
                     colaRepository.save(cola);
