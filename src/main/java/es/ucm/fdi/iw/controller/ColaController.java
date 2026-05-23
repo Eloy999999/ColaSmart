@@ -122,6 +122,9 @@ public class ColaController {
         cola.setUltimoTurno(colaExistente.getUltimoTurno());
         cola.setInicioUltimoTurno(colaExistente.getInicioUltimoTurno());
         cola.setFinUltimoTurno(colaExistente.getFinUltimoTurno());
+        cola.setFirst(colaExistente.getFirst());
+        cola.setLast(colaExistente.getLast());
+        cola.setWaiting(colaExistente.getWaiting());
 
         colaRepository.save(cola);
 

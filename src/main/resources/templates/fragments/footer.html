@@ -1,6 +1,59 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <!-- Título de prueba del fragmento -->
+    <title>Footer fragment - rest is empty</title>
+</head>
+
+<body>
+
+    <!-- Fragmento reutilizable del footer -->
+    <footer th:fragment="footer" class="footer mt-auto py-3 bg-light">
+
+        <div class="container">
+
+            <!-- Texto informativo de la aplicación -->
+            <span class="text-muted">
+
+                Aplicación de plantilla de IW 2025-26.
+
+                <!-- Enlace a licencia -->
+                Accede a la última versión
+                (y propón mejoras, es
+                <a href="https://www.apache.org/licenses/LICENSE-2.0">
+                    código abierto
+                </a>)
+                en el
+
+                <!-- Enlace al repositorio -->
+                <a href="https://github.com/manuel-freire/iw/blob/main/plantilla">
+                    repositorio
+                </a>.
+            </span>
+        </div>
+
+        <!-- Bootstrap JS -->
+        <script th:src="@{/js/bootstrap.bundle-5.3.3.js}"
+                src="js/bootstrap.bundle-5.3.3.js"></script>
+
+        <!-- Librería STOMP para WebSockets -->
+        <script th:src="@{/js/stomp.js}"
+                src="js/stomp.js"></script>
+
+        <!-- Scripts generales de la aplicación -->
+        <script th:src="@{/js/iw.js}"
+                src="js/iw.js"></script>
+
+        <!-- Scripts extra -->
+    </footer>
+
+</body>
+
+</html>
 <head>
     <title>Footer fragment - rest is empty</title>
 </head>

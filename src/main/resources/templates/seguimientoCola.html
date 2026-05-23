@@ -377,7 +377,8 @@
         const espera =
             ordenados.filter(c =>
                 cola.first != null &&
-                c.posicion >= cola.first);
+                c.posicion >= cola.first &&
+                cola.waiting > 0);
 
         const turnoDiv = document.getElementById('modal-turno-actual');
 
@@ -418,7 +419,7 @@
         }
 
         const listaDiv = document.getElementById('modal-lista-espera');
-        document.getElementById('modal-badge-espera').textContent = espera.length;
+        document.getElementById('modal-badge-espera').textContent = cola.waiting;
 
         if (espera.length === 0) {
             listaDiv.innerHTML = '<p class="text-muted">No hay nadie esperando.</p>';
