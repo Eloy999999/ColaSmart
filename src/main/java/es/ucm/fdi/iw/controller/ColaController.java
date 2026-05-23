@@ -338,7 +338,6 @@ public class ColaController {
             log.warn("No se encontró usuario en posicion {}, avanzando al siguiente", cola.getFirst());
 
             cola.setFirst(cola.getFirst() + 1);
-            cola.setWaiting(cola.getWaiting() - 1);
 
             siguienteUsuario = cola.getListaClientes().stream()
                 .filter(u -> u.getPosicion() == cola.getFirst()) // La nuevaPosActual es cola.getFirst();
