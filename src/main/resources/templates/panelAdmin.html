@@ -238,7 +238,7 @@
                                     </td>
                                 <td>
                                     <span th:if="${colaDelPaciente[paciente.id] != null}"
-                                        th:text="${paciente.posicion - colaDelPaciente[paciente.id].first}">
+                                        th:text="${paciente.posicion - colaDelPaciente[paciente.id].first + 1}">
                                     </span>
                                     <span th:unless="${colaDelPaciente[paciente.id] != null}"
                                         class="text-muted">Sin cola</span>
