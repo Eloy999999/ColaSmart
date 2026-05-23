@@ -231,6 +231,11 @@ public class AdminController {
                         cola.setFirst(cola.getFirst() + 1);
                     }
                     colaRepository.save(cola);
+
+                    // Incluido WebSocket para notificar a los usuarios en tiempo real en la vista tuTurno de cuándo otro usuario abandona la cola
+                        messagingTemplate.convertAndSend(
+                            "/topic/cola/" + cola.getId() + "/actualizar",
+                            "{\"colaId\":" + cola.getId() + ", \"tipo\":\"ABANDONO\"}");
                 }
             }
 
