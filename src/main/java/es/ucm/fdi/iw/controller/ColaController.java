@@ -348,7 +348,7 @@ public class ColaController {
 
         // Avanzar al siguiente cliente si hay alguien esperando
         if (cola.getWaiting() > 0) {
-            cola.setFirst(cola.getFirst() + 1);
+            cola.setFirst(siguienteUsuario.getPosicion() + 1); // El puntero "first" apunta a la siguiente posicion en espera
             cola.setWaiting(cola.getWaiting() - 1);
             cola.setInicioTurnoActual(LocalTime.now());
 
