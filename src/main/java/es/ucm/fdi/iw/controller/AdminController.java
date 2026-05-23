@@ -220,6 +220,12 @@ public class AdminController {
 
                     cola.getListaClientes().remove(paciente);
                     cola.setWaiting(cola.getWaiting() - 1);
+                    if (cola.getLast() == paciente.getPosicion()) {
+                        cola.setLast(cola.getLast() - 1);
+                    }
+                    if (cola.getFirst() == paciente.getPosicion()) {
+                        cola.setFirst(cola.getFirst() + 1);
+                    }
                     colaRepository.save(cola);
                 }
             }
