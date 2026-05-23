@@ -43,7 +43,7 @@
         class="btn btn-dark btn-lg py-4 fs-3"
         data-bs-toggle="modal"
         data-bs-target="#usuariosModal">
-            👤 Manejar Pacientes en Colas
+            👤 Manejar Usuarios en Colas
         </a>
 
     </div>
@@ -200,7 +200,7 @@
         <div class="modal-content">
 
             <div class="modal-header">
-                <h5 class="modal-title">Gestión de Usuarios (Pacientes)</h5>
+                <h5 class="modal-title">Gestión de Usuarios</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
@@ -258,7 +258,7 @@
                             </tr>
                             <tr th:if="${#lists.isEmpty(pacientes)}">
                                 <td colspan="6" class="text-center text-muted">
-                                    No hay pacientes registrados
+                                    No hay usuarios registrados
                                 </td>
                             </tr>
                         </tbody>
@@ -297,6 +297,44 @@
         }, { once: true });
     }
 </script>
+
+
+<!-- 
+<script th:inline="javascript">
+    const csrfToken = /*[[${_csrf.token}]]*/ '';
+
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+
+    const stompClient = new StompJs.Client({
+        brokerURL: wsProtocol + '//' + window.location.host + '/ws',
+        reconnectDelay: 5000,
+        connectHeaders: { 'X-CSRF-TOKEN': csrfToken }
+    });
+
+    stompClient.onConnect = function () {
+
+        stompClient.subscribe("/topic/admin/actualizar", async function () {
+
+            console.log("🔄 Admin update recibido");
+
+            // recargar SOLO la parte de usuarios
+            const res = await fetch("/panelAdmin/datos");
+            const data = await res.json();
+
+            actualizarTablaUsuarios(data);
+        });
+    };
+
+    stompClient.activate();
+
+    function actualizarTablaUsuarios(data) {
+        console.log(data);
+
+        // aquí puedes reconstruir la tabla o hacer reload parcial
+        location.reload(); // versión simple (funciona siempre)
+    }
+</script>
+-->
 
 </body>
 </html>

@@ -106,6 +106,20 @@ public class AdminController {
         return "panelAdmin";
     }
 
+    // Cargar los datos de pacientes y colas en el refresco
+    @GetMapping("/panelAdmin/datos")
+    @ResponseBody
+    public Map<String, Object> datosAdmin() {
+
+        List<User> pacientes = userRepository.findAll();
+        List<Cola> colas = colaRepository.findAll();
+
+        return Map.of(
+            "pacientes", pacientes,
+            "colas", colas
+        );
+    }
+
     // Activa o desactiva un usuario
     @PostMapping("/toggle/{id}")
     @Transactional

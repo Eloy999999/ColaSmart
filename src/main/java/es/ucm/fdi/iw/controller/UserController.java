@@ -607,24 +607,48 @@ public class UserController {
     User usuarioExistente = userRepository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + id));
 
-    usuarioExistente.setPosicion(personal.getPosicion());
+    //usuarioExistente.setPosicion(personal.getPosicion());
 
-    // 1. Quitar de la cola actual
+    // Cambiar de cola si se seleccionó una que no estaba
     for (Cola c : colaRepository.findAll()) {
-      c.getListaClientes().remove(usuarioExistente);
+      if (c.getListaClientes().contains(usuarioExistente) && c.getId() != colaId) {
+        c.getListaClientes().remove(usuarioExistente);
+        // setear last a 1 menos, quitar 1 esperando y quitar una pos a los que estaban detras del user
+        c.setLast(c.getLast() - 1);
+        c.setWaiting(c.getWaiting() -1);
+
+        colaRepository.save(c);
+
+        List<User> clientes = c.getListaClientes();
+
+        int posicionActual = usuarioExistente.getPosicion();
+
+        // Mover hacia arriba a todos los que están detrás
+        if (posicionActual <= c.getLast()){
+          for (User u : clientes) {
+            
+            if (u.getPosicion() > posicionActual) {
+
+              u.setPosicion(u.getPosicion() - 1);
+              userRepository.save(u);
+            }
+
+          }
+        }
+
+        // Poner user en la nueva cola último
+        Cola colaFinal = colaRepository.findById(colaId)
+          .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
+        
+        colaFinal.setLast(colaFinal.getLast() + 1);
+        colaFinal.setWaiting(colaFinal.getWaiting() + 1);
+        usuarioExistente.setPosicion(colaFinal.getLast());
+        colaFinal.getListaClientes().add(usuarioExistente);
+
+        colaRepository.save(colaFinal);
+        userRepository.save(usuarioExistente);
+      }    
     }
-
-    // 2. Añadir a la nueva cola
-    Cola nuevaCola = colaRepository.findById(colaId)
-        .orElseThrow(() -> new RuntimeException("Cola no encontrada"));
-
-    nuevaCola.getListaClientes().add(usuarioExistente);
-
-    // Guardar el usuario actualizado
-    userRepository.save(usuarioExistente);
-    colaRepository.save(nuevaCola);
-
-    // personal.setId(id);
 
     return "redirect:/panelAdmin?modal=usuarios";
   }
@@ -683,6 +707,63 @@ public class UserController {
     userRepository.save(usuarioExistente);
 
     return "redirect:/panelAdmin?modal=personal";
+  }
+
+  /**
+   * Actualiza los datos de un paciente y lo mueve de cola si es necesario.
+   */
+  @PostMapping("/ponerPrimero/{id}")
+  public String ponerPrimeroCola(@PathVariable Long id) {
+
+      // Usuario a mover
+      User usuario = userRepository.findById(id)
+              .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+      // Buscar la cola donde está el usuario
+      Cola colaUsuario = null;
+
+      for (Cola c : colaRepository.findAll()) {
+          if (c.getListaClientes().contains(usuario)) {
+              colaUsuario = c;
+              break;
+          }
+      }
+
+      if (colaUsuario == null) {
+          throw new RuntimeException("El usuario no pertenece a ninguna cola");
+      }
+
+      List<User> clientes = colaUsuario.getListaClientes();
+
+      int posicionActual = usuario.getPosicion();
+
+      // Mover hacia abajo a todos los que están delante
+      if (posicionActual > colaUsuario.getFirst()){
+        for (User u : clientes) {
+          
+          if (u.getId() != usuario.getId() &&
+            u.getPosicion() >= colaUsuario.getFirst() && u.getPosicion() < posicionActual) {
+
+            u.setPosicion(u.getPosicion() + 1);
+            userRepository.save(u);
+          }
+
+        }
+
+        // Poner el usuario primero
+        usuario.setPosicion(colaUsuario.getFirst());
+
+        userRepository.save(usuario);
+          
+      }
+    /* 
+    messagingTemplate.convertAndSend(
+    "/topic/admin/actualizar",
+    "reload"
+    );
+    */
+
+    return "redirect:/user/modificar_paciente/" + usuario.getId();
   }
 
   // ------ metodos auxiliares ------//
