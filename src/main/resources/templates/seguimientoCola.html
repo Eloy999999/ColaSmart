@@ -284,34 +284,72 @@
         stompClient.activate();
     });
 
+    /**
+     * Abre el modal de detalle de una cola concreta.
+     * 
+     * - Guarda el ID de la cola actualmente abierta
+     * - Muestra el modal a pantalla completa
+     * - Bloquea el scroll del body
+     * - Solicita al servidor los datos actualizados de la cola
+     * - Renderiza toda la informacion en pantalla
+     * 
+     * @param {number} colaId ID de la cola seleccionada
+     */
     async function abrirModal(colaId) {
+
+        // Guardar la cola actualmente abierta
         colaIdActual = colaId;
 
+        // Mostrar modal
         document.getElementById('modalDetalle').classList.add('visible');
+
+        // Bloquear scroll del fondo
         document.body.style.overflow = 'hidden';
+
+        // Llevar la ventana arriba del todo
         window.scrollTo(0, 0);
 
         try {
+
+            // Pedir detalle actualizado al backend
             const res = await fetch(`/colas/${colaId}/detalle`);
+
+            // Convertir respuesta JSON
             const cola = await res.json();
             renderModal(cola);
         } catch(e) {
+
+            // Mostrar mensaje de error
             document.getElementById('modal-turno-actual').innerHTML =
                 '<p class="text-danger">Error al cargar los datos.</p>';
         }
     }
 
+    /**
+     * Alterna entre:
+     * - modo visualizacion
+     * - modo edicion de sala
+     * 
+     * Cambia:
+     * - visibilidad del input
+     * - texto mostrado
+     * - estilos del boton
+     */
     function toggleEditarSala() {
         const contenedor = document.getElementById('contenedorSala');
         const input = document.getElementById('inputSala');
         const texto = document.getElementById('textoSala');
         const btn = document.getElementById('btnEditarSala');
 
+        // Entrar en modo edicion
         if (!editandoSala) {
+            // Mostrar contenedor
             contenedor.classList.remove('d-none');
-
+            // Mostrar input editable
             input.style.display = 'block';
+            // Ocultar texto fijo
             texto.style.display = 'none';
+            // Dar foco automaticamente
             input.focus();
 
             btn.textContent = 'Guardar';
@@ -335,6 +373,12 @@
         editandoSala = !editandoSala;
     }
 
+    /**
+     * Actualiza el titulo superior del modal
+     * usando:
+     * - nombre de la cola
+     * - nombre de la sala
+     */
     function actualizarTituloConSala() {
         if (colaIdActual !== null) {
             const salaNombre = document.getElementById('inputSala').value;
@@ -343,6 +387,17 @@
         }
     }
 
+    /**
+     * Renderiza toda la informacion del modal:
+     * 
+     * - turno actual
+     * - ultimo turno atendido
+     * - lista de espera
+     * - contador de espera
+     * - estado del boton "Llamar siguiente"
+     * 
+     * @param {Object} cola Datos completos de la cola
+     */
     function renderModal(cola) {
         console.log(cola);
         console.log(cola.listaClientes);
@@ -437,7 +492,15 @@
         document.getElementById('btn-siguiente').disabled = espera.length === 0;
     }
 
+    /**
+     * Llama al siguiente usuario de la cola.
+     * 
+     * - Envia peticion POST al backend
+     * - Incluye la sala actual
+     * - Actualiza el modal tras completarse
+     */
     async function llamarSiguiente() {
+        // Obtener nombre de sala actual
         const sala = document.getElementById("inputSala").value;
 
         try {

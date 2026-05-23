@@ -149,9 +149,9 @@
 
             // Turnos llamados, incluyendo el turno actual
             const atendidos = [];
-            for (let i = posActual; i >= posActual - 5 && i >= 0; i--) {
+            for (let i = posActual - 1; atendidos.length < 6 && i >= 0; i--) {
                 const u = cola.listaClientes.find(c => c.posicion === i);
-                atendidos.push(u || null);
+                if (u) atendidos.push(u);
             }
 
             // Actualiza visualmente la lista de atendidos

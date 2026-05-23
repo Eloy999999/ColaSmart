@@ -320,11 +320,32 @@ public class ColaController {
         Cola cola = colaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+
+
+        User siguienteUsuario = cola.getListaClientes().stream()
+            .filter(u -> u.getPosicion() == cola.getFirst()) // La nuevaPosActual es cola.getFirst();
+            .findFirst()
+            .orElse(null);
+                
         // Registrar el turno que acaba de ser atendido
         int actual = cola.getFirst() - 1;
         cola.setUltimoTurno(String.valueOf(actual));
         cola.setInicioUltimoTurno(cola.getInicioTurnoActual());
         cola.setFinUltimoTurno(LocalTime.now());
+
+        while (siguienteUsuario == null && cola.getWaiting() > 0) {
+            // Si el siguiente usuario no se encuentra (posicion vacia), avanzar al siguiente
+            log.warn("No se encontró usuario en posicion {}, avanzando al siguiente", cola.getFirst());
+
+            cola.setFirst(cola.getFirst() + 1);
+            cola.setWaiting(cola.getWaiting() - 1);
+
+            siguienteUsuario = cola.getListaClientes().stream()
+                .filter(u -> u.getPosicion() == cola.getFirst()) // La nuevaPosActual es cola.getFirst();
+                .findFirst()
+                .orElse(null);
+
+        }
 
         // Avanzar al siguiente cliente si hay alguien esperando
         if (cola.getWaiting() > 0) {
@@ -333,14 +354,10 @@ public class ColaController {
             cola.setInicioTurnoActual(LocalTime.now());
 
             // Asignar la sala al nuevo turno actual
-            int nuevaPosActual = cola.getFirst() - 1;
-            cola.getListaClientes().stream()
-                .filter(u -> u.getPosicion() == nuevaPosActual)
-                .findFirst()
-                .ifPresent(u -> {
-                    u.setLugar(sala);
-                    userRepository.save(u);
-                });
+            if (siguienteUsuario != null) {
+                siguienteUsuario.setLugar(sala);
+                userRepository.save(siguienteUsuario);
+            }
         }
 
         colaRepository.saveAndFlush(cola);
