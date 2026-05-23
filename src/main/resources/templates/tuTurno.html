@@ -81,7 +81,9 @@
               method="post"
               style="display:none;">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <input type="hidden" name="redirect" value="/panelQR">
+
+            <!-- Redirige de vuelta al panel QR después de abandonar la cola -->
+            <input type="hidden" name="redirect" th:value="@{/panelQR/{_id}(_id=${cola.id})}">
         </form>
 
     </div>
