@@ -183,7 +183,7 @@ public class AdminController {
     // Eliminar personal
     @PostMapping("/personal/eliminar/{id}")
     public String eliminarPersonal(@PathVariable Long id,
-            @RequestParam(required = false, defaultValue = "/panelAdmin") String redirect) {
+            @RequestParam(required = false, defaultValue = "/panelAdmin?modal=personal") String redirect) {
 
         if (userRepository.existsById(id)) {
             // Elimina al usuario de las colas
@@ -204,20 +204,22 @@ public class AdminController {
 
     // Eliminar Pacientes
     @PostMapping("/pacientes/eliminar/{id}")
-    public String eliminarPacientes(@PathVariable Long id) {
+    public String eliminarPacientes(@PathVariable Long id,
+            @RequestParam(required = false, defaultValue = "/panelAdmin?modal=usuarios") String redirect) {
 
         User paciente = userRepository.findById(id).orElse(null);
 
         if (paciente != null) {
 
             List<Cola> colas = colaRepository.findAll();
-            // Lo elimina de cualquier cola
 
+            // Lo elimina de cualquier cola
             for (Cola cola : colas) {
                 if (cola.getListaClientes() != null &&
                         cola.getListaClientes().contains(paciente)) {
 
                     cola.getListaClientes().remove(paciente);
+                    cola.setWaiting(cola.getWaiting() - 1);
                     colaRepository.save(cola);
                 }
             }
@@ -225,7 +227,7 @@ public class AdminController {
             userRepository.delete(paciente);
         }
 
-        return "redirect:/panelAdmin?modal=usuarios";
+        return "redirect:" + redirect;
     }
 
     // Método opcional para poblar DB con datos de prueba

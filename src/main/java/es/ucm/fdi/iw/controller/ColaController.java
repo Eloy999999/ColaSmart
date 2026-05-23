@@ -399,7 +399,7 @@ public class ColaController {
 
         // Recuperar los ultimos 6 turnos atendidos (posiciones anteriores al turno actual)
         List<User> atendidos = new ArrayList<>();
-        for (int i = posActual - 1; atendidos.size() < 6 && i >= 0; i--) {
+        for (int i = posActual; atendidos.size() < 6 && i >= 0; i--) {
             final int pos = i;
             cola.getListaClientes().stream()
                 .filter(u -> u.getPosicion() == pos)
