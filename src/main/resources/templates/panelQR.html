@@ -69,7 +69,7 @@
                     <div id="contenedor-atendidos" class="d-flex flex-column gap-3" style="font-size: 20px;">
                         <div th:each="user : ${atendidos}"
                              class="item-atendido"
-                             th:text="${user != null} ? ${user.username} + ' - ' + ${user.lugar} : ''">
+                            th:text="|${user.username} - ${user.lugar != null ? user.lugar : 'Puesto 1'}|">
                         </div>
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                          th:text="${turnoActual.username} + ' - ' + (${turnoActual.lugar} != null ? ${turnoActual.lugar} : 'Puesto ?')">
                     </div> -->
                     <div id="turno-actual" class="fw-bold mt-3" style="font-size: 80px;">
-                        <span th:if="${turnoActual != null}" th:text="${turnoActual.username} + ' - ' + (${turnoActual.lugar} != null ? ${turnoActual.lugar} : 'Puesto ?')"></span>
+                        <span th:if="${turnoActual != null}" th:text="${turnoActual.username} + ' - ' + (${turnoActual.lugar} != null ? ${turnoActual.lugar} : 'Puesto 1')"></span>
                     </div>
                 </div>
             </div>
@@ -144,7 +144,7 @@
             const divTurno = document.getElementById('turno-actual');
             if (divTurno) {
                 divTurno.textContent = actual
-                    ? `${actual.username} - ${actual.lugar || 'Puesto ?'}` : '';
+                    ? `${actual.username} - ${actual.lugar || 'Puesto 1'}` : '';
             }
 
             // Turnos llamados, incluyendo el turno actual
@@ -162,7 +162,7 @@
                 } else {
                     contenedor.innerHTML = atendidos.map(c => `
                         <div class="item-atendido">
-                            ${c ? c.username + ' - ' + (c.lugar || 'Puesto ?') : ''}
+                            ${c ? c.username + ' - ' + (c.lugar || 'Puesto 1') : 'Puesto 1'}
                         </div>`).join('');
                 }
             }
