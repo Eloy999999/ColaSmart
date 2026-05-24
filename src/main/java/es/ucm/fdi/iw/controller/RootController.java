@@ -2,6 +2,7 @@ package es.ucm.fdi.iw.controller;
 
 import java.util.List;
 import java.util.Optional;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
@@ -117,10 +117,19 @@ public class RootController {
     @GetMapping("/tuTurno")
     public String tuTurno(HttpSession session, Model model) {
 
-        Cola cola = (Cola) session.getAttribute("colaTemporal");
-        User user = (User) session.getAttribute("usuarioTemporal");
-        Integer posicion = user.getPosicion();
-        model.addAttribute("posicion", posicion);
+        Long colaIdNum = (Long) session.getAttribute("colaId");
+        Long userIdNum = (Long) session.getAttribute("userId");
+
+        if (colaIdNum == null || userIdNum == null) {
+            return "redirect:/";
+        }
+
+        Long colaId = colaIdNum.longValue();
+        Long userId = userIdNum.longValue();
+
+        Cola cola = colaRepository.findById(colaId).orElseThrow();
+        User user = userRepository.findById(userId).orElseThrow();
+
         model.addAttribute("cola", cola);
         model.addAttribute("user", user);
 
