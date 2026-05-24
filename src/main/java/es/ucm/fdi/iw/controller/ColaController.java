@@ -366,6 +366,8 @@ public class ColaController {
                 "/topic/cola/" + id + "/actualizar",
                 "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
 
+        messagingTemplate.convertAndSend("/topic/admin/actualizar", "{\"tipo\":\"RELOAD_PUESTOS\"}");
+        
         return ResponseEntity.ok().build();
     }
 

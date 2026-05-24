@@ -105,35 +105,77 @@ public class AdminController {
 
         List<Map<String, String>> puestosActivos = new java.util.ArrayList<>();
         java.util.Set<String> puestosRegistrados = new java.util.HashSet<>();
+        java.time.LocalTime ahora = java.time.LocalTime.now();
 
-        // 1. Ordenamos todos los pacientes por ID de forma descendente 
-        // (Las llamadas más recientes de todo el hospital se ponen las primeras)
-        pacientes.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
-
-        // 2. Recorremos los pacientes para ver en qué puestos están/estaban
-        for (User paciente : pacientes) {
-            // Un puesto se considera activo si tiene un paciente asignado en una posición
-            if (paciente.getLugar() != null && paciente.getPosicion() != null) {
-                String nombrePuesto = paciente.getLugar();
-
-                // Evitamos duplicar el puesto si ese mismo puesto ha llamado a varios
-                if (!puestosRegistrados.contains(nombrePuesto)) {
-                    puestosRegistrados.add(nombrePuesto);
-
-                    // Buscamos la cola a la que pertenece este paciente usando tu mapa existente
-                    Cola colaAsociada = colaDelPaciente.get(paciente.getId());
-
-                    Map<String, String> fila = new HashMap<>();
-                    fila.put("puesto", nombrePuesto);
-                    fila.put("cola", colaAsociada != null ? colaAsociada.getNombre() : "General");
-                    fila.put("lugar", colaAsociada != null && colaAsociada.getLugar() != null ? colaAsociada.getLugar() : "-");
-                    puestosActivos.add(fila);
+        for (Cola cola : colas) {
+            // Solo procesamos colas abiertas que tengan clientes
+            if (cola.isAbierto() && cola.getListaClientes() != null) {
+                
+                String nombrePersonal = "Sin asignar";
+                if (cola.getTrabajadores() != null && !cola.getTrabajadores().isEmpty()) {
+                    User medico = cola.getTrabajadores().get(0);
+                    nombrePersonal = medico.getFirstName() + " " + medico.getLastName();
                 }
-            }
 
-            // Freno de mano: Mostramos solo los 5 puestos con actividad más reciente
-            if (puestosActivos.size() >= 5) {
-                break;
+                //Prioridad a la hora del turno actual
+                java.time.LocalTime tiempoReferencia = (cola.getInicioTurnoActual() != null) 
+                        ? cola.getInicioTurnoActual() 
+                        : ahora;
+
+                // Mostrar el puesto que está atendiendo en ese momento
+                int posActual = cola.getFirst() - 1;
+                User usuarioActual = cola.getListaClientes().stream()
+                        .filter(u -> u.getPosicion() == posActual)
+                        .findFirst()
+                        .orElse(null);
+
+                if (usuarioActual != null && usuarioActual.getLugar() != null) {
+                    String puestoActual = usuarioActual.getLugar();
+                    
+                    if (!puestosRegistrados.contains(puestoActual)) {
+                        puestosRegistrados.add(puestoActual);
+                        
+                        Map<String, String> fila = new HashMap<>();
+                        fila.put("puesto", puestoActual);
+                        fila.put("cola", cola.getNombre());
+                        fila.put("lugar", cola.getLugar() != null ? cola.getLugar() : "-");
+                        fila.put("personal", nombrePersonal);
+                        fila.put("estado", "Atendiendo ahora");
+                        puestosActivos.add(fila);
+                    }
+                }
+
+                // Mostrar el puesto anterior si entró en los 10 minutos previos
+                if (cola.getFinUltimoTurno() != null) {
+                    // Calculamos la distancia entre el fin del turno anterior y el inicio del actual
+                    long minutosTranscurridos = java.time.Duration.between(cola.getFinUltimoTurno(), tiempoReferencia).toMinutes();
+                    
+                    // Si el hueco de tiempo entre turnos fue de 10 minutos o menos
+                    if (minutosTranscurridos >= 0 && minutosTranscurridos <= 10) {
+                        
+                        int posAnterior = posActual - 1;
+                        User usuarioAnterior = cola.getListaClientes().stream()
+                                .filter(u -> u.getPosicion() == posAnterior)
+                                .findFirst()
+                                .orElse(null);
+
+                        if (usuarioAnterior != null && usuarioAnterior.getLugar() != null) {
+                            String puestoAnterior = usuarioAnterior.getLugar();
+                            
+                            if (!puestosRegistrados.contains(puestoAnterior)) {
+                                puestosRegistrados.add(puestoAnterior);
+                                
+                                Map<String, String> fila = new HashMap<>();
+                                fila.put("puesto", puestoAnterior);
+                                fila.put("cola", cola.getNombre());
+                                fila.put("lugar", cola.getLugar() != null ? cola.getLugar() : "-");
+                                fila.put("personal", nombrePersonal);
+                                fila.put("estado", "Activo reciente (" + minutosTranscurridos + " min de margen)");
+                                puestosActivos.add(fila);
+                            }
+                        }
+                    }
+                }
             }
         }
 

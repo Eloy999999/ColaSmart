@@ -306,6 +306,7 @@
                                 <th>Puesto</th>
                                 <th>Cola</th>
                                 <th>Lugar</th>
+                                <th>Personal</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -313,9 +314,10 @@
                                 <td th:text="${fila.puesto}">Puesto 1</td>
                                 <td th:text="${fila.cola}">Cola General</td>
                                 <td th:text="${fila.lugar}">Sala 3</td>
+                                <td th:text="${fila.personal}">Admin</td> </tr>
                             </tr>
                             <tr th:if="${#lists.isEmpty(puestosActivos)}">
-                                <td colspan="3" class="text-center text-muted">
+                                <td colspan="4" class="text-center text-muted">
                                     No hay puestos activos ahora mismo
                                 </td>
                             </tr>
