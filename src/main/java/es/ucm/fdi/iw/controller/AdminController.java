@@ -103,6 +103,28 @@ public class AdminController {
         model.addAttribute("colaDelPaciente", colaDelPaciente);
         model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
 
+        List<Map<String, String>> puestosActivos = new java.util.ArrayList<>();
+
+        for (Cola cola : colas) {
+            if (cola.getListaClientes() != null && cola.getFirst() > 0) {
+                int posActual = cola.getFirst() - 1;
+
+                User actual = cola.getListaClientes().stream()
+                        .filter(u -> u.getPosicion() == posActual)
+                        .findFirst()
+                        .orElse(null);
+
+                if (actual != null) {
+                    Map<String, String> fila = new HashMap<>();
+                    fila.put("puesto", actual.getLugar() != null ? actual.getLugar() : "Puesto 1");
+                    fila.put("cola", cola.getNombre());
+                    fila.put("lugar", cola.getLugar() != null ? cola.getLugar() : "-");
+                    puestosActivos.add(fila);
+                }
+            }
+        }
+
+        model.addAttribute("puestosActivos", puestosActivos);
         return "panelAdmin";
     }
 
