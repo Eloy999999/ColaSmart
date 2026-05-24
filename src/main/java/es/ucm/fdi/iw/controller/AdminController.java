@@ -227,24 +227,44 @@ public class AdminController {
 
             List<Cola> colas = colaRepository.findAll();
 
-            // Lo elimina de cualquier cola
+            Integer posicionPaciente = paciente.getPosicion();
+
+            // Lo elimina de su cola
             for (Cola cola : colas) {
                 if (cola.getListaClientes() != null &&
                         cola.getListaClientes().contains(paciente)) {
 
                     cola.getListaClientes().remove(paciente);
-                    cola.setWaiting(cola.getWaiting() - 1);
 
-                    // Si el usuario era el último de la cola, se ajusta el contador 'last'
-                    if (cola.getLast() == paciente.getPosicion()) {
-                        cola.setLast(cola.getLast() - 1);
+                    if (posicionPaciente < cola.getFirst() -1){ // En el registro de los usuarios ya atendidos
+                        for (User usuario : cola.getListaClientes()) {
+                            if (usuario.getPosicion() < posicionPaciente) {
+                                usuario.setPosicion(usuario.getPosicion() + 1);
+                                userRepository.save(usuario);
+                            }
+                        }
+                    }else{ // en cola o siendo atendido
+                        if (posicionPaciente == cola.getFirst() - 1 && cola.getWaiting() == 0) { // si estaba siendo atendido y no hay nadie más detrás
+                            cola.setFirst(cola.getFirst() - 1);
+                            cola.setLast(cola.getLast() - 1);
+                            cola.setUltimoTurno(String.valueOf(Integer.parseInt(cola.getUltimoTurno()) - 1));
+                        }else{// en otro caso
+                            /*
+                            if (posicionPaciente == cola.getFirst() || posicionPaciente == cola.getFirst() -1) { // si era primero o estaba siendo atendido ya, la posicion del nuevo primero es la siguiente
+                                cola.setFirst(cola.getFirst() + 1);
+                            }
+                            */
+                            for (User usuario : cola.getListaClientes()) {
+                                if (usuario.getPosicion() > posicionPaciente) {
+                                    usuario.setPosicion(usuario.getPosicion() - 1);
+                                    userRepository.save(usuario);
+                                }
+                            }
+                            cola.setWaiting(cola.getWaiting() - 1);
+                            cola.setLast(cola.getLast() - 1);
+                        }
+                        colaRepository.save(cola);
                     }
-
-                    // Si el usuario era el primero de la cola, se ajusta el contador 'first', pero nunca ambos a la vez.
-                    else if (cola.getFirst() == paciente.getPosicion()) {
-                        cola.setFirst(cola.getFirst() + 1);
-                    }
-                    colaRepository.save(cola);
 
                     // Incluido WebSocket para notificar a los usuarios en tiempo real en la vista tuTurno de cuándo otro usuario abandona la cola
                         messagingTemplate.convertAndSend(

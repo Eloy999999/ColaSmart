@@ -569,12 +569,7 @@ public class UserController {
       return "redirect:/user/modificar_colas_personal/" + trabajadorId;
   }
 
-  /**
-   * Muestra la vista de modificacion de pacientes.
-   *
-   * @param id ID del paciente
-   * @param model modelo de la vista
-   */
+/* 
   @GetMapping("/modificar_paciente/{id}")
   public String mostrarModificarPaciente(@PathVariable Long id, Model model) {
     User personal = userRepository.findById(id).orElse(null);
@@ -590,14 +585,9 @@ public class UserController {
     model.addAttribute("colaDelPaciente", colaDelPaciente);
     return "modificar_paciente";
   }
+    */
 
-  /**
-   * Actualiza los datos de un paciente y lo mueve de cola si es necesario.
-   *
-   * @param id ID del paciente
-   * @param personal datos modificados
-   * @param colaId nueva cola asignada
-   */
+/* 
   @PostMapping("/editarPaciente/{id}")
   public String actualizarPaciente(@PathVariable Long id,
       @ModelAttribute("personal") User personal,
@@ -652,20 +642,9 @@ public class UserController {
 
     return "redirect:/panelAdmin?modal=usuarios";
   }
+    */
 
-  /**
-   * Actualiza los datos de un trabajador.
-   * 
-   * Tambien permite:
-   * - cambiar contraseña
-   * - modificar rol
-   * - reasignar colas
-   *
-   * @param id ID del trabajador
-   * @param personal datos modificados
-   * @param colasId lista de colas seleccionadas
-   * @param rol nuevo rol
-   */
+  
   @PostMapping("/editarPersonal/{id}")
   public String actualizarPersonal(@PathVariable Long id,
       @ModelAttribute("personal") User personal,
@@ -710,7 +689,7 @@ public class UserController {
   }
 
   /**
-   * Actualiza los datos de un paciente y lo mueve de cola si es necesario.
+   * Mueve a un usuario a la primera posición de la cola en la que está
    */
   @PostMapping("/ponerPrimero/{id}")
   public String ponerPrimeroCola(@PathVariable Long id) {
@@ -763,7 +742,7 @@ public class UserController {
     );
     */
 
-    return "redirect:/user/modificar_paciente/" + usuario.getId();
+    return "redirect:/panelAdmin?modal=usuarios";
   }
 
   // ------ metodos auxiliares ------//

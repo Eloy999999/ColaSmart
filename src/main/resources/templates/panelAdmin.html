@@ -245,7 +245,17 @@
                                 </td>
 
                                 <td class="text-center">
-                                    <a th:href="@{/user/modificar_paciente/{id}(id=${paciente.id})}" class="btn btn-sm btn-warning">✏️ Editar</a>
+                                    <form th:action="@{/user/ponerPrimero/{id}(id=${paciente.id})}"
+                                        method="post"
+                                        style="display:inline;">
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-warning"
+                                                th:disabled="${colaDelPaciente[paciente.id] != null and (paciente.posicion - colaDelPaciente[paciente.id].first + 1) < 1}">
+                                            ✏️ Adelantar en cola a primero
+                                        </button>
+
+                                    </form>
                                     <form th:action="@{/panelAdmin/pacientes/eliminar/{id}(id=${paciente.id})}" method="post" style="display:inline;">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                         <button type="submit"
