@@ -41,7 +41,7 @@
                 <p class="fs-2">
                     <strong>Tiempo estimado:</strong>
                     <span id="tiempo-span"
-                          th:text="${cola.tiempo * (user.posicion+1 - cola.getFirst()) + ' minutos'}">
+                          th:text="${cola.tiempo * (user.getPosicion()+1 - cola.getFirst()) + ' minutos'}">
                         15 minutos
                     </span>
                 </p>
@@ -49,7 +49,7 @@
                 <p class="fs-2">
                     <strong>Posición en la cola:</strong>
                     <span id="posicion-span"
-                          th:text="${user.posicion+1 - cola.getFirst()}">
+                          th:text="${user.getPosicion()+1 - cola.getFirst()}">
                         3
                     </span>
                 </p>
@@ -77,7 +77,7 @@
 
         <!-- Formulario oculto enviado al confirmar abandonar la cola -->
         <form id="form-abandonar"
-              th:action="@{/panelAdmin/pacientes/eliminar/{id}(id=${user.id})}"
+              th:action="@{/user/salir_de_cola/{id}(id=${user.id})}"
               method="post"
               style="display:none;">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -162,7 +162,7 @@
             }
 
             // Posición relativa en la cola
-            const posRelativa = yo.posicion + 1 - cola.first;
+            const posRelativa = yo.getPosicion() + 1 - cola.first;
             console.log("tuturno: posRelativa =", posRelativa);
 
             // Actualizar posición en pantalla

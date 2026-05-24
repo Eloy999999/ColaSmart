@@ -191,8 +191,8 @@ public class UserController {
     log.info("WebSocket enviado correctamente");
 
     // Guardar usuario y cola en sesion
-    session.setAttribute("usuarioTemporal", u);
-    session.setAttribute("colaTemporal", cola);
+    session.setAttribute("userId", u.getId());
+    session.setAttribute("colaId", cola.getId());
 
     // Redirigir al panel de turnos
     return "redirect:/tuTurno"; // pasar id de cola e id de nuevo user paciente
@@ -775,5 +775,69 @@ public class UserController {
     }
     return username;
   }
+
+  // Usuario sale de cola
+  @PostMapping("/salir_de_cola/{id}")
+  public String salirDeCola(@PathVariable Long id,
+          @RequestParam(required = false, defaultValue = "/panelAdmin?modal=usuarios") String redirect) {
+
+      User usuario = userRepository.findById(id).orElse(null);
+
+      if (usuario != null) {
+
+          List<Cola> colas = colaRepository.findAll();
+
+          Integer posicionUsuario = usuario.getPosicion();
+
+          // Lo elimina de su cola
+          for (Cola cola : colas) {
+              if (cola.getListaClientes() != null &&
+                      cola.getListaClientes().contains(usuario)) {
+
+                  cola.getListaClientes().remove(usuario);
+
+                  if (posicionUsuario < cola.getFirst() -1){ // En el registro de los usuarios ya atendidos
+                      for (User u : cola.getListaClientes()) {
+                          if (u.getPosicion() < posicionUsuario) {
+                              u.setPosicion(u.getPosicion() + 1);
+                              userRepository.save(u);
+                          }
+                      }
+                  }else{ // en cola o siendo atendido
+                      if (posicionUsuario == cola.getFirst() - 1 && cola.getWaiting() == 0) { // si estaba siendo atendido y no hay nadie más detrás
+                          cola.setFirst(cola.getFirst() - 1);
+                          cola.setLast(cola.getLast() - 1);
+                          cola.setUltimoTurno(String.valueOf(Integer.parseInt(cola.getUltimoTurno()) - 1));
+                      }else{// en otro caso
+                          /*
+                          if (posicionPaciente == cola.getFirst() || posicionPaciente == cola.getFirst() -1) { // si era primero o estaba siendo atendido ya, la posicion del nuevo primero es la siguiente
+                              cola.setFirst(cola.getFirst() + 1);
+                          }
+                          */
+                          for (User u : cola.getListaClientes()) {
+                              if (u.getPosicion() > posicionUsuario) {
+                                  u.setPosicion(u.getPosicion() - 1);
+                                  userRepository.save(u);
+                              }
+                          }
+                          cola.setWaiting(cola.getWaiting() - 1);
+                          cola.setLast(cola.getLast() - 1);
+                      }
+                      colaRepository.save(cola);
+                  }
+
+                  // Incluido WebSocket para notificar a los usuarios en tiempo real en la vista tuTurno de cuándo otro usuario abandona la cola
+                      messagingTemplate.convertAndSend(
+                          "/topic/cola/" + cola.getId() + "/actualizar",
+                          "{\"colaId\":" + cola.getId() + ", \"tipo\":\"ABANDONO\"}");
+              }
+          }
+
+          userRepository.delete(usuario);
+      }
+
+      return "redirect:" + redirect;
+  }
+
 
 }
