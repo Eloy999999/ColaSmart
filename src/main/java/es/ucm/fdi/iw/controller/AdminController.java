@@ -104,23 +104,36 @@ public class AdminController {
         model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
 
         List<Map<String, String>> puestosActivos = new java.util.ArrayList<>();
+        java.util.Set<String> puestosRegistrados = new java.util.HashSet<>();
 
-        for (Cola cola : colas) {
-            if (cola.getListaClientes() != null && cola.getFirst() > 0) {
-                int posActual = cola.getFirst() - 1;
+        // 1. Ordenamos todos los pacientes por ID de forma descendente 
+        // (Las llamadas más recientes de todo el hospital se ponen las primeras)
+        pacientes.sort((p1, p2) -> Long.compare(p2.getId(), p1.getId()));
 
-                User actual = cola.getListaClientes().stream()
-                        .filter(u -> u.getPosicion() == posActual)
-                        .findFirst()
-                        .orElse(null);
+        // 2. Recorremos los pacientes para ver en qué puestos están/estaban
+        for (User paciente : pacientes) {
+            // Un puesto se considera activo si tiene un paciente asignado en una posición
+            if (paciente.getLugar() != null && paciente.getPosicion() != null) {
+                String nombrePuesto = paciente.getLugar();
 
-                if (actual != null) {
+                // Evitamos duplicar el puesto si ese mismo puesto ha llamado a varios
+                if (!puestosRegistrados.contains(nombrePuesto)) {
+                    puestosRegistrados.add(nombrePuesto);
+
+                    // Buscamos la cola a la que pertenece este paciente usando tu mapa existente
+                    Cola colaAsociada = colaDelPaciente.get(paciente.getId());
+
                     Map<String, String> fila = new HashMap<>();
-                    fila.put("puesto", actual.getLugar() != null ? actual.getLugar() : "Puesto 1");
-                    fila.put("cola", cola.getNombre());
-                    fila.put("lugar", cola.getLugar() != null ? cola.getLugar() : "-");
+                    fila.put("puesto", nombrePuesto);
+                    fila.put("cola", colaAsociada != null ? colaAsociada.getNombre() : "General");
+                    fila.put("lugar", colaAsociada != null && colaAsociada.getLugar() != null ? colaAsociada.getLugar() : "-");
                     puestosActivos.add(fila);
                 }
+            }
+
+            // Freno de mano: Mostramos solo los 5 puestos con actividad más reciente
+            if (puestosActivos.size() >= 5) {
+                break;
             }
         }
 

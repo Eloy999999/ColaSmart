@@ -406,7 +406,7 @@ public class ColaController {
                 .ifPresent(atendidos::add);
         }
         // Rellenar con null si hay menos de 6 turnos atendidos
-        while (atendidos.size() < 6) atendidos.add(null);
+        //while (atendidos.size() < 6) atendidos.add(null);
 
         model.addAttribute("atendidos", atendidos);
         model.addAttribute("turnoActual", turnoActual);
