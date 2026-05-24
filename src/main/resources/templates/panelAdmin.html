@@ -305,16 +305,14 @@
                             <tr>
                                 <th>Puesto</th>
                                 <th>Cola</th>
-                                <th>Lugar</th>
-                                <th>Personal</th>
+                                <th>Área / Sala</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="fila : ${puestosActivos}">
-                                <td th:text="${fila.puesto}">Puesto 1</td>
-                                <td th:text="${fila.cola}">Cola General</td>
-                                <td th:text="${fila.lugar}">Sala 3</td>
-                                <td th:text="${fila.personal}">Admin</td> </tr>
+                                <td th:text="${fila.puesto}"></td>
+                                <td th:text="${fila.cola}"></td>
+                                <td th:text="${fila.lugar}"></td>
                             </tr>
                             <tr th:if="${#lists.isEmpty(puestosActivos)}">
                                 <td colspan="4" class="text-center text-muted">
