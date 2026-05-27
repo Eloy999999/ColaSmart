@@ -120,6 +120,9 @@ public class User implements Transferable<User.Transfer> {
   private Integer tiempoEstimado;
   private Integer prioridad;
 
+  // Añadido como práctica para el examen
+  private Integer numVecesLogin;
+
   @ManyToMany
   @JoinTable(name = "user_colas")
   private List<Cola> colasAsignadas = new ArrayList<>();

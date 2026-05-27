@@ -18,6 +18,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 
 /**
  * Called when a user is first authenticated (via login).
@@ -44,6 +45,8 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
   /**
    * Called whenever a user authenticates correctly.
    */
+
+  @Transactional
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
@@ -65,6 +68,8 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     User u = entityManager.createNamedQuery("User.byUsername", User.class)
         .setParameter("username", username)
         .getSingleResult();
+    u.setNumVecesLogin(u.getNumVecesLogin() + 1); // Añadido como práctica para el examen
+    entityManager.merge(u);
     session.setAttribute("u", u);
 
     // add 'url' and 'ws' session variables

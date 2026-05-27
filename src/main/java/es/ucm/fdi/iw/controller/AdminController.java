@@ -243,6 +243,7 @@ public class AdminController {
         nuevoPersonal.setEnabled(true);
         // Asigna rol de organizador
         nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
+        nuevoPersonal.setNumVecesLogin(0); // Añadido como práctica para el examen
         entityManager.persist(nuevoPersonal);
         return "redirect:/panelAdmin?modal=personal";
     }
