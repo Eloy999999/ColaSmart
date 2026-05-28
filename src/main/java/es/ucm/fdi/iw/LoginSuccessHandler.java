@@ -13,6 +13,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import es.ucm.fdi.iw.model.User;
+import es.ucm.fdi.iw.model.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,6 +32,7 @@ import jakarta.servlet.http.HttpSession;
  * updating the user's profile.
  */
 @Component
+//@Transactional
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
   @Autowired
@@ -38,6 +40,9 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
   @Autowired
   private EntityManager entityManager;
+
+  @Autowired
+  private UserRepository userRepository;
 
   private static Logger log = LogManager.getLogger(LoginSuccessHandler.class);
 
@@ -66,6 +71,14 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         .setParameter("username", username)
         .getSingleResult();
     session.setAttribute("u", u);
+
+    if (u.getNumSesiones() == null || u.getNumSesiones() == 0) {
+        u.setNumSesiones(1);
+    }else{
+      u.setNumSesiones(u.getNumSesiones()+ 1);
+    }
+
+    userRepository.save(u);
 
     // add 'url' and 'ws' session variables
     // example URLS: Root URL

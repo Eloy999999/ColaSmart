@@ -167,6 +167,7 @@
                             <th>Nombre</th>
                             <th>Usuario</th>
                             <th>Rol</th>
+                            <th>Número de sesiones</th>
                             <th class="text-center">Acciones</th>
                         </tr>
                         </thead>
@@ -176,6 +177,7 @@
                                 <td th:text="${trabajador.firstName + ' ' + trabajador.lastName}">Dr. Martínez</td>
                                 <td th:text="${trabajador.username}">drmarti</td>
                                 <td th:text="${trabajador.roles}">Pediatra</td>
+                                <td th:text="${trabajador.numSesiones}" class="text-center">1</td>
                                 <td class="text-center">
                                     <a th:href="@{/user/modificar_colas_personal/{id}(id=${trabajador.id})}" class="btn btn-info btn-sm">🪪 Asignar colas</a> <!-- Boton asignar colas a personal personal-->
                                     <a th:href="@{/user/modificar_personal/{id}(id=${trabajador.id})}" class="btn btn-sm btn-warning">✏️ Editar</a> <!-- Boton editar personal-->

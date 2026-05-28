@@ -127,6 +127,8 @@ public class User implements Transferable<User.Transfer> {
   @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
   private List<Turno> turnos = new ArrayList<>();
 
+  private Integer numSesiones;
+
   // Métodos auxiliares
 
   /**

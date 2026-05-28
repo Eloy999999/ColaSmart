@@ -237,12 +237,13 @@ public class AdminController {
     // Crear nuevo personal
     @PostMapping("/personal")
     @Transactional
-    public String crearPersonal(@ModelAttribute User nuevoPersonal) {
+    public String crearPersonal(@ModelAttribute User nuevoPersonal, @RequestParam("rol") String rol) {
         // Cifra la contraseña
         nuevoPersonal.setPassword(passwordEncoder.encode(nuevoPersonal.getPassword()));
         nuevoPersonal.setEnabled(true);
         // Asigna rol de organizador
-        nuevoPersonal.setRoles(User.Role.ORGANIZADOR.toString());
+        nuevoPersonal.setRoles(rol);
+        nuevoPersonal.setNumSesiones(0);
         entityManager.persist(nuevoPersonal);
         return "redirect:/panelAdmin?modal=personal";
     }
