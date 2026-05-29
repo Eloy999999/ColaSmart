@@ -96,10 +96,6 @@ public class Cola {
   private int last;     // posicion del ultimo cliente añadido
   private int waiting;  // clientes en espera
 
-  public int getFirst()   { return first; }
-  public int getLast()    { return last; }
-  public int getWaiting() { return waiting; }
-
   /**
    * Asigna posicion al siguiente cliente que se une a la cola
    * e incrementa los contadores correspondientes.

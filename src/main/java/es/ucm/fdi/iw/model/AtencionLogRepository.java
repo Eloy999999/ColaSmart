@@ -18,6 +18,10 @@ public interface AtencionLogRepository extends JpaRepository<AtencionLog, Long> 
 
     List<AtencionLog> findTop50ByHoraInicioAtencionIsNotNullAndHoraFinAtencionIsNullOrderByHoraEntradaColaDesc();
 
+    long countByHoraFinAtencionIsNotNull();
+
+    long countByHoraFinAtencionIsNotNullAndHoraFinAtencionAfter(LocalDateTime desde);
+
     @Query("""
         SELECT l
         FROM AtencionLog l

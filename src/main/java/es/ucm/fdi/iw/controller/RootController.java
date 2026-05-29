@@ -1,5 +1,6 @@
 package es.ucm.fdi.iw.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import es.ucm.fdi.iw.model.AtencionLogRepository;
 import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.User;
@@ -31,6 +33,9 @@ public class RootController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AtencionLogRepository atencionLogRepository;
 
     private static final Logger log = LogManager.getLogger(RootController.class);
 
@@ -61,6 +66,24 @@ public class RootController {
      */
     @GetMapping("/")
     public String index(Model model) {
+
+        LocalDateTime ultimas24h = LocalDateTime.now().minusHours(24);
+
+        long atendidosTotal = atencionLogRepository.countByHoraFinAtencionIsNotNull();
+
+        long atendidosUltimoDia = atencionLogRepository.countByHoraFinAtencionIsNotNullAndHoraFinAtencionAfter(ultimas24h);
+
+        long genteEnColasAhora = colaRepository.findAll().stream()
+                .mapToLong(Cola::getWaiting)
+                .sum();
+
+        long numeroColas = colaRepository.count();
+
+        model.addAttribute("atendidosTotal", atendidosTotal);
+        model.addAttribute("atendidosUltimoDia", atendidosUltimoDia);
+        model.addAttribute("genteEnColasAhora", genteEnColasAhora);
+        model.addAttribute("numeroColas", numeroColas);
+
         return "index";
     }
 
@@ -73,41 +96,11 @@ public class RootController {
     }
 
     /**
-     * Muestra el panel QR de la cola por defecto (supermercado).
-     * Usa una cola por defecto y prepara en el modelo:
-     * - la cola
-     * - los últimos atendidos
-     * - el turno actual
-     * Si la cola está cerrada, redirige a una vista específica.
+        Pregunta C: muestra “/” no PanelQR/975 como default
      */
     @GetMapping("/panelQR")
     public String panelQR(Model model) {
-        long idDefault = 975;
-        Cola cola = colaRepository.findById(idDefault).orElse(null);
-        model.addAttribute("cola", cola); // Le meto la cola para poder sacar de ahi toda la info de esta, y meter al
-                                          // user nuevo a esta cola
-
-        if (!cola.isAbierto()) { // Si esta cerrada la cola, poner que la cola esta cerrada
-            model.addAttribute("cola", cola);
-            return "cola_cerrada";
-        }
-
-        // Coger posiciones de -6 a -1 por cola, los usuarios atendidos en posiciones recientes de la cola
-        List<User> atendidos = userRepository.findAtendidosByColaId(idDefault, -6, -1);
-
-        // Rellena con null hasta tener 6 elementos para la vista
-        while (atendidos.size() < 6) {
-            atendidos.add(null);
-        }
-
-        // Turno actual por cola
-        Optional<User> turnoActualOpt = userRepository.findTurnoActualByColaId(idDefault,0);
-        User turnoActual = turnoActualOpt.orElse(null);
-
-        model.addAttribute("atendidos", atendidos);
-        model.addAttribute("turnoActual", turnoActual);
-
-        return "panelQR";
+        return "redirect:/";
     }
 
     /**

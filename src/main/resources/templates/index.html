@@ -15,6 +15,54 @@
 
         <h1>Bienvenido a ColaSmart</h1>
 
+        <section class="my-5">
+            <h2 class="mb-4">Estadísticas de uso</h2>
+
+            <div class="row g-4">
+
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Usuarios atendidos</h5>
+                            <p class="display-6" th:text="${atendidosTotal}">0</p>
+                            <p class="text-muted mb-0">Total histórico</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Último día</h5>
+                            <p class="display-6" th:text="${atendidosUltimoDia}">0</p>
+                            <p class="text-muted mb-0">Atendidos en 24 horas</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">En cola ahora</h5>
+                            <p class="display-6" th:text="${genteEnColasAhora}">0</p>
+                            <p class="text-muted mb-0">Usuarios esperando</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Colas activas</h5>
+                            <p class="display-6" th:text="${numeroColas}">0</p>
+                            <p class="text-muted mb-0">Colas en el sistema</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
         <h2>Descripción</h2>
         <p>
             ColaSmart es una plataforma web para gestionar turnos y colas virtuales en servicios
