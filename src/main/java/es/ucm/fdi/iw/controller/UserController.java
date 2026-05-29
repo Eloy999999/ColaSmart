@@ -43,6 +43,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.ucm.fdi.iw.LocalData;
+import es.ucm.fdi.iw.model.AtencionLog;
+import es.ucm.fdi.iw.model.AtencionLogRepository;
 import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.Message;
@@ -96,6 +98,10 @@ public class UserController {
   // Repositorio de colas
   @Autowired
   private ColaRepository colaRepository;
+
+  // Repositorio de historial de atención
+  @Autowired
+  private AtencionLogRepository atencionLogRepository;
 
   /**
    * Inserta automaticamente atributos comunes de sesion en el modelo.
@@ -194,6 +200,14 @@ public class UserController {
     session.setAttribute("userId", u.getId());
     session.setAttribute("colaId", cola.getId());
 
+    AtencionLog logAtencion = new AtencionLog();
+    logAtencion.setUserId(u.getId());
+    logAtencion.setUsername(u.getUsername());
+    logAtencion.setHoraEntradaCola(LocalDateTime.now());
+    logAtencion.setColaId(cola.getId());
+    logAtencion.setCola(cola.getNombre());
+
+    atencionLogRepository.save(logAtencion);
     // Redirigir al panel de turnos
     return "redirect:/tuTurno"; // pasar id de cola e id de nuevo user paciente
   }

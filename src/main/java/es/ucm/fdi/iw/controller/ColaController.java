@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,9 +36,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+//import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import es.ucm.fdi.iw.LocalData;
+import es.ucm.fdi.iw.model.AtencionLogRepository;
 import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.User;
@@ -66,6 +68,9 @@ public class ColaController {
     @Autowired
     private LocalData localData;
 
+    @Autowired
+    private AtencionLogRepository atencionLogRepository;
+
     /**
      * Inyecta atributos comunes de sesion en el modelo antes de cada peticion.
      * Esto evita tener que recuperarlos manualmente en cada metodo del controlador.
@@ -75,24 +80,6 @@ public class ColaController {
         for (String name : new String[] { "u", "url", "ws", "topics" }) {
             model.addAttribute(name, session.getAttribute(name));
         }
-    }
-
-    /**
-     * Elimina una cola por su ID y redirige al panel de administracion.
-     * Si la cola no existe, muestra un mensaje de error al usuario.
-     *
-     * @param id             ID de la cola a eliminar
-     * @param redirectAttrs  atributos para pasar mensajes a la vista tras la redireccion
-     */
-    @PostMapping("/colas/eliminar/{id}")
-    public String eliminarCola(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
-        if (colaRepository.existsById(id)) {
-            colaRepository.deleteById(id);
-            redirectAttrs.addFlashAttribute("msg", "Cola eliminada correctamente");
-        } else {
-            redirectAttrs.addFlashAttribute("msg", "La cola no existe");
-        }
-        return "redirect:/panelAdmin?modal=listas";
     }
 
     /**
@@ -229,6 +216,7 @@ public class ColaController {
         return "redirect:/seguimientoCola";
     }
 
+
     /**
      * Devuelve el detalle completo de una cola en formato JSON.
      * Incluye informacion del turno actual, el ultimo turno atendido
@@ -315,23 +303,31 @@ public class ColaController {
     @ResponseBody
     public ResponseEntity<?> llamarSiguiente(
             @PathVariable long id,
-            @RequestParam String sala) {
+            @RequestParam String sala,
+            Authentication auth) {
 
         Cola cola = colaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-
 
         User siguienteUsuario = cola.getListaClientes().stream()
             .filter(u -> u.getPosicion() == cola.getFirst()) // La nuevaPosActual es cola.getFirst();
             .findFirst()
             .orElse(null);
-                
+        
+        // Personal que le da al botón de llamarSiguiente
+        User personal = userRepository.findByUsername(auth.getName()).orElseThrow();
+
         // Registrar el turno que acaba de ser atendido
         int actual = cola.getFirst() - 1;
         cola.setUltimoTurno(String.valueOf(actual));
         cola.setInicioUltimoTurno(cola.getInicioTurnoActual());
         cola.setFinUltimoTurno(LocalTime.now());
+
+        atencionLogRepository.findTopByPersonalIdAndHoraFinAtencionIsNull(personal.getId())
+            .ifPresent(logAtencionAtendido -> {
+                logAtencionAtendido.setHoraFinAtencion(LocalDateTime.now());
+                atencionLogRepository.save(logAtencionAtendido);
+            });
 
         while (siguienteUsuario == null && cola.getWaiting() > 0) {
             // Si el siguiente usuario no se encuentra (posicion vacia), avanzar al siguiente
@@ -356,6 +352,15 @@ public class ColaController {
             if (siguienteUsuario != null) {
                 siguienteUsuario.setLugar(sala);
                 userRepository.save(siguienteUsuario);
+
+                atencionLogRepository.findByUserId(siguienteUsuario.getId())
+                    .ifPresent(logAtencion -> {
+                        logAtencion.setHoraInicioAtencion(LocalDateTime.now());
+                        logAtencion.setLugar(sala);
+                        logAtencion.setUsernamePersonal(personal.getUsername());
+                        logAtencion.setPersonalId(personal.getId());
+                        atencionLogRepository.save(logAtencion);
+                });
             }
         }
 
@@ -367,7 +372,7 @@ public class ColaController {
                 "{\"colaId\":" + id + ", \"tipo\":\"SIGUIENTE\"}");
 
         messagingTemplate.convertAndSend("/topic/admin/actualizar", "{\"tipo\":\"RELOAD_PUESTOS\"}");
-        
+
         return ResponseEntity.ok().build();
     }
 

@@ -1,5 +1,6 @@
 package es.ucm.fdi.iw.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.time.LocalDateTime;
 
+import es.ucm.fdi.iw.model.AtencionLogRepository;
 import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.Lorem;
@@ -57,6 +61,9 @@ public class AdminController {
     // Envío de mensajes WebSocket
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+    
+    @Autowired
+    private AtencionLogRepository atencionLogRepository;
 
     private static final Logger log = LogManager.getLogger(AdminController.class);
 
@@ -78,7 +85,7 @@ public class AdminController {
                 .filter(u -> u.hasRole(User.Role.PACIENTE))
                 .collect(Collectors.toList());
 
-        // Relaciona paciente con su cola
+        // Relaciona usuario con su cola
         Map<Long, Cola> colaDelPaciente = new java.util.HashMap<>();
         for (Cola cola : colas) {
             if (cola.getListaClientes() != null) {
@@ -103,6 +110,10 @@ public class AdminController {
         model.addAttribute("colaDelPaciente", colaDelPaciente);
         model.addAttribute("maxPuestoPorCola", maxPuestoPorCola);
 
+        LocalDateTime ultimas24h = java.time.LocalDateTime.now().minusHours(24);
+        model.addAttribute("resumenGestores", atencionLogRepository.resumenPorGestor(ultimas24h));
+        model.addAttribute("historialAtenciones", atencionLogRepository.findHistorialAtencionesTerminadas());
+        
         List<Map<String, String>> puestosActivos = new java.util.ArrayList<>();
         java.util.Set<String> puestosRegistrados = new java.util.HashSet<>();
         java.time.LocalTime ahora = java.time.LocalTime.now();
@@ -184,7 +195,7 @@ public class AdminController {
     }
 
     // Cargar los datos de pacientes y colas en el refresco
-    @GetMapping("/panelAdmin/datos")
+    @GetMapping("/datos")
     @ResponseBody
     public Map<String, Object> datosAdmin() {
 
@@ -247,27 +258,35 @@ public class AdminController {
         return "redirect:/panelAdmin?modal=personal";
     }
 
-    // Abrir/Cerrar cola
-    @PostMapping("/colas/{id}/toggle")
-    @Transactional
-    @ResponseBody
-    public Map<String, String> toggleCola(@PathVariable long id, HttpServletResponse response) {
-        Cola cola = entityManager.find(Cola.class, id);
-        // Comprueba si existe
-        if (cola == null) {
-            response.setStatus(404);
-            return Map.of("error", "Cola no encontrada");
-        }
-        cola.abrir();
-        return Map.of("estado", cola.getEstado().name());
-    }
 
     // Eliminar cola
     @PostMapping("/colas/eliminar/{id}")
-    public String eliminarCola(@PathVariable Long id) {
-        if (colaRepository.existsById(id)) {
-            colaRepository.deleteById(id);
+    @Transactional
+    public String eliminarCola(@PathVariable("id") Long id, RedirectAttributes redirectAttrs) {
+        Cola cola = colaRepository.findById(id).orElse(null);
+
+        if (cola == null) {
+            redirectAttrs.addFlashAttribute("msg", "La cola no existe");
+            return "redirect:/panelAdmin?modal=listas";
         }
+
+        // Quitar la cola de los trabajadores asignados
+        if (cola.getTrabajadores() != null) {
+            for (User trabajador : new ArrayList<>(cola.getTrabajadores())) {
+                trabajador.getColasAsignadas().remove(cola);
+                userRepository.save(trabajador);
+            }
+            cola.getTrabajadores().clear();
+        }
+
+        // Quitar clientes asociados a la cola
+        if (cola.getListaClientes() != null) {
+            cola.getListaClientes().clear();
+        }
+
+        colaRepository.delete(cola);
+
+        redirectAttrs.addFlashAttribute("msg", "Cola eliminada correctamente");
         return "redirect:/panelAdmin?modal=listas";
     }
 
@@ -293,7 +312,7 @@ public class AdminController {
         return "redirect:" + redirect;
     }
 
-    // Eliminar Pacientes
+    // Eliminar Usuarios
     @PostMapping("/pacientes/eliminar/{id}")
     public String eliminarPacientes(@PathVariable Long id,
             @RequestParam(required = false, defaultValue = "/panelAdmin?modal=usuarios") String redirect) {
@@ -326,11 +345,6 @@ public class AdminController {
                             cola.setLast(cola.getLast() - 1);
                             cola.setUltimoTurno(String.valueOf(Integer.parseInt(cola.getUltimoTurno()) - 1));
                         }else{// en otro caso
-                            /*
-                            if (posicionPaciente == cola.getFirst() || posicionPaciente == cola.getFirst() -1) { // si era primero o estaba siendo atendido ya, la posicion del nuevo primero es la siguiente
-                                cola.setFirst(cola.getFirst() + 1);
-                            }
-                            */
                             for (User usuario : cola.getListaClientes()) {
                                 if (usuario.getPosicion() > posicionPaciente) {
                                     usuario.setPosicion(usuario.getPosicion() - 1);
