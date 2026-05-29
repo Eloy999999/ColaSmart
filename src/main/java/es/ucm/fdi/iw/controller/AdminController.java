@@ -114,83 +114,8 @@ public class AdminController {
         model.addAttribute("resumenGestores", atencionLogRepository.resumenPorGestor(ultimas24h));
         model.addAttribute("historialAtenciones", atencionLogRepository.findHistorialAtencionesTerminadas());
         
-        List<Map<String, String>> puestosActivos = new java.util.ArrayList<>();
-        java.util.Set<String> puestosRegistrados = new java.util.HashSet<>();
-        java.time.LocalTime ahora = java.time.LocalTime.now();
-
-        for (Cola cola : colas) {
-            // Solo procesamos colas abiertas que tengan clientes
-            if (cola.isAbierto() && cola.getListaClientes() != null) {
-                
-                String nombrePersonal = "Sin asignar";
-                if (cola.getTrabajadores() != null && !cola.getTrabajadores().isEmpty()) {
-                    User medico = cola.getTrabajadores().get(0);
-                    nombrePersonal = medico.getFirstName() + " " + medico.getLastName();
-                }
-
-                //Prioridad a la hora del turno actual
-                java.time.LocalTime tiempoReferencia = (cola.getInicioTurnoActual() != null) 
-                        ? cola.getInicioTurnoActual() 
-                        : ahora;
-
-                // Mostrar el puesto que está atendiendo en ese momento
-                int posActual = cola.getFirst() - 1;
-                User usuarioActual = cola.getListaClientes().stream()
-                        .filter(u -> u.getPosicion() == posActual)
-                        .findFirst()
-                        .orElse(null);
-
-                if (usuarioActual != null && usuarioActual.getLugar() != null) {
-                    String puestoActual = usuarioActual.getLugar();
-                    
-                    if (!puestosRegistrados.contains(puestoActual)) {
-                        puestosRegistrados.add(puestoActual);
-                        
-                        Map<String, String> fila = new HashMap<>();
-                        fila.put("puesto", puestoActual);
-                        fila.put("cola", cola.getNombre());
-                        fila.put("lugar", cola.getLugar() != null ? cola.getLugar() : "-");
-                        fila.put("personal", nombrePersonal);
-                        fila.put("estado", "Atendiendo ahora");
-                        puestosActivos.add(fila);
-                    }
-                }
-
-                // Mostrar el puesto anterior si entró en los 10 minutos previos
-                if (cola.getFinUltimoTurno() != null) {
-                    // Calculamos la distancia entre el fin del turno anterior y el inicio del actual
-                    long minutosTranscurridos = java.time.Duration.between(cola.getFinUltimoTurno(), tiempoReferencia).toMinutes();
-                    
-                    // Si el hueco de tiempo entre turnos fue de 10 minutos o menos
-                    if (minutosTranscurridos >= 0 && minutosTranscurridos <= 10) {
-                        
-                        int posAnterior = posActual - 1;
-                        User usuarioAnterior = cola.getListaClientes().stream()
-                                .filter(u -> u.getPosicion() == posAnterior)
-                                .findFirst()
-                                .orElse(null);
-
-                        if (usuarioAnterior != null && usuarioAnterior.getLugar() != null) {
-                            String puestoAnterior = usuarioAnterior.getLugar();
-                            
-                            if (!puestosRegistrados.contains(puestoAnterior)) {
-                                puestosRegistrados.add(puestoAnterior);
-                                
-                                Map<String, String> fila = new HashMap<>();
-                                fila.put("puesto", puestoAnterior);
-                                fila.put("cola", cola.getNombre());
-                                fila.put("lugar", cola.getLugar() != null ? cola.getLugar() : "-");
-                                fila.put("personal", nombrePersonal);
-                                fila.put("estado", "Activo reciente (" + minutosTranscurridos + " min de margen)");
-                                puestosActivos.add(fila);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        model.addAttribute("puestosActivos", puestosActivos);
+        // Puestos activos (turnos llamados pero no finalizados, finaliza cuando un personal p llama siguiente en cualquier cola)
+        model.addAttribute("puestosActivos", atencionLogRepository.findTop50ByHoraInicioAtencionIsNotNullAndHoraFinAtencionIsNullOrderByHoraEntradaColaDesc());
         return "panelAdmin";
     }
 
