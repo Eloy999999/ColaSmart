@@ -75,6 +75,15 @@
             </div>
         </div>
 
+        <!-- Botón para recargar la cola -->
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-primary btn-lg" id="btn-recargar">
+                    Recargar
+                </button>
+            </div>
+        </div>
+
         <!-- Formulario oculto enviado al confirmar abandonar la cola -->
         <form id="form-abandonar"
               th:action="@{/user/salir_de_cola/{id}(id=${user.id})}"
@@ -101,6 +110,7 @@
 <script th:inline="javascript">
     // Elems principales vista
     const btnAbandonar = document.getElementById('btn-abandonar');
+    const btnRecargar = document.getElementById('btn-recargar');
     const mainContent = document.getElementById('main-content');
     const turnoDisplay = document.getElementById('turno-display');
 
@@ -119,6 +129,11 @@
         if (seguro) {
             document.getElementById('form-abandonar').submit();
         }
+    });
+
+    // Listener para recargar al darle al boton correspondiente
+    btnRecargar.addEventListener('click', () => {
+        window.location.reload();
     });
 
     // Valores generados por Thymeleaf al renderizar la página
@@ -197,6 +212,11 @@
 
     // Inicia la conexión WebSocket/STOMP
     stompClient.activate();
+
+    // Recarga automática cada minuto
+    window.setInterval(() => {
+        window.location.reload();
+    }, 60 * 1000);
 </script>
 
 </body>
