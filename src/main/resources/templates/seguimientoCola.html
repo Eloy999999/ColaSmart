@@ -192,6 +192,22 @@
         </div>
     </div>
 
+    <!-- Última persona atendida -->
+    <div class="card mb-3 border-secondary">
+        <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Mensaje para usuarios esperando</h5>
+        </div>
+        <div class="card-body" id="modal-enviar-mensaje">
+            <input type="text"
+                   id="inputMensaje"
+                   class="form-control ms-2"
+                   style="font-size: 1.5rem; height: 48px;"
+                   value="Mensaje de prueba">
+            <button id="btn-mensaje" class="btn btn-success btn-lg" onclick="enviarMensaje()">
+            ▶ Enviar mensaje
+        </button>
+        </div>
+    </div>
     <!-- Lista de espera -->
     <div class="card mb-4">
         <div class="card-header d-flex align-items-center gap-2">
@@ -495,6 +511,38 @@
         }
 
         document.getElementById('btn-siguiente').disabled = espera.length === 0;
+    }
+
+    /**
+     * Envía un mensaje a los usuarios esperando en la cola.
+     * 
+     * - Obtiene el mensaje del input
+     * - Envía petición POST al backend con el mensaje y la sala actual
+     * - Muestra alerta de éxito o error
+     */
+    async function enviarMensaje() {
+        const mensaje = document.getElementById("inputMensaje").value;
+        const sala = document.getElementById("inputSala").value;
+
+        try {
+            const res = await fetch(`/colas/${colaIdActual}/mensaje?sala=${sala}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ mensaje })
+            });
+
+            if (res.ok) {
+                alert('Mensaje enviado correctamente.');
+                document.getElementById("inputMensaje").value = '';
+            } else {
+                alert('Error al enviar mensaje: ' + res.status);
+            }
+        } catch(e) {
+            alert('Error al enviar mensaje: ' + e);
+        }
     }
 
     /**
