@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.time.Duration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,6 +53,7 @@ import es.ucm.fdi.iw.model.Transferable;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.User.Role;
 import es.ucm.fdi.iw.model.UserRepository;
+import es.ucm.fdi.iw.model.MessageRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -102,6 +104,9 @@ public class UserController {
   // Repositorio de historial de atención
   @Autowired
   private AtencionLogRepository atencionLogRepository;
+
+  @Autowired
+    private MessageRepository messageRepository;
 
   /**
    * Inserta automaticamente atributos comunes de sesion en el modelo.
@@ -167,7 +172,7 @@ public class UserController {
    * @param session sesion HTTP actual
    */
   @GetMapping("/newQRuser")
-  public String mostararVerTurno(@RequestParam("token") String token, HttpSession session) throws IOException {
+  public String mostararVerTurno(@RequestParam("token") String token, HttpSession session, Model model) throws IOException {
 
     // Crear nuevo paciente temporal
     User u = new User();
@@ -852,6 +857,5 @@ public class UserController {
 
       return "redirect:" + redirect;
   }
-
 
 }

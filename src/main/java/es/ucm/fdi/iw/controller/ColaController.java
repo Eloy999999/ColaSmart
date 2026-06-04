@@ -31,11 +31,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.transaction.annotation.Transactional;
 //import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import es.ucm.fdi.iw.LocalData;
@@ -44,6 +46,8 @@ import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.UserRepository;
+import es.ucm.fdi.iw.model.Message;
+import es.ucm.fdi.iw.model.MessageRepository;
 import jakarta.servlet.http.HttpSession;
 
 /**
@@ -70,6 +74,9 @@ public class ColaController {
 
     @Autowired
     private AtencionLogRepository atencionLogRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     /**
      * Inyecta atributos comunes de sesion en el modelo antes de cada peticion.
@@ -454,5 +461,33 @@ public class ColaController {
                 f.exists() ? new FileInputStream(f)
                         : UserController.class.getClassLoader().getResourceAsStream("static/img/default-bg.jpg"));
         return os -> FileCopyUtils.copy(in, os);
+    }
+
+    @PostMapping("/colas/{id}/mensaje")
+    @ResponseBody
+    @Transactional
+    public ResponseEntity<String> enviarMensajeForo(@PathVariable long id, @RequestBody Message.Form form, Authentication auth) {
+        // 1. Buscamos la cola
+        Cola cola = colaRepository.findById(id).orElseThrow();
+        
+        User organizador = userRepository.findByUsername(auth.getName()).orElseThrow();
+
+        Message nuevoMensaje = new Message();
+        nuevoMensaje.setSender(organizador);
+        nuevoMensaje.setText(form.getMensaje());
+        nuevoMensaje.setDateSent(LocalDateTime.now());
+        nuevoMensaje.setMinutesExpiration(form.getExpiracionMinutos());
+        nuevoMensaje.setTopic(cola.getTopic());
+        nuevoMensaje.setRecipient(null); // Es un mensaje global para el grupo, no para un usuario
+
+        //Guardamos el mensaje en su repositorio
+        messageRepository.save(nuevoMensaje);
+
+        messagingTemplate.convertAndSend(
+            "/topic/cola/" + cola.getId() + "/actualizar",
+            "{\"colaId\":" + cola.getId() + ", \"tipo\":\"NUEVO_AVISO\"}"
+        );
+
+        return ResponseEntity.ok("{\"status\":\"ok\"}");
     }
 }

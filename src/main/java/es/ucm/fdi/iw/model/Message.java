@@ -50,6 +50,8 @@ public class Message implements Transferable<Message.Transfer> {
 	private LocalDateTime dateSent;
 	private LocalDateTime dateRead;
 
+	private int minutesExpiration;
+
 	@ManyToOne
 	@JoinColumn(name = "receiver_id")
 	private User receiver;
@@ -79,6 +81,12 @@ public class Message implements Transferable<Message.Transfer> {
 			this.id = m.getId();
 		}
 	}
+
+	@Data
+    public static class Form {
+        private String mensaje;
+        private int expiracionMinutos;
+    }
 
 	@Override
 	public Transfer toTransfer() {

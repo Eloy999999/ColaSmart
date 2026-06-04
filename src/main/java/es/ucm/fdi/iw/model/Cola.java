@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -95,6 +96,9 @@ public class Cola {
   private int first;    // posicion del cliente siendo atendido
   private int last;     // posicion del ultimo cliente añadido
   private int waiting;  // clientes en espera
+
+  @OneToOne // Una cola tiene un único canal de avisos/topic
+  private Topic topic;
 
   /**
    * Asigna posicion al siguiente cliente que se une a la cola

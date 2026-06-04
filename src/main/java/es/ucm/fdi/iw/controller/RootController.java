@@ -17,6 +17,8 @@ import es.ucm.fdi.iw.model.Cola;
 import es.ucm.fdi.iw.model.ColaRepository;
 import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.UserRepository;
+import es.ucm.fdi.iw.model.Message;
+import es.ucm.fdi.iw.model.MessageRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
@@ -36,6 +38,9 @@ public class RootController {
 
     @Autowired
     private AtencionLogRepository atencionLogRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     private static final Logger log = LogManager.getLogger(RootController.class);
 
@@ -122,6 +127,25 @@ public class RootController {
 
         Cola cola = colaRepository.findById(colaId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
+
+        List<Message> mensajesDelTopic = messageRepository.findByTopicOrderByDateSentDesc(cola.getTopic());
+        Message mensajeActivo = null;
+
+        for (Message m : mensajesDelTopic) {
+            if (m.getMinutesExpiration() == 0) {
+                // 0 significa que nunca caduca
+                mensajeActivo = m;
+                break; 
+            } else {
+                java.time.Duration transcurrido = java.time.Duration.between(m.getDateSent(), java.time.LocalDateTime.now());
+                if (transcurrido.toMinutes() < m.getMinutesExpiration()) {
+                    mensajeActivo = m;
+                    break; // El mensaje sigue vigente, lo elegimos y paramos el bucle
+                }
+            }
+        }
+
+        model.addAttribute("mensajeAviso", mensajeActivo);
 
         model.addAttribute("cola", cola);
         model.addAttribute("user", user);
