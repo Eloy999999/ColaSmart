@@ -202,7 +202,12 @@
                    id="inputMensaje"
                    class="form-control ms-2"
                    style="font-size: 1.5rem; height: 48px;"
-                   value="No hay avisos">
+                   placeholder="Mensaje">
+            <input type="number"
+                   id="inputExpiracion"
+                   class="form-control ms-2 mt-2"
+                   style="font-size: 1.5rem; height: 48px;"
+                   min="0" placeholder="Expiración (minutos)">
             <button id="btn-mensaje" class="btn btn-success btn-lg" onclick="enviarMensaje()">
             ▶ Enviar mensaje
         </button>
@@ -523,9 +528,10 @@
     async function enviarMensaje() {
         const mensaje = document.getElementById("inputMensaje").value;
         const sala = document.getElementById("inputSala").value;
+        const expiracion = document.getElementById("inputExpiracion").value;
 
         try {
-            const res = await fetch(`/colas/${colaIdActual}/mensaje?sala=${sala}`, {
+            const res = await fetch(`/colas/${colaIdActual}/mensaje?sala=${sala}&expiracion=${expiracion}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -537,6 +543,7 @@
             if (res.ok) {
                 alert('Mensaje enviado correctamente.');
                 document.getElementById("inputMensaje").value = '';
+                document.getElementById("inputExpiracion").value = '';
             } else {
                 alert('Error al enviar mensaje: ' + res.status);
             }
