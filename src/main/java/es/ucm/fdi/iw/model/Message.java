@@ -55,7 +55,11 @@ public class Message implements Transferable<Message.Transfer> {
 	@ManyToOne
 	@JoinColumn(name = "receiver_id")
 	private User receiver;
-	
+		
+	@ManyToOne
+	@JoinColumn(name = "cola_id")
+	private Cola cola;
+
 	/**
 	 * Objeto para persistir a/de JSON
 	 * @author mfreire

@@ -34,7 +34,6 @@ import es.ucm.fdi.iw.model.User;
 import es.ucm.fdi.iw.model.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 

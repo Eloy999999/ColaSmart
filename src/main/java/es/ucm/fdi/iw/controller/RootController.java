@@ -2,7 +2,6 @@ package es.ucm.fdi.iw.controller;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.time.Duration;
 
 import org.apache.logging.log4j.LogManager;
@@ -129,12 +128,12 @@ public class RootController {
         Cola cola = colaRepository.findById(colaId).orElseThrow();
         User user = userRepository.findById(userId).orElseThrow();
 
-        List<Message> mensajesDelTopic = messageRepository.findByTopicOrderByDateSentDesc(cola.getTopic());
+        List<Message> mensajesDeLaCola = messageRepository.findByColaOrderByDateSentDesc(cola);
         Message mensajeActivo = null;
 
         long minutosRestantesMensaje = 0;
 
-        for (Message m : mensajesDelTopic) {
+        for (Message m : mensajesDeLaCola) {
             if (m.getMinutesExpiration() == 0) {
                 // El organizador puso 0: Nunca expira
                 mensajeActivo = m;
@@ -152,7 +151,7 @@ public class RootController {
                     minutosRestantesMensaje = m.getMinutesExpiration() - minutosQueLlevaActivo;
                     break;
                 }
-    }
+            }
         }
 
         model.addAttribute("mensajeAviso", mensajeActivo);

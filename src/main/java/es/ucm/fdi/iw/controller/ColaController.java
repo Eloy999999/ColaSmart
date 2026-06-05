@@ -478,6 +478,7 @@ public class ColaController {
         nuevoMensaje.setDateSent(LocalDateTime.now());
         nuevoMensaje.setMinutesExpiration(form.getExpiracionMinutos());
         nuevoMensaje.setTopic(cola.getTopic());
+        nuevoMensaje.setCola(cola);
         nuevoMensaje.setRecipient(null); // Es un mensaje global para el grupo, no para un usuario
 
         //Guardamos el mensaje en su repositorio
