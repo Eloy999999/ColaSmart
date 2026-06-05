@@ -86,6 +86,7 @@ public class Message implements Transferable<Message.Transfer> {
     public static class Form {
         private String mensaje;
         private int expiracionMinutos;
+		private String sala;
     }
 
 	@Override

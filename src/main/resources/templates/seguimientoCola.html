@@ -531,13 +531,17 @@
         const expiracion = document.getElementById("inputExpiracion").value;
 
         try {
-            const res = await fetch(`/colas/${colaIdActual}/mensaje?sala=${sala}&expiracion=${expiracion}`, {
+            const res = await fetch(`/colas/${colaIdActual}/mensaje`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': csrfToken
                 },
-                body: JSON.stringify({ mensaje })
+                body: JSON.stringify({ 
+                    mensaje: mensaje,
+                    expiracionMinutos: expiracion ? parseInt(expiracion) : 0,
+                    sala: sala
+                 })
             });
 
             if (res.ok) {

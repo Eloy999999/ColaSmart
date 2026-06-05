@@ -72,6 +72,12 @@
             <small class="text-muted">
                 Enviado a las <span th:text="${#temporals.format(mensajeAviso.dateSent, 'HH:mm')}">12:30</span>
             </small>
+            <span class="badge bg-secondary" id="tiempo-vida-mensaje">
+                <span th:if="${minutosRestantesAviso == -1}">Aviso permanente</span>
+                <span th:if="${minutosRestantesAviso > 0}">
+                    Expira en <strong th:text="${minutosRestantesAviso}">5</strong> min
+                </span>
+            </span>
         </div>
 
         <!-- BOTONES ABAJO -->
@@ -166,21 +172,8 @@
         console.log("tuturno: STOMP conectado, suscribiendo a /topic/cola/" + colaId + "/actualizar");
 
         // Suscripción al canal de actualización de esta cola
-        stompClient.subscribe(`/topic/cola/${colaId}/actualizar`, async function (msg) {
+        stompClient.subscribe(`/topic/cola/${colaId}/actualizar`, async function () {
             console.log("tuturno: mensaje WebSocket recibido");
-
-            if (msg && msg.body) {
-                try {
-                    const data = JSON.parse(msg.body);
-                    if (data.tipo === 'NUEVO_AVISO') {
-                        console.log("tuturno: Es un aviso del foro. Recargando página entera...");
-                        window.location.reload(); 
-                        return; // Detiene la ejecución aquí para que no ejecute el fetch de abajo
-                    }
-                } catch (e) {
-                    console.error("Error al parsear el mensaje del WebSocket:", e);
-                }
-            }
 
             // Se consulta el estado actualizado de la cola
             const res = await fetch(`/colas/${colaId}/detalle`);

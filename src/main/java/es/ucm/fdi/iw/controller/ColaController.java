@@ -467,7 +467,7 @@ public class ColaController {
     @ResponseBody
     @Transactional
     public ResponseEntity<String> enviarMensajeForo(@PathVariable long id, @RequestBody Message.Form form, Authentication auth) {
-        // 1. Buscamos la cola
+     
         Cola cola = colaRepository.findById(id).orElseThrow();
         
         User organizador = userRepository.findByUsername(auth.getName()).orElseThrow();

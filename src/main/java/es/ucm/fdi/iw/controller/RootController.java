@@ -3,6 +3,7 @@ package es.ucm.fdi.iw.controller;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.time.Duration;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -131,21 +132,31 @@ public class RootController {
         List<Message> mensajesDelTopic = messageRepository.findByTopicOrderByDateSentDesc(cola.getTopic());
         Message mensajeActivo = null;
 
+        long minutosRestantesMensaje = 0;
+
         for (Message m : mensajesDelTopic) {
             if (m.getMinutesExpiration() == 0) {
-                // 0 significa que nunca caduca
+                // El organizador puso 0: Nunca expira
                 mensajeActivo = m;
+                minutosRestantesMensaje = -1; // Usamos -1 para "infinito"
                 break; 
             } else {
-                java.time.Duration transcurrido = java.time.Duration.between(m.getDateSent(), java.time.LocalDateTime.now());
-                if (transcurrido.toMinutes() < m.getMinutesExpiration()) {
+                // Calculamos cuánto tiempo ha pasado desde que se envió
+                Duration transcurrido = Duration.between(m.getDateSent(), java.time.LocalDateTime.now());
+                long minutosQueLlevaActivo = transcurrido.toMinutes();
+
+                // Si lleva menos minutos activo de lo que configuró el organizador
+                if (minutosQueLlevaActivo < m.getMinutesExpiration()) {
                     mensajeActivo = m;
-                    break; // El mensaje sigue vigente, lo elegimos y paramos el bucle
+                    //Restamos el total de expiración menos los minutos que ya han pasado
+                    minutosRestantesMensaje = m.getMinutesExpiration() - minutosQueLlevaActivo;
+                    break;
                 }
-            }
+    }
         }
 
         model.addAttribute("mensajeAviso", mensajeActivo);
+        model.addAttribute("minutosRestantesAviso", minutosRestantesMensaje);
 
         model.addAttribute("cola", cola);
         model.addAttribute("user", user);
